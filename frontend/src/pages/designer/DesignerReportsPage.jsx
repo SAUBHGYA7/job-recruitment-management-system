@@ -60,7 +60,7 @@ export default function DesignerReportsPage() {
         </Button>
       </div>
 
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+      <div className="panel p-4">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="text-slate-400 uppercase bg-slate-800/40 border-b border-slate-800 font-mono text-[11px]">

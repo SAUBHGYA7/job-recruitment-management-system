@@ -45,7 +45,7 @@ export default function TableDetailPage() {
         </NavLink>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-designer-500/10 border border-designer-500/30 flex items-center justify-center text-designer-400 font-bold">
+            <div className="w-12 h-12 rounded bg-designer-500/10 border border-designer-500/30 flex items-center justify-center text-designer-400 font-bold">
               <Table className="w-6 h-6" />
             </div>
             <div>
@@ -60,7 +60,7 @@ export default function TableDetailPage() {
       </div>
 
       {/* Columns Definition Table (USER_TAB_COLUMNS) */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+      <div className="panel p-4">
         <h3 className="text-base font-bold text-white mb-1">Column Definitions</h3>
         <p className="text-xs text-slate-400 mb-4">Derived from <code className="text-designer-400">USER_TAB_COLUMNS</code></p>
 
@@ -114,7 +114,7 @@ export default function TableDetailPage() {
 
       {/* Constraints for this Table */}
       {details.constraints?.length > 0 && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+        <div className="panel p-4">
           <h3 className="text-base font-bold text-white mb-1">Constraints &amp; Integrity Rules</h3>
           <p className="text-xs text-slate-400 mb-4">Derived from <code className="text-designer-400">USER_CONSTRAINTS</code></p>
 
@@ -146,7 +146,7 @@ export default function TableDetailPage() {
       )}
 
       {/* Sample Rows Data Preview */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+      <div className="panel p-4">
         <h3 className="text-base font-bold text-white mb-1">Sample Oracle Rows</h3>
         <p className="text-xs text-slate-400 mb-4">Live table data preview ({details.sampleRows?.length} rows shown)</p>
 

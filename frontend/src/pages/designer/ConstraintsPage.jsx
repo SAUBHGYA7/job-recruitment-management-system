@@ -50,7 +50,7 @@ export default function ConstraintsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 glass-card">
+      <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-900/90 border border-slate-800 rounded p-4 glass-card">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -77,7 +77,7 @@ export default function ConstraintsPage() {
         </div>
       </div>
 
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+      <div className="panel p-4">
         {loading ? (
           <Loader text="Loading USER_CONSTRAINTS..." />
         ) : (

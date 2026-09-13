@@ -4,60 +4,60 @@
 
 @layer base {
   :root {
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
 
   body {
-    background-color: #0b0f17;
+    background-color: #0b0f15;
     color: #cbd5e1;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Compact, professional scrollbars */
+  /* Compact scrollbars */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   ::-webkit-scrollbar-track {
-    background: #0f172a;
+    background: #0d1117;
   }
   ::-webkit-scrollbar-thumb {
-    background: #334155;
-    border-radius: 3px;
+    background: #212836;
+    border-radius: 2px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+    background: #2f394a;
   }
 }
 
 @layer components {
-  /* Enterprise UI Panels - Simple, clean, rectangular, subtle borders */
+  /* Crisp Enterprise Panels */
   .panel {
-    background-color: #0f172a;
-    border: 1px solid #1e293b;
-    border-radius: 6px;
+    background-color: #111620;
+    border: 1px solid #1f2735;
+    border-radius: 4px;
   }
 
   .panel-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid #1e293b;
-    background-color: #131d31;
+    padding: 10px 14px;
+    border-bottom: 1px solid #1f2735;
+    background-color: #141b27;
   }
 
-  /* Standard data table */
+  /* Data Table */
   .table-container {
     overflow-x: auto;
-    border: 1px solid #1e293b;
-    border-radius: 6px;
-    background-color: #0f172a;
+    border: 1px solid #1f2735;
+    border-radius: 4px;
+    background-color: #111620;
   }
 
   .data-table {
     width: 100%;
     text-align: left;
-    font-size: 13px;
+    font-size: 12px;
     border-collapse: collapse;
   }
 
@@ -66,17 +66,17 @@
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #94a3b8;
-    background-color: #131d31;
-    border-bottom: 1px solid #1e293b;
+    letter-spacing: 0.04em;
+    color: #8b99ae;
+    background-color: #141b27;
+    border-bottom: 1px solid #1f2735;
     white-space: nowrap;
   }
 
   .data-table td {
     padding: 8px 12px;
-    border-bottom: 1px solid #1e293b;
-    color: #e2e8f0;
+    border-bottom: 1px solid #1a2230;
+    color: #d1d9e6;
   }
 
   .data-table tr:last-child td {
@@ -84,22 +84,20 @@
   }
 
   .data-table tr:hover td {
-    background-color: #1e293b;
+    background-color: #171f2c;
   }
 
-  /* Standard input fields */
+  /* Crisp input fields */
   .input-field {
-    background-color: #0b0f17;
-    border: 1px solid #334155;
-    border-radius: 4px;
-    padding: 6px 10px;
-    font-size: 13px;
-    color: #f8fafc;
-    transition: border-color 0.15s ease;
-  }
-
-  .input-field:focus {
+    background-color: #0b0f15;
+    border: 1px solid #283244;
+    border-radius: 3px;
+    padding: 5px 9px;
+    font-size: 12px;
+    color: #f1f5f9;
     outline: none;
-    border-color: #3b82f6;
+  }
+  .input-field:focus {
+    border-color: #0284c7;
   }
 }

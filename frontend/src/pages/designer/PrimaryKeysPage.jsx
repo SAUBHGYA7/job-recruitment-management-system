@@ -37,7 +37,7 @@ export default function PrimaryKeysPage() {
         <p className="text-xs text-slate-400 mt-1">Queried from Oracle dictionary: <code className="text-designer-400">USER_CONSTRAINTS WHERE CONSTRAINT_TYPE = 'P'</code></p>
       </div>
 
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+      <div className="panel p-4">
         {loading ? (
           <Loader text="Loading primary key constraints..." />
         ) : (

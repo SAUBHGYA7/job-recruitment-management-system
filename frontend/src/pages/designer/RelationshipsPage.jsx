@@ -76,7 +76,7 @@ export default function RelationshipsPage() {
       {/* Main Graph Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Schema Nodes Grid */}
-        <div className="lg:col-span-8 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+        <div className="lg:col-span-8 panel p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <Layers className="w-4 h-4 text-designer-400" />
@@ -100,7 +100,7 @@ export default function RelationshipsPage() {
                 <button
                   key={n.id}
                   onClick={() => setSelectedNode(n)}
-                  className={`p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between ${
+                  className={`p-3 rounded border text-left transition-all duration-200 flex flex-col justify-between ${
                     isSelected
                       ? 'bg-designer-600/20 border-designer-400 shadow-lg shadow-designer-600/20 ring-1 ring-designer-400'
                       : 'bg-slate-950/80 hover:bg-slate-800/60 ' + groupColors[n.group]
@@ -123,7 +123,7 @@ export default function RelationshipsPage() {
         </div>
 
         {/* Right: Selected Node Inspector */}
-        <div className="lg:col-span-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel flex flex-col justify-between space-y-6">
+        <div className="lg:col-span-4 panel p-4 flex flex-col justify-between space-y-6">
           {selectedNode ? (
             <div>
               <div className="border-b border-slate-800 pb-4 mb-4">

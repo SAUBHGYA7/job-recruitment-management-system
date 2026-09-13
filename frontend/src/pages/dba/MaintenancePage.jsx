@@ -31,7 +31,7 @@ export default function MaintenancePage() {
         <p className="text-xs text-slate-400 mt-1">Safe diagnostic and maintenance operations for the Oracle schema</p>
       </div>
 
-      <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-start gap-3 text-xs text-amber-200">
+      <div className="p-4 rounded bg-amber-950/20 border border-amber-500/30 flex items-start gap-3 text-xs text-amber-200">
         <Lock className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
         <div>
           <strong className="text-amber-400">Academic Project Safety Policy:</strong> Unrestricted destructive commands such as <code className="text-amber-300">DROP DATABASE</code> or unrestricted arbitrary SQL injection are blocked. Controlled administrative tasks are listed below.
@@ -40,7 +40,7 @@ export default function MaintenancePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Action 1: Reset Sample Data */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel flex flex-col justify-between space-y-4">
+        <div className="panel p-4 flex flex-col justify-between space-y-4">
           <div>
             <div className="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 font-bold mb-3">
               <RotateCcw className="w-5 h-5" />
@@ -60,7 +60,7 @@ export default function MaintenancePage() {
         </div>
 
         {/* Action 2: Verify Schema Integrity */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel flex flex-col justify-between space-y-4">
+        <div className="panel p-4 flex flex-col justify-between space-y-4">
           <div>
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold mb-3">
               <CheckCircle2 className="w-5 h-5" />
@@ -80,7 +80,7 @@ export default function MaintenancePage() {
         </div>
 
         {/* Action 3: Recalculate Statistics */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel flex flex-col justify-between space-y-4">
+        <div className="panel p-4 flex flex-col justify-between space-y-4">
           <div>
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold mb-3">
               <RefreshCw className="w-5 h-5" />

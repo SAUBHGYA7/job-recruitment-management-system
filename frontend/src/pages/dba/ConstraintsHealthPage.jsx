@@ -44,22 +44,22 @@ export default function ConstraintsHealthPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 glass-card">
+        <div className="p-5 rounded bg-slate-900 border border-slate-800 glass-card">
           <p className="text-xs text-slate-400 uppercase font-semibold">Total Constraints</p>
           <p className="text-2xl font-black text-white mt-1">{summary.totalConstraints}</p>
         </div>
-        <div className="p-5 rounded-2xl bg-slate-900 border border-emerald-500/30 glass-card">
+        <div className="p-5 rounded bg-slate-900 border border-emerald-500/30 glass-card">
           <p className="text-xs text-emerald-400 uppercase font-semibold">Enabled Constraints</p>
           <p className="text-2xl font-black text-emerald-400 mt-1">{summary.enabledCount}</p>
         </div>
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 glass-card">
+        <div className="p-5 rounded bg-slate-900 border border-slate-800 glass-card">
           <p className="text-xs text-slate-400 uppercase font-semibold">Disabled Constraints</p>
           <p className="text-2xl font-black text-slate-300 mt-1">{summary.disabledCount}</p>
         </div>
       </div>
 
       {/* Integrity Checks Table */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+      <div className="panel p-4">
         <h3 className="text-sm font-bold text-white mb-4">Foreign Key Parent-Child Integrity Verifications</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">

@@ -59,7 +59,7 @@ export default function DatabaseStatsPage() {
         </Button>
       </div>
 
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel">
+      <div className="panel p-4">
         {loading ? (
           <Loader text="Gathering table statistics..." />
         ) : (

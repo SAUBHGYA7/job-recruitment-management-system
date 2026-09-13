@@ -67,20 +67,33 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-56 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0 h-screen select-none">
+    <aside className="w-56 bg-[#0e131b] border-r border-[#1d2533] flex flex-col shrink-0 h-screen select-none">
       {/* Brand Header */}
-      <div className="h-12 px-4 flex items-center gap-2 border-b border-slate-800 bg-slate-900/50">
-        <Database className="w-4 h-4 text-blue-400" />
-        <span className="text-xs font-bold tracking-wide text-white font-mono">JRMS DBMS v2.0</span>
+      <div className="h-12 px-3.5 flex items-center gap-2.5 border-b border-[#1d2533] bg-[#121822]">
+        <div className="w-6 h-6 rounded bg-[#182333] border border-[#273852] flex items-center justify-center text-cyan-400">
+          <Database className="w-3.5 h-3.5" />
+        </div>
+        <div className="leading-tight">
+          <span className="text-xs font-bold tracking-wide text-white font-mono block">JRMS CONSOLE</span>
+          <span className="text-[10px] text-slate-500 font-mono block">Oracle 23c Free</span>
+        </div>
       </div>
 
-      {/* Role Banner */}
-      <div className="px-4 py-2 bg-slate-900/30 border-b border-slate-800/60 text-[11px]">
-        <span className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Actor Mode: </span>
-        <span className="font-bold text-slate-200">{role}</span>
+      {/* Role Pill Banner */}
+      <div className="px-3 py-2 bg-[#101621] border-b border-[#1a2230] flex items-center justify-between text-xs">
+        <span className="text-slate-500 uppercase tracking-wider font-semibold text-[10px]">Actor</span>
+        <span className={`text-[11px] font-mono font-semibold px-2 py-0.5 rounded border ${
+          role === 'DBA' 
+            ? 'bg-emerald-950/60 border-emerald-800/60 text-emerald-400' 
+            : role === 'DATABASE_DESIGNER'
+            ? 'bg-indigo-950/60 border-indigo-800/60 text-indigo-400'
+            : 'bg-cyan-950/60 border-cyan-800/60 text-cyan-400'
+        }`}>
+          {role}
+        </span>
       </div>
 
-      {/* Nav Items */}
+      {/* Navigation list */}
       <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
         {/* User Portal Section */}
         {(role === 'USER' || role === 'DATABASE_DESIGNER' || role === 'DBA') && (
@@ -93,15 +106,15 @@ export default function Sidebar() {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs transition-colors ${
+                  `flex items-center gap-2 px-2.5 py-1.5 rounded text-xs transition-colors ${
                     isActive
-                      ? 'bg-blue-600 text-white font-medium'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                      ? 'bg-cyan-950/80 text-cyan-300 font-medium border border-cyan-800/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#151c27]'
                   }`
                 }
               >
                 <item.icon className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span>{item.label}</span>
               </NavLink>
             ))}
           </div>
@@ -109,8 +122,8 @@ export default function Sidebar() {
 
         {/* Database Designer Section */}
         {(role === 'DATABASE_DESIGNER' || role === 'DBA') && (
-          <div className="mb-3 pt-2 border-t border-slate-900">
-            <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+          <div className="mb-3">
+            <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
               Database Designer
             </p>
             {designerLinks.map((item) => (
@@ -118,24 +131,24 @@ export default function Sidebar() {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs transition-colors ${
+                  `flex items-center gap-2 px-2.5 py-1.5 rounded text-xs transition-colors ${
                     isActive
-                      ? 'bg-indigo-600 text-white font-medium'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                      ? 'bg-indigo-950/80 text-indigo-300 font-medium border border-indigo-800/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#151c27]'
                   }`
                 }
               >
                 <item.icon className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span>{item.label}</span>
               </NavLink>
             ))}
           </div>
         )}
 
-        {/* DBA Console Section */}
+        {/* DBA Admin Section */}
         {role === 'DBA' && (
-          <div className="mb-3 pt-2 border-t border-slate-900">
-            <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+          <div className="mb-3">
+            <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
               DBA Console
             </p>
             {dbaLinks.map((item) => (
@@ -143,24 +156,27 @@ export default function Sidebar() {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-2.5 py-1.5 rounded text-xs transition-colors ${
+                  `flex items-center gap-2 px-2.5 py-1.5 rounded text-xs transition-colors ${
                     isActive
-                      ? 'bg-emerald-700 text-white font-medium'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                      ? 'bg-emerald-950/80 text-emerald-300 font-medium border border-emerald-800/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#151c27]'
                   }`
                 }
               >
                 <item.icon className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span>{item.label}</span>
               </NavLink>
             ))}
           </div>
         )}
       </nav>
 
-      {/* Footer Info */}
-      <div className="p-3 border-t border-slate-800 bg-slate-900/30 text-[10px] text-slate-500 font-mono">
-        Oracle 23c • FREEPDB1
+      {/* Database Quick Health */}
+      <div className="p-2.5 border-t border-[#1d2533] bg-[#0c1017] text-[11px] font-mono">
+        <div className="flex items-center gap-1.5 text-emerald-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>FREEPDB1: Live</span>
+        </div>
       </div>
     </aside>
   );

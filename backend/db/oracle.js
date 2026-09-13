@@ -28,10 +28,10 @@ export async function initOraclePool() {
   try {
     console.log(`[OracleDB] Attempting connection to Oracle DB at: ${dbConfig.connectString} (User: ${dbConfig.user})...`);
     
-    // Connect with a 2.5 second timeout guard for fast initialization
+    // Connect with a 15 second timeout guard
     const poolPromise = oracledb.createPool(dbConfig);
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Connection timed out after 2500ms')), 2500)
+      setTimeout(() => reject(new Error('Connection timed out after 15000ms')), 15000)
     );
 
     pool = await Promise.race([poolPromise, timeoutPromise]);

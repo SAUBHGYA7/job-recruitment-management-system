@@ -41,7 +41,7 @@ export default function SchemaOverviewPage() {
       </div>
 
       {/* Core Principle Alert */}
-      <div className="p-5 rounded-3xl bg-brand-950/40 border border-brand-500/30 glass-panel flex items-start gap-4">
+      <div className="panel p-4 border-l-2 border-l-brand-400 flex items-start gap-4">
         <ShieldCheck className="w-6 h-6 text-brand-400 shrink-0 mt-1" />
         <div>
           <h3 className="text-sm font-bold text-white">Hybrid Academic Normalization Principle (DA1 / DA2)</h3>
@@ -56,7 +56,7 @@ export default function SchemaOverviewPage() {
         {docs.map((doc, idx) => (
           <div
             key={idx}
-            className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 glass-panel space-y-4"
+            className="panel p-4 space-y-4"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
@@ -89,7 +89,7 @@ export default function SchemaOverviewPage() {
             </div>
 
             {/* Dependency Problem Description */}
-            <div className="p-3 rounded-2xl bg-rose-950/20 border border-rose-500/20 text-xs text-rose-200">
+            <div className="p-3 rounded bg-rose-950/20 border border-rose-500/20 text-xs text-rose-200">
               <strong className="text-rose-400">Violation:</strong> {doc.problem}
             </div>
 
