@@ -7,9 +7,11 @@ import { Badge } from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 
+import { mockData } from '../../services/mockDb';
+
 export default function CandidatesPage() {
-  const [candidates, setCandidates] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [candidates, setCandidates] = useState(mockData.candidates);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [genderFilter, setGenderFilter] = useState('ALL');
   const [selectedCandidate, setSelectedCandidate] = useState(null);

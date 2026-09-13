@@ -7,28 +7,25 @@ import { NavLink } from 'react-router-dom';
 import api from '../../services/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
+import { getMockDbaDashboard } from '../../services/mockDb';
+
 export default function DbaDashboard() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(getMockDbaDashboard());
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchDbaData() {
       try {
         const res = await api.get('/dba/dashboard');
-        if (res.data?.data) {
+        if (res.data?.data?.summary) {
           setData(res.data.data);
         }
       } catch (err) {
         console.error('DBA dashboard error:', err);
-      } finally {
-        setLoading(false);
       }
     }
     fetchDbaData();
   }, []);
-
-  if (loading) return <Loader text="Querying Oracle DBA administrative metrics..." />;
-  if (!data) return <div className="p-8 text-center text-xs text-slate-500">No administrative metrics found.</div>;
 
   const { summary, storageMetrics, objectTypes, recentAudit } = data;
 

@@ -7,9 +7,11 @@ import { Badge } from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
 
+import { mockData } from '../../services/mockDb';
+
 export default function ApplicationsPage() {
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [applications, setApplications] = useState(mockData.applications);
+  const [loading, setLoading] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState('Shortlisted');

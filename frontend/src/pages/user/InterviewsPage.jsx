@@ -7,9 +7,11 @@ import { Badge } from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 
+import { mockData } from '../../services/mockDb';
+
 export default function InterviewsPage() {
-  const [interviews, setInterviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [interviews, setInterviews] = useState(mockData.interviews);
+  const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
 

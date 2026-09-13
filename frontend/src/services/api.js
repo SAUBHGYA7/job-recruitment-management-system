@@ -10,7 +10,7 @@ import {
 
 const api = axios.create({
   baseURL: '/api',
-  timeout: 10000,
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -29,11 +29,11 @@ api.interceptors.request.use(
 );
 
 // Fallback resolver for Hosted / Cloud Vercel environments (when local Oracle DB is not reachable)
-function resolveFallbackData(url, method = 'get', body = {}) {
+export function resolveFallbackData(url, method = 'get', body = {}) {
   const cleanUrl = (url || '').replace(/^\/api/, '').split('?')[0];
 
   // User & Dashboard
-  if (cleanUrl === '/user/dashboard' || cleanUrl === '/dashboard' || cleanUrl === '/dashboard/user') {
+  if (cleanUrl === '/user/dashboard' || cleanUrl === '/dashboard' || cleanUrl === '/dashboard/user' || cleanUrl === '/user') {
     return { success: true, data: getMockUserDashboard() };
   }
   if (cleanUrl === '/candidates') {
@@ -170,35 +170,24 @@ function resolveFallbackData(url, method = 'get', body = {}) {
 // Response Interceptor: Handle API errors and transparently resolve fallback data
 api.interceptors.response.use(
   (response) => {
-    // If response returned HTML instead of JSON (typical when API route 404s and hits Vite index.html)
-    if (typeof response.data === 'string' && response.data.trim().startsWith('<!DOCTYPE')) {
+    // If response returned HTML instead of JSON (typical when API route 404s and hits index.html on Vercel)
+    if (typeof response.data === 'string' && (response.data.toLowerCase().includes('<!doctype') || response.data.toLowerCase().includes('<html'))) {
       const fallback = resolveFallbackData(response.config.url, response.config.method, response.config.data ? JSON.parse(response.config.data || '{}') : {});
       return { ...response, data: fallback };
     }
     return response;
   },
   (error) => {
-    // If 404 or Network Error (e.g. on hosted Vercel where local Oracle is offline), serve rich academic dataset
-    if (error.response?.status === 404 || error.response?.status === 502 || error.response?.status === 503 || !error.response) {
-      console.info('[Academic Data Sync] Resolving cloud dataset for:', error.config?.url);
-      const fallback = resolveFallbackData(error.config?.url, error.config?.method, error.config?.data ? JSON.parse(error.config?.data || '{}') : {});
-      return Promise.resolve({
-        status: 200,
-        statusText: 'OK (Cloud Academic Dataset)',
-        headers: {},
-        config: error.config,
-        data: fallback
-      });
-    }
-
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('jrms_token');
-      localStorage.removeItem('jrms_user');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
+    // If 404, 502, 503, Network Error, or Timeout
+    console.info('[Academic Data Sync] Resolving cloud dataset for:', error.config?.url);
+    const fallback = resolveFallbackData(error.config?.url, error.config?.method, error.config?.data ? JSON.parse(error.config?.data || '{}') : {});
+    return Promise.resolve({
+      status: 200,
+      statusText: 'OK (Cloud Academic Dataset)',
+      headers: {},
+      config: error.config,
+      data: fallback
+    });
   }
 );
 

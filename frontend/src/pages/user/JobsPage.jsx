@@ -7,9 +7,11 @@ import { Badge } from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 
+import { mockData } from '../../services/mockDb';
+
 export default function JobsPage() {
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs] = useState(mockData.jobs);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);

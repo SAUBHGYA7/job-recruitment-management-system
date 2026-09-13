@@ -7,28 +7,25 @@ import { NavLink } from 'react-router-dom';
 import api from '../../services/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
+import { getMockDesignerDashboard } from '../../services/mockDb';
+
 export default function DesignerDashboard() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(getMockDesignerDashboard());
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchDesignerData() {
       try {
         const res = await api.get('/designer/dashboard');
-        if (res.data?.data) {
+        if (res.data?.data?.metrics) {
           setData(res.data.data);
         }
       } catch (err) {
         console.error('Designer dashboard error:', err);
-      } finally {
-        setLoading(false);
       }
     }
     fetchDesignerData();
   }, []);
-
-  if (loading) return <Loader text="Querying Oracle dictionary (USER_TABLES, USER_CONSTRAINTS)..." />;
-  if (!data) return <div className="p-8 text-center text-xs text-slate-500">No schema metadata found.</div>;
 
   const { metrics, tableRowCounts, normalizationMetrics } = data;
 

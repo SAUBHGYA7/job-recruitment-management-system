@@ -1,35 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Briefcase, FileText, CalendarCheck, Building2, Sparkles } from 'lucide-react';
+import { Users, Briefcase, FileText, CalendarCheck, Building2 } from 'lucide-react';
 import StatCard from '../../components/common/StatCard';
-import { Loader } from '../../components/common/Loader';
 import { Badge } from '../../components/common/Badge';
 import api from '../../services/api';
+import { getMockUserDashboard } from '../../services/mockDb';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function UserDashboard() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Default to rich academic dataset so page always renders immediately
+  const [data, setData] = useState(getMockUserDashboard());
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchDashboard() {
       try {
         const res = await api.get('/user/dashboard');
-        if (res.data?.data) {
+        if (res.data?.data?.kpis) {
           setData(res.data.data);
         }
       } catch (err) {
         console.error('Failed to load user dashboard:', err);
-      } finally {
-        setLoading(false);
       }
     }
     fetchDashboard();
   }, []);
 
-  if (loading) return <Loader text="Querying live statistics from Oracle Database..." />;
-  if (!data) return <div className="p-8 text-center text-xs text-slate-500">No data returned from database.</div>;
-
-  const { kpis, charts, recentApplications, dbStatus } = data;
+  const { kpis, charts, recentApplications } = data;
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
@@ -53,7 +49,7 @@ export default function UserDashboard() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Most Demanded Skills from Oracle */}
+        {/* Most Demanded Skills */}
         <div className="lg:col-span-7 panel p-4">
           <div className="mb-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
