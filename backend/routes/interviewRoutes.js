@@ -1,0 +1,14 @@
+import express from 'express';
+import { getInterviews, createInterview, updateInterview } from '../controllers/interviewController.js';
+import { authenticateUser } from '../middleware/authMiddleware.js';
+import { requireRole } from '../middleware/roleMiddleware.js';
+
+const router = express.Router();
+
+router.use(authenticateUser);
+
+router.get('/', requireRole('USER', 'DATABASE_DESIGNER', 'DBA'), getInterviews);
+router.post('/', requireRole('USER', 'DBA'), createInterview);
+router.put('/:id', requireRole('USER', 'DBA'), updateInterview);
+
+export default router;
