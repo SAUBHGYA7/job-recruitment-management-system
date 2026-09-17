@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Plus, Search, Filter } from 'lucide-react';
+import { Briefcase, Plus, Search, Filter, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
@@ -8,10 +8,11 @@ import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import { validateRequired, validateNumber, validateLength, validateDate } from '../../utils/validation';
 
-import { mockData } from '../../services/mockDb';
 
 export default function JobsPage() {
-  const [jobs, setJobs] = useState(mockData.jobs);
+  const [jobs, setJobs] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -92,6 +93,22 @@ export default function JobsPage() {
     }
   };
 
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/jobs/${deleteTarget.job_key}`);
+      addToast(`Job posting #${deleteTarget.job_id || deleteTarget.job_key} deleted successfully`, 'success');
+      setDeleteTarget(null);
+      fetchJobs();
+    } catch {
+      addToast('Failed to delete job posting', 'error');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
       {/* Heading & Description */}
@@ -158,12 +175,13 @@ export default function JobsPage() {
                 <th>Closing Date</th>
                 <th>Required Skills</th>
                 <th>Applicants</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {jobs.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-8 text-xs text-slate-500 font-mono">
+                  <td colSpan={9} className="text-center py-8 text-xs text-slate-500 font-mono">
                     No job postings found in database.
                   </td>
                 </tr>
@@ -190,6 +208,15 @@ export default function JobsPage() {
                       </div>
                     </td>
                     <td className="font-mono font-semibold text-slate-300">{j.applicant_count}</td>
+                    <td className="text-right">
+                      <button
+                        onClick={() => setDeleteTarget(j)}
+                        className="px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-medium inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -294,6 +321,27 @@ export default function JobsPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Job Posting"
+        subtitle="This removes the job posting and its requirements from Oracle DB"
+      >
+        <div className="space-y-4 text-xs">
+          <p className="text-slate-300">
+            Are you sure you want to delete <span className="text-white font-semibold">{deleteTarget?.job_title}</span> ({deleteTarget?.job_id || '#' + deleteTarget?.job_key})?
+          </p>
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="danger" loading={deleteLoading} onClick={handleDelete}>
+              Confirm Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

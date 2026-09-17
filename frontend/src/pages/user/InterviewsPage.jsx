@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Search, Filter } from 'lucide-react';
+import { Calendar, Plus, Search, Filter, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
@@ -8,15 +8,16 @@ import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import { validateRequired, validateDate, validateLength } from '../../utils/validation';
 
-import { mockData } from '../../services/mockDb';
 
 export default function InterviewsPage() {
-  const [interviews, setInterviews] = useState(mockData.interviews);
+  const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [modeFilter, setModeFilter] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     int_date: '2026-09-20',
@@ -101,6 +102,21 @@ export default function InterviewsPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/interviews/${deleteTarget.int_id}`);
+      addToast(`Interview #${deleteTarget.int_id} deleted successfully`, 'success');
+      setDeleteTarget(null);
+      fetchInterviews();
+    } catch {
+      addToast('Failed to delete interview', 'error');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
       {/* Header */}
@@ -166,12 +182,13 @@ export default function InterviewsPage() {
                 <th>Status</th>
                 <th>Score</th>
                 <th>Evaluator Feedback</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {interviews.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-xs text-slate-500 font-mono">
+                  <td colSpan={8} className="text-center py-8 text-xs text-slate-500 font-mono">
                     No scheduled interviews found.
                   </td>
                 </tr>
@@ -199,6 +216,15 @@ export default function InterviewsPage() {
                       )}
                     </td>
                     <td className="text-slate-400 text-xs max-w-md truncate">{intV.feedback || 'None'}</td>
+                    <td className="text-right">
+                      <button
+                        onClick={() => setDeleteTarget(intV)}
+                        className="px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-medium inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -305,6 +331,30 @@ export default function InterviewsPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirm Modal */}
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Interview"
+        subtitle="This removes the interview and its details from the database"
+      >
+        <div className="space-y-4 text-xs">
+          <p className="text-slate-300">
+            Are you sure you want to delete Interview{' '}
+            <span className="text-rose-400 font-mono font-bold">#{deleteTarget?.int_id}</span>?{' '}
+            This will also remove linked Interview_Details records.
+          </p>
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="danger" loading={deleteLoading} onClick={handleDelete}>
+              Confirm Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
