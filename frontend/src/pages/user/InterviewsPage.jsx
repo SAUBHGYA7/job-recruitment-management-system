@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Video, MapPin, Star } from 'lucide-react';
+import { Calendar, Plus, Search, Filter } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
 import { Badge } from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
+import { validateRequired, validateDate, validateLength } from '../../utils/validation';
 
 import { mockData } from '../../services/mockDb';
 
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState(mockData.interviews);
   const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [modeFilter, setModeFilter] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
 
@@ -19,16 +22,22 @@ export default function InterviewsPage() {
     int_date: '2026-09-20',
     int_time: '11:00',
     int_mode: 'Online',
-    location: 'Bengaluru Hub',
+    location: 'Google Meet (Room Alpha)',
+    int_status: 'Scheduled',
+    score: null,
     feedback: ''
   });
+
+  const [errors, setErrors] = useState({});
 
   const { addToast } = useToast();
 
   const fetchInterviews = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/interviews');
+      const res = await api.get('/interviews', {
+        params: { search, mode: modeFilter !== 'ALL' ? modeFilter : undefined }
+      });
       if (res.data?.data) {
         setInterviews(res.data.data);
       }
@@ -41,16 +50,48 @@ export default function InterviewsPage() {
 
   useEffect(() => {
     fetchInterviews();
-  }, []);
+  }, [search, modeFilter]);
+
+  const validateForm = () => {
+    const errs = {};
+    const dateErr = validateRequired(formData.int_date, 'Interview Date') || validateDate(formData.int_date, { label: 'Interview Date' });
+    if (dateErr) errs.int_date = dateErr;
+
+    const timeErr = validateRequired(formData.int_time, 'Interview Time') || validateLength(formData.int_time, { max: 10, label: 'Time' });
+    if (timeErr) errs.int_time = timeErr;
+
+    if (formData.location) {
+      const locErr = validateLength(formData.location, { max: 50, label: 'Location' });
+      if (locErr) errs.location = locErr;
+    }
+
+    if (formData.feedback) {
+      const fbErr = validateLength(formData.feedback, { max: 200, label: 'Instructions/Notes' });
+      if (fbErr) errs.feedback = fbErr;
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleSchedule = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      addToast('Please correct the validation errors', 'error');
+      return;
+    }
     setAddLoading(true);
     try {
       const res = await api.post('/interviews', formData);
       if (res.data.success) {
-        addToast('Interview scheduled in Oracle Database', 'success');
+        addToast('Interview round scheduled in Oracle DB', 'success');
         setShowAddModal(false);
+        setFormData({
+          int_date: '2026-09-20', int_time: '11:00', int_mode: 'Online',
+          location: 'Google Meet (Room Alpha)', int_status: 'Scheduled',
+          score: null, feedback: ''
+        });
+        setErrors({});
         fetchInterviews();
       }
     } catch {
@@ -62,20 +103,57 @@ export default function InterviewsPage() {
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Interviews Directory</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">Interviews &amp; Evaluation Pipeline</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Interview (int_date, int_time) ⨝ Interview_Details (mode, score, feedback) relations.
+            Interview (int_date, int_time) ⨝ Interview_Details (int_mode, location, score, feedback) BCNF relations.
           </p>
         </div>
-        <Button icon={Plus} variant="primary" size="sm" onClick={() => setShowAddModal(true)}>
+        <Button
+          icon={Plus}
+          variant="primary"
+          size="sm"
+          onClick={() => {
+            setErrors({});
+            setShowAddModal(true);
+          }}
+        >
           Schedule Interview
         </Button>
       </div>
 
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-center gap-2.5 p-2 bg-slate-900 border border-slate-800 rounded">
+        <div className="relative flex-1 w-full">
+          <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by candidate, location, or feedback..."
+            className="w-full bg-slate-950 border border-slate-700 rounded pl-8 pr-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Filter className="w-3.5 h-3.5 text-slate-400" />
+          <select
+            value={modeFilter}
+            onChange={(e) => setModeFilter(e.target.value)}
+            className="bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+          >
+            <option value="ALL">All Modes</option>
+            <option value="Online">Online</option>
+            <option value="Offline">Offline</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Interviews Table */}
       {loading ? (
-        <Loader text="Loading interviews from Oracle Database..." />
+        <Loader text="Loading scheduled interviews from database..." />
       ) : (
         <div className="table-container">
           <table className="data-table">
@@ -84,27 +162,25 @@ export default function InterviewsPage() {
                 <th>Interview ID</th>
                 <th>Candidate</th>
                 <th>Date &amp; Time</th>
-                <th>Mode / Location</th>
+                <th>Mode / Venue</th>
                 <th>Status</th>
                 <th>Score</th>
-                <th>Feedback / Evaluation Notes</th>
+                <th>Evaluator Feedback</th>
               </tr>
             </thead>
             <tbody>
               {interviews.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-8 text-xs text-slate-500 font-mono">
-                    No interview records found.
+                    No scheduled interviews found.
                   </td>
                 </tr>
               ) : (
                 interviews.map((intV) => (
                   <tr key={intV.int_id}>
-                    <td className="font-mono font-bold text-blue-400">{intV.int_id}</td>
-                    <td className="font-semibold text-white">
-                      {intV.candidate ? intV.candidate.name : 'General Evaluation'}
-                    </td>
-                    <td className="font-mono text-slate-300 text-xs">
+                    <td className="font-mono font-bold text-blue-400">#{intV.int_id}</td>
+                    <td className="font-semibold text-white">{intV.candidate_name || (intV.candidate ? intV.candidate.name : 'Candidate Pool')}</td>
+                    <td className="font-mono text-slate-300">
                       {intV.int_date} at {intV.int_time}
                     </td>
                     <td className="text-slate-300">
@@ -138,28 +214,38 @@ export default function InterviewsPage() {
         title="Schedule Interview Round"
         subtitle="Saves to Interview and Interview_Details tables in Oracle"
       >
-        <form onSubmit={handleSchedule} className="space-y-3 text-xs">
+        <form onSubmit={handleSchedule} noValidate className="space-y-3 text-xs">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Interview Date</label>
+              <label className="block font-medium text-slate-300 mb-1">Interview Date *</label>
               <input
                 type="date"
-                required
                 value={formData.int_date}
-                onChange={(e) => setFormData({ ...formData, int_date: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                onChange={(e) => {
+                  setFormData({ ...formData, int_date: e.target.value });
+                  if (errors.int_date) setErrors({ ...errors, int_date: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.int_date ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
               />
+              {errors.int_date && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.int_date}</p>
+              )}
             </div>
             <div>
-              <label className="block font-medium text-slate-300 mb-1">Time</label>
+              <label className="block font-medium text-slate-300 mb-1">Time *</label>
               <input
                 type="text"
-                required
                 value={formData.int_time}
-                onChange={(e) => setFormData({ ...formData, int_time: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                onChange={(e) => {
+                  setFormData({ ...formData, int_time: e.target.value });
+                  if (errors.int_time) setErrors({ ...errors, int_time: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.int_time ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
                 placeholder="11:00"
               />
+              {errors.int_time && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.int_time}</p>
+              )}
             </div>
           </div>
 
@@ -180,10 +266,16 @@ export default function InterviewsPage() {
               <input
                 type="text"
                 value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                onChange={(e) => {
+                  setFormData({ ...formData, location: e.target.value });
+                  if (errors.location) setErrors({ ...errors, location: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.location ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
                 placeholder="Bengaluru Hub or Google Meet"
               />
+              {errors.location && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.location}</p>
+              )}
             </div>
           </div>
 
@@ -192,10 +284,16 @@ export default function InterviewsPage() {
             <textarea
               rows={3}
               value={formData.feedback}
-              onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, feedback: e.target.value });
+                if (errors.feedback) setErrors({ ...errors, feedback: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.feedback ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
               placeholder="Technical topics to evaluate..."
             />
+            {errors.feedback && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.feedback}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">

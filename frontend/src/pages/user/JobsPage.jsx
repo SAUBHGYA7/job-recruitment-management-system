@@ -6,6 +6,7 @@ import { Loader } from '../../components/common/Loader';
 import { Badge } from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
+import { validateRequired, validateNumber, validateLength, validateDate } from '../../utils/validation';
 
 import { mockData } from '../../services/mockDb';
 
@@ -25,6 +26,8 @@ export default function JobsPage() {
     closing_date: '2026-10-31',
     app_id: 'APP001'
   });
+
+  const [errors, setErrors] = useState({});
 
   const { addToast } = useToast();
 
@@ -48,8 +51,30 @@ export default function JobsPage() {
     fetchJobs();
   }, [search, statusFilter]);
 
+  const validateForm = () => {
+    const errs = {};
+    const titleErr = validateRequired(formData.job_title, 'Job Title') || validateLength(formData.job_title, { max: 60, label: 'Job Title' });
+    if (titleErr) errs.job_title = titleErr;
+
+    const salaryErr = validateNumber(formData.salary, { min: 0, max: 99999999, label: 'Salary' });
+    if (salaryErr) errs.salary = salaryErr;
+
+    const dateErr = validateDate(formData.closing_date, { label: 'Closing Date' });
+    if (dateErr) errs.closing_date = dateErr;
+
+    const descErr = validateLength(formData.descriptive, { max: 200, label: 'Job Description' });
+    if (descErr) errs.descriptive = descErr;
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      addToast('Please correct the validation errors', 'error');
+      return;
+    }
     setAddLoading(true);
     try {
       const res = await api.post('/jobs', formData);
@@ -57,6 +82,7 @@ export default function JobsPage() {
         addToast('Job posting created in Oracle Database', 'success');
         setShowAddModal(false);
         setFormData({ job_title: '', job_status: 'Open', salary: 65000, descriptive: '', closing_date: '2026-10-31', app_id: 'APP001' });
+        setErrors({});
         fetchJobs();
       }
     } catch {
@@ -76,7 +102,15 @@ export default function JobsPage() {
             Decomposed Job (job_status, salary) ⨝ Job_Details (job_title, descriptive) ⨝ Job_Posting (closing_date).
           </p>
         </div>
-        <Button icon={Plus} variant="primary" size="sm" onClick={() => setShowAddModal(true)}>
+        <Button
+          icon={Plus}
+          variant="primary"
+          size="sm"
+          onClick={() => {
+            setErrors({});
+            setShowAddModal(true);
+          }}
+        >
           Create Job Posting
         </Button>
       </div>
@@ -171,17 +205,22 @@ export default function JobsPage() {
         title="Create Job Posting"
         subtitle="Inserts into Job, Job_Details, and Job_Posting tables"
       >
-        <form onSubmit={handleCreate} className="space-y-3 text-xs">
+        <form onSubmit={handleCreate} noValidate className="space-y-3 text-xs">
           <div>
             <label className="block font-medium text-slate-300 mb-1">Job Title *</label>
             <input
               type="text"
-              required
               value={formData.job_title}
-              onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, job_title: e.target.value });
+                if (errors.job_title) setErrors({ ...errors, job_title: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.job_title ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
               placeholder="e.g. S/W Dev or Data Analyst"
             />
+            {errors.job_title && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.job_title}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -201,9 +240,15 @@ export default function JobsPage() {
               <input
                 type="number"
                 value={formData.salary}
-                onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                onChange={(e) => {
+                  setFormData({ ...formData, salary: e.target.value });
+                  if (errors.salary) setErrors({ ...errors, salary: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.salary ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
               />
+              {errors.salary && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.salary}</p>
+              )}
             </div>
           </div>
 
@@ -212,9 +257,15 @@ export default function JobsPage() {
             <input
               type="date"
               value={formData.closing_date}
-              onChange={(e) => setFormData({ ...formData, closing_date: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, closing_date: e.target.value });
+                if (errors.closing_date) setErrors({ ...errors, closing_date: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.closing_date ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
             />
+            {errors.closing_date && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.closing_date}</p>
+            )}
           </div>
 
           <div>
@@ -222,10 +273,16 @@ export default function JobsPage() {
             <textarea
               rows={3}
               value={formData.descriptive}
-              onChange={(e) => setFormData({ ...formData, descriptive: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, descriptive: e.target.value });
+                if (errors.descriptive) setErrors({ ...errors, descriptive: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.descriptive ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
               placeholder="Core responsibilities and requirements..."
             />
+            {errors.descriptive && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.descriptive}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">

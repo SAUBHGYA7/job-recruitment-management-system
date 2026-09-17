@@ -9,6 +9,8 @@ import Button from '../../components/common/Button';
 
 import { mockData } from '../../services/mockDb';
 
+import { validateRequired } from '../../utils/validation';
+
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState(mockData.applications);
   const [loading, setLoading] = useState(false);
@@ -17,6 +19,7 @@ export default function ApplicationsPage() {
   const [newStatus, setNewStatus] = useState('Shortlisted');
   const [newResult, setNewResult] = useState('Selected');
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   const { addToast } = useToast();
 
@@ -40,13 +43,25 @@ export default function ApplicationsPage() {
 
   const openStatusModal = (app) => {
     setSelectedApp(app);
-    setNewStatus(app.app_status);
-    setNewResult(app.final_result);
+    setNewStatus(app.app_status || 'Shortlisted');
+    setNewResult(app.final_result || 'Selected');
+    setFormErrors({});
     setShowStatusModal(true);
   };
 
   const handleUpdateStatus = async (e) => {
     e.preventDefault();
+    const errors = {};
+    const statusErr = validateRequired(newStatus, 'Status');
+    if (statusErr) errors.newStatus = statusErr;
+    const resultErr = validateRequired(newResult, 'Final result');
+    if (resultErr) errors.newResult = resultErr;
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
     setUpdateLoading(true);
     try {
       await api.put(`/applications/${selectedApp.app_id}/status`, {
@@ -138,16 +153,22 @@ export default function ApplicationsPage() {
       {/* Update Status Modal */}
       <Modal
         isOpen={showStatusModal}
-        onClose={() => setShowStatusModal(false)}
+        onClose={() => {
+          setShowStatusModal(false);
+          setFormErrors({});
+        }}
         title={`Update Application #${selectedApp?.app_id}`}
         subtitle="Modifies Application and Application_Date entities"
       >
-        <form onSubmit={handleUpdateStatus} className="space-y-3 text-xs">
+        <form onSubmit={handleUpdateStatus} noValidate className="space-y-3 text-xs">
           <div>
             <label className="block font-medium text-slate-300 mb-1">Application Status</label>
             <select
               value={newStatus}
-              onChange={(e) => setNewStatus(e.target.value)}
+              onChange={(e) => {
+                setNewStatus(e.target.value);
+                if (formErrors.newStatus) setFormErrors({ ...formErrors, newStatus: null });
+              }}
               className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
             >
               <option value="Shortlisted">Shortlisted</option>
@@ -155,23 +176,35 @@ export default function ApplicationsPage() {
               <option value="Rejected">Rejected</option>
               <option value="On Hold">On Hold</option>
             </select>
+            {formErrors.newStatus && (
+              <p className="text-rose-400 text-[11px] mt-1">{formErrors.newStatus}</p>
+            )}
           </div>
 
           <div>
             <label className="block font-medium text-slate-300 mb-1">Final Result</label>
             <select
               value={newResult}
-              onChange={(e) => setNewResult(e.target.value)}
+              onChange={(e) => {
+                setNewResult(e.target.value);
+                if (formErrors.newResult) setFormErrors({ ...formErrors, newResult: null });
+              }}
               className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
             >
               <option value="Selected">Selected</option>
               <option value="Pending">Pending</option>
               <option value="Rejected">Rejected</option>
             </select>
+            {formErrors.newResult && (
+              <p className="text-rose-400 text-[11px] mt-1">{formErrors.newResult}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-            <Button size="sm" variant="outline" onClick={() => setShowStatusModal(false)}>
+            <Button size="sm" variant="outline" onClick={() => {
+              setShowStatusModal(false);
+              setFormErrors({});
+            }}>
               Cancel
             </Button>
             <Button size="sm" type="submit" variant="primary" loading={updateLoading}>

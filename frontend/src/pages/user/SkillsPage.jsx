@@ -9,11 +9,14 @@ import Modal from '../../components/common/Modal';
 
 import { mockData } from '../../services/mockDb';
 
+import { validateRequired, validateLength } from '../../utils/validation';
+
 export default function SkillsPage() {
   const [skills, setSkills] = useState(mockData.skills);
   const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   const [formData, setFormData] = useState({
     skill_name: '',
@@ -41,8 +44,24 @@ export default function SkillsPage() {
     fetchSkills();
   }, []);
 
+  const validateForm = () => {
+    const errors = {};
+    const nameErr = validateRequired(formData.skill_name, 'Skill name') ||
+      validateLength(formData.skill_name, 2, 50, 'Skill name');
+    if (nameErr) errors.skill_name = nameErr;
+
+    if (formData.description) {
+      const descErr = validateLength(formData.description, 0, 300, 'Description');
+      if (descErr) errors.description = descErr;
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setAddLoading(true);
     try {
       const res = await api.post('/skills', formData);
@@ -50,6 +69,7 @@ export default function SkillsPage() {
         addToast('Skill added to Skill and Skill_Details tables', 'success');
         setShowAddModal(false);
         setFormData({ skill_name: '', skill_category: 'Programming', description: '' });
+        setFormErrors({});
         fetchSkills();
       }
     } catch {
@@ -117,21 +137,31 @@ export default function SkillsPage() {
       {/* Add Skill Modal */}
       <Modal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setFormErrors({});
+        }}
         title="Add Skill to Taxonomy"
         subtitle="Inserts into Skill (PK: skill_id) and Skill_Details (PK: skill_name)"
       >
-        <form onSubmit={handleCreate} className="space-y-3 text-xs">
+        <form onSubmit={handleCreate} noValidate className="space-y-3 text-xs">
           <div>
             <label className="block font-medium text-slate-300 mb-1">Skill Name *</label>
             <input
               type="text"
-              required
               value={formData.skill_name}
-              onChange={(e) => setFormData({ ...formData, skill_name: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, skill_name: e.target.value });
+                if (formErrors.skill_name) setFormErrors({ ...formErrors, skill_name: null });
+              }}
+              className={`w-full bg-slate-950 border ${
+                formErrors.skill_name ? 'border-rose-500' : 'border-slate-700'
+              } rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
               placeholder="e.g. Oracle PL/SQL"
             />
+            {formErrors.skill_name && (
+              <p className="text-rose-400 text-[11px] mt-1">{formErrors.skill_name}</p>
+            )}
           </div>
 
           <div>
@@ -154,14 +184,25 @@ export default function SkillsPage() {
             <textarea
               rows={3}
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              onChange={(e) => {
+                setFormData({ ...formData, description: e.target.value });
+                if (formErrors.description) setFormErrors({ ...formErrors, description: null });
+              }}
+              className={`w-full bg-slate-950 border ${
+                formErrors.description ? 'border-rose-500' : 'border-slate-700'
+              } rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
               placeholder="Skill scope and requirements..."
             />
+            {formErrors.description && (
+              <p className="text-rose-400 text-[11px] mt-1">{formErrors.description}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
-            <Button size="sm" variant="outline" onClick={() => setShowAddModal(false)}>
+            <Button size="sm" variant="outline" onClick={() => {
+              setShowAddModal(false);
+              setFormErrors({});
+            }}>
               Cancel
             </Button>
             <Button size="sm" type="submit" variant="primary" loading={addLoading}>
