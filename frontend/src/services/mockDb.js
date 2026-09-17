@@ -465,7 +465,139 @@ export function getMockDbaTables() {
     { TABLE_NAME: 'RECRUITMENT', ROW_COUNT: 15, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'APP_USERS', ROW_COUNT: 3, COLUMN_COUNT: 6, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' }
   ];
-  return { total: tableList.length, data: tableList };
+  // Normalize keys to support both UPPERCASE and camelCase consumers
+  const normalized = tableList.map(t => {
+    const pk = getMockPrimaryKeys().find(p => p.tableName === t.TABLE_NAME);
+    const fks = getMockConstraints('R').filter(c => c.tableName === t.TABLE_NAME);
+    const pkName = pk ? pk.constraintName : 'NONE';
+    const fkCount = fks.length;
+    return {
+      ...t,
+      tableName: t.TABLE_NAME,
+      rowCount: t.ROW_COUNT,
+      columnCount: t.COLUMN_COUNT,
+      tablespace: t.TABLESPACE_NAME,
+      primaryKey: pkName,
+      foreignKeyCount: fkCount,
+      PK_NAME: pkName,
+      FK_COUNT: fkCount
+    };
+  });
+  return { total: normalized.length, data: normalized };
+}
+
+// Return detailed metadata and sample rows for a specific table in Fallback/Cloud mode
+export function getMockTableDetails(tableName) {
+  const upper = (tableName || '').toUpperCase();
+  const allTables = getMockDbaTables().data;
+  const tableMeta = allTables.find(t => t.tableName === upper || t.TABLE_NAME === upper);
+  
+  if (!tableMeta) {
+    return null;
+  }
+
+  const pks = getMockPrimaryKeys().filter(p => p.tableName === upper);
+  const pkCols = new Set(pks.flatMap(p => p.columns));
+
+  const fks = getMockConstraints('R').filter(c => c.tableName === upper);
+  const fkCols = new Set(fks.flatMap(c => c.columns));
+
+  // Determine columns
+  const tableCols = getMockColumns().filter(c => c.TABLE_NAME === upper);
+  const columns = tableCols.map(c => ({
+    COLUMN_NAME: c.COLUMN_NAME,
+    DATA_TYPE: c.DATA_TYPE,
+    DATA_LENGTH: c.DATA_LENGTH,
+    DATA_PRECISION: c.DATA_PRECISION,
+    DATA_SCALE: c.DATA_SCALE,
+    NULLABLE: c.NULLABLE,
+    isPrimaryKey: pkCols.has(c.COLUMN_NAME) || c.COLUMN_NAME.endsWith('_ID') || c.COLUMN_NAME.endsWith('_KEY'),
+    isForeignKey: fkCols.has(c.COLUMN_NAME)
+  }));
+
+  // Ensure at least PK and default columns exist if mock columns was generic
+  if (columns.length <= 2 && pkCols.size > 0) {
+    pkCols.forEach(col => {
+      if (!columns.some(c => c.COLUMN_NAME === col)) {
+        columns.unshift({
+          COLUMN_NAME: col,
+          DATA_TYPE: 'NUMBER',
+          DATA_LENGTH: 10,
+          DATA_PRECISION: 10,
+          DATA_SCALE: 0,
+          NULLABLE: 'N',
+          isPrimaryKey: true,
+          isForeignKey: false
+        });
+      }
+    });
+  }
+
+  // Constraints for this table
+  const constraints = getMockConstraints('ALL')
+    .filter(c => c.tableName === upper)
+    .map(c => ({
+      CONSTRAINT_NAME: c.constraintName,
+      CONSTRAINT_TYPE: c.typeCode,
+      SEARCH_CONDITION: c.searchCondition,
+      R_CONSTRAINT_NAME: c.rConstraintName,
+      DELETE_RULE: 'CASCADE',
+      STATUS: c.status
+    }));
+
+  // Sample rows from dataset
+  let sampleRows = [];
+  if (upper === 'CANDIDATE') {
+    sampleRows = mockData.candidates.slice(0, 10).map(c => ({
+      CAND_ID: c.cand_id,
+      NAME: c.fullName,
+      GENDER: c.gender,
+      DOB: c.dob,
+      CITY: c.address?.city || 'Delhi'
+    }));
+  } else if (upper === 'JOB') {
+    sampleRows = mockData.jobs.slice(0, 10).map(j => ({
+      JOB_KEY: j.job_key,
+      JOB_ID: j.job_id,
+      JOB_TITLE: j.job_title,
+      STATUS: j.job_status,
+      SALARY: j.salary
+    }));
+  } else if (upper === 'APPLICATION') {
+    sampleRows = mockData.applications.slice(0, 10).map(a => ({
+      APP_ID: a.app_id,
+      CANDIDATE: a.candidate?.name,
+      JOB: a.job?.job_title,
+      STATUS: a.app_status,
+      RESULT: a.final_result
+    }));
+  } else if (upper === 'EMPLOYER') {
+    sampleRows = mockData.employers.slice(0, 10).map(e => ({
+      EMP_ID: e.emp_id,
+      COMPANY_NAME: e.company_name,
+      HEADQUARTER: e.headquarter,
+      FOUNDED_YEAR: e.founded_year
+    }));
+  } else if (upper === 'SKILL') {
+    sampleRows = mockData.skills.slice(0, 10).map(s => ({
+      SKILL_ID: s.skill_id,
+      SKILL_NAME: s.skill_name,
+      CATEGORY: s.skill_category
+    }));
+  } else {
+    sampleRows = [
+      { RECORD_ID: 1, RECORD_NAME: `${upper} Record 1`, STATUS: 'ACTIVE', CREATED_DATE: '2026-09-01' },
+      { RECORD_ID: 2, RECORD_NAME: `${upper} Record 2`, STATUS: 'ACTIVE', CREATED_DATE: '2026-09-02' }
+    ];
+  }
+
+  return {
+    tableName: upper,
+    rowCount: tableMeta.ROW_COUNT || sampleRows.length,
+    columns,
+    constraints,
+    sampleRows
+  };
 }
 
 // SQL Query Console executor for Cloud Fallback

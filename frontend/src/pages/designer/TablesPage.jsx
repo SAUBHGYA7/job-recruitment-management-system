@@ -116,32 +116,41 @@ export default function TablesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                {filtered.map((t) => (
-                  <tr key={t.tableName} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-bold text-white flex items-center gap-2">
-                      <Table className="w-3.5 h-3.5 text-designer-400 shrink-0" />
-                      {t.tableName}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-emerald-400 font-semibold">
-                      {t.primaryKey || 'NONE'}
-                    </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-300">{t.columnCount ?? 0} cols</td>
-                    <td className="py-3.5 px-4 font-semibold text-indigo-400">{t.foreignKeyCount ?? 0} FKs</td>
-                    <td className="py-3.5 px-4">
-                      <Badge variant={(t.rowCount || 0) > 0 ? 'success' : 'default'}>{t.rowCount || 0} rows</Badge>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">{t.tablespace || 'USERS'}</td>
-                    <td className="py-3.5 px-4 text-right">
-                      <NavLink
-                        to={`/designer/tables/${t.tableName}`}
-                        className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-designer-600 hover:text-white text-slate-300 transition-colors text-[11px] font-semibold inline-flex items-center gap-1"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        Details
-                      </NavLink>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map((t) => {
+                  const name = t.tableName || t.TABLE_NAME || 'TABLE';
+                  const pk = t.primaryKey || t.PK_NAME || 'NONE';
+                  const cols = t.columnCount ?? t.COLUMN_COUNT ?? 0;
+                  const fks = t.foreignKeyCount ?? t.FK_COUNT ?? 0;
+                  const rows = t.rowCount ?? t.ROW_COUNT ?? 0;
+                  const space = t.tablespace || t.TABLESPACE_NAME || 'USERS';
+
+                  return (
+                    <tr key={name} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-white flex items-center gap-2">
+                        <Table className="w-3.5 h-3.5 text-designer-400 shrink-0" />
+                        {name}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-[11px] text-emerald-400 font-semibold">
+                        {pk}
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-slate-300">{cols} cols</td>
+                      <td className="py-3.5 px-4 font-semibold text-indigo-400">{fks} FKs</td>
+                      <td className="py-3.5 px-4">
+                        <Badge variant={rows > 0 ? 'success' : 'default'}>{rows} rows</Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">{space}</td>
+                      <td className="py-3.5 px-4 text-right">
+                        <NavLink
+                          to={`/designer/tables/${name}`}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-designer-600 hover:text-white text-slate-300 transition-colors text-[11px] font-semibold inline-flex items-center gap-1"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Details
+                        </NavLink>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -10,6 +10,7 @@ import {
   getMockColumns,
   getMockDbaDashboard,
   getMockDbaTables,
+  getMockTableDetails,
   executeMockSql
 } from './mockDb';
 
@@ -279,6 +280,11 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
     const urlParams = new URLSearchParams((url || '').split('?')[1] || '');
     const type = urlParams.get('type');
     return { success: true, data: getMockConstraints(type) };
+  }
+  if (cleanUrl.startsWith('/designer/tables/') && cleanUrl.split('/').length >= 4) {
+    const tableName = cleanUrl.split('/')[3];
+    const details = getMockTableDetails(tableName);
+    return { success: !!details, data: details };
   }
   if (cleanUrl.startsWith('/designer/tables') || cleanUrl.startsWith('/database/tables')) {
     return { success: true, data: getMockDbaTables().data };

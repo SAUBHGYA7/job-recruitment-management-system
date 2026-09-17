@@ -113,37 +113,48 @@ export default function TableDetailPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-slate-200">
-              {details.columns?.map((c) => (
-                <tr key={c.COLUMN_NAME} className="hover:bg-slate-800/30">
-                  <td className="py-3 px-4 font-mono font-bold text-white flex items-center gap-2">
-                    {c.COLUMN_NAME}
-                  </td>
-                  <td className="py-3 px-4 font-mono text-brand-400">{c.DATA_TYPE}</td>
-                  <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
-                    {c.DATA_PRECISION ? `(${c.DATA_PRECISION}, ${c.DATA_SCALE || 0})` : `(${c.DATA_LENGTH})`}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`font-semibold ${c.NULLABLE === 'N' ? 'text-rose-400' : 'text-slate-500'}`}>
-                      {c.NULLABLE === 'N' ? 'NOT NULL' : 'NULL'}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 flex items-center gap-1.5">
-                    {c.isPrimaryKey && (
-                      <Badge variant="success">
-                        <Key className="w-3 h-3 mr-1" />
-                        PK
-                      </Badge>
-                    )}
-                    {c.isForeignKey && (
-                      <Badge variant="purple">
-                        <Link2 className="w-3 h-3 mr-1" />
-                        FK
-                      </Badge>
-                    )}
-                    {!c.isPrimaryKey && !c.isForeignKey && <span className="text-slate-600">-</span>}
-                  </td>
-                </tr>
-              ))}
+              {details.columns?.map((c) => {
+                const colName = c.COLUMN_NAME || c.column_name || 'COL';
+                const dType = c.DATA_TYPE || c.data_type || 'VARCHAR2';
+                const dPrec = c.DATA_PRECISION ?? c.data_precision;
+                const dScale = c.DATA_SCALE ?? c.data_scale ?? 0;
+                const dLen = c.DATA_LENGTH ?? c.data_length ?? 20;
+                const isNull = (c.NULLABLE || c.nullable || 'Y') === 'N';
+                const isPk = !!(c.isPrimaryKey || c.IS_PRIMARY_KEY);
+                const isFk = !!(c.isForeignKey || c.IS_FOREIGN_KEY);
+
+                return (
+                  <tr key={colName} className="hover:bg-slate-800/30">
+                    <td className="py-3 px-4 font-mono font-bold text-white flex items-center gap-2">
+                      {colName}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-brand-400">{dType}</td>
+                    <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                      {dPrec ? `(${dPrec}, ${dScale})` : `(${dLen})`}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`font-semibold ${isNull ? 'text-rose-400' : 'text-slate-500'}`}>
+                        {isNull ? 'NOT NULL' : 'NULL'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 flex items-center gap-1.5">
+                      {isPk && (
+                        <Badge variant="success">
+                          <Key className="w-3 h-3 mr-1" />
+                          PK
+                        </Badge>
+                      )}
+                      {isFk && (
+                        <Badge variant="purple">
+                          <Link2 className="w-3 h-3 mr-1" />
+                          FK
+                        </Badge>
+                      )}
+                      {!isPk && !isFk && <span className="text-slate-600">-</span>}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
