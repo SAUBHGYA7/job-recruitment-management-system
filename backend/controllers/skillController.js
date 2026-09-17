@@ -71,3 +71,29 @@ export async function createSkill(req, res, next) {
     next(error);
   }
 }
+
+export async function deleteSkill(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    // Get skill name first
+    const skillRes = await executeQuery(`SELECT skill_name FROM Skill WHERE skill_id = :id OR skill_name = :id`, { id });
+    const skillName = skillRes.rows[0]?.SKILL_NAME || skillRes.rows[0]?.skill_name || id;
+
+    await executeQuery(`DELETE FROM Has WHERE skill_id = :id`, { id });
+    await executeQuery(`DELETE FROM Requires WHERE skill_id = :id`, { id });
+    await executeQuery(`DELETE FROM Skill_Details WHERE skill_name = :skillName`, { skillName });
+    await executeQuery(`DELETE FROM Skill WHERE skill_id = :id OR skill_name = :id`, { id });
+
+    await logAuditEvent({
+      username: req.user?.username || 'USER',
+      role: req.user?.role || 'USER',
+      action: 'DELETE_SKILL',
+      details: `Deleted Skill #${id} (${skillName}) from Oracle Database`
+    });
+
+    res.json({ success: true, message: `Skill #${id} deleted successfully.` });
+  } catch (error) {
+    next(error);
+  }
+}

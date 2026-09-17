@@ -1,5 +1,5 @@
 import express from 'express';
-import { getSkills, createSkill } from '../controllers/skillController.js';
+import { getSkills, createSkill, deleteSkill } from '../controllers/skillController.js';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import { requireRole } from '../middleware/roleMiddleware.js';
 
@@ -9,5 +9,6 @@ router.use(authenticateUser);
 
 router.get('/', requireRole('USER', 'DATABASE_DESIGNER', 'DBA'), getSkills);
 router.post('/', requireRole('USER', 'DBA'), createSkill);
+router.delete('/:id', requireRole('USER', 'DBA'), deleteSkill);
 
 export default router;

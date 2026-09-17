@@ -87,3 +87,24 @@ export async function updateInterview(req, res, next) {
     next(error);
   }
 }
+
+export async function deleteInterview(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    await executeQuery(`UPDATE Candidate SET int_id = NULL WHERE int_id = :id`, { id });
+    await executeQuery(`DELETE FROM Interview_Details WHERE int_id = :id`, { id });
+    await executeQuery(`DELETE FROM Interview WHERE int_id = :id`, { id });
+
+    await logAuditEvent({
+      username: req.user?.username || 'USER',
+      role: req.user?.role || 'USER',
+      action: 'DELETE_INTERVIEW',
+      details: `Deleted Interview #${id} from Oracle Database`
+    });
+
+    res.json({ success: true, message: `Interview #${id} deleted successfully.` });
+  } catch (error) {
+    next(error);
+  }
+}

@@ -86,3 +86,27 @@ export async function createEmployer(req, res, next) {
     next(error);
   }
 }
+
+export async function deleteEmployer(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    await executeQuery(`DELETE FROM Employer_Phone WHERE emp_id = :id`, { id });
+    await executeQuery(`DELETE FROM Employer_Details WHERE emp_id = :id`, { id });
+    await executeQuery(`DELETE FROM Recruitment_License WHERE emp_id = :id`, { id });
+    await executeQuery(`DELETE FROM Recruitment WHERE emp_id = :id`, { id });
+    await executeQuery(`DELETE FROM Company_Employer WHERE emp_id = :id`, { id });
+    await executeQuery(`DELETE FROM Employer WHERE emp_id = :id`, { id });
+
+    await logAuditEvent({
+      username: req.user?.username || 'USER',
+      role: req.user?.role || 'USER',
+      action: 'DELETE_EMPLOYER',
+      details: `Deleted Employer #${id} from Oracle Database`
+    });
+
+    res.json({ success: true, message: `Employer #${id} deleted successfully.` });
+  } catch (error) {
+    next(error);
+  }
+}
