@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Plus, Search } from 'lucide-react';
+import { Building2, Plus, Search, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
@@ -7,10 +7,11 @@ import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import { validateRequired, validateNumber, validateEmail, validatePhone, validateLength } from '../../utils/validation';
 
-import { mockData } from '../../services/mockDb';
 
 export default function EmployersPage() {
-  const [employers, setEmployers] = useState(mockData.employers);
+  const [employers, setEmployers] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -111,6 +112,22 @@ export default function EmployersPage() {
     }
   };
 
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/employers/${deleteTarget.emp_id}`);
+      addToast(`Employer ${deleteTarget.company_name} deleted successfully`, 'success');
+      setDeleteTarget(null);
+      fetchEmployers();
+    } catch {
+      addToast('Failed to delete employer', 'error');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const filtered = employers.filter(
     (e) =>
       e.company_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -168,12 +185,13 @@ export default function EmployersPage() {
                 <th>Phone</th>
                 <th>License</th>
                 <th>Agency</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-8 text-xs text-slate-500 font-mono">
+                  <td colSpan={9} className="text-center py-8 text-xs text-slate-500 font-mono">
                     No employers found matching your search.
                   </td>
                 </tr>
@@ -188,6 +206,15 @@ export default function EmployersPage() {
                     <td className="font-mono text-slate-400 text-xs">{emp.phones?.join(', ') || emp.phone_no || 'N/A'}</td>
                     <td className="font-mono text-emerald-400 text-xs">{emp.license_no || 'N/A'}</td>
                     <td className="text-slate-400 text-xs">{emp.agency_name || 'Direct'}</td>
+                    <td className="text-right">
+                      <button
+                        onClick={() => setDeleteTarget(emp)}
+                        className="px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-medium inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -316,6 +343,28 @@ export default function EmployersPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Employer"
+        subtitle="This removes the employer and associated details from Oracle DB"
+      >
+        <div className="space-y-4 text-xs">
+          <p className="text-slate-300">
+            Are you sure you want to delete <span className="text-white font-semibold">{deleteTarget?.company_name}</span> ({deleteTarget?.emp_id})?
+            This will also remove linked details and contact records.
+          </p>
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="danger" loading={deleteLoading} onClick={handleDelete}>
+              Confirm Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

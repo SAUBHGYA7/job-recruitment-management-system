@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
@@ -7,12 +7,13 @@ import { Badge } from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 
-import { mockData } from '../../services/mockDb';
 
 import { validateRequired, validateLength } from '../../utils/validation';
 
 export default function SkillsPage() {
-  const [skills, setSkills] = useState(mockData.skills);
+  const [skills, setSkills] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
@@ -79,6 +80,22 @@ export default function SkillsPage() {
     }
   };
 
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/skills/${deleteTarget.skill_id}`);
+      addToast(`Skill ${deleteTarget.skill_name} deleted successfully`, 'success');
+      setDeleteTarget(null);
+      fetchSkills();
+    } catch {
+      addToast('Failed to delete skill', 'error');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -106,12 +123,13 @@ export default function SkillsPage() {
                 <th>Description</th>
                 <th>Job Postings Demanding</th>
                 <th>Candidates Possessing</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {skills.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-xs text-slate-500 font-mono">
+                  <td colSpan={7} className="text-center py-8 text-xs text-slate-500 font-mono">
                     No skill records found.
                   </td>
                 </tr>
@@ -126,6 +144,15 @@ export default function SkillsPage() {
                     <td className="text-slate-300 text-xs">{sk.description}</td>
                     <td className="font-mono text-slate-200">{sk.demandCount} jobs</td>
                     <td className="font-mono text-emerald-400">{sk.candidatesWithSkill} candidates</td>
+                    <td className="text-right">
+                      <button
+                        onClick={() => setDeleteTarget(sk)}
+                        className="px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-medium inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -210,6 +237,27 @@ export default function SkillsPage() {
             </Button>
           </div>
         </form>
+      </Modal>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Skill"
+        subtitle="Removes the skill and taxonomy category from the database"
+      >
+        <div className="space-y-4 text-xs">
+          <p className="text-slate-300">
+            Are you sure you want to delete <span className="text-white font-semibold">{deleteTarget?.skill_name}</span> (#{deleteTarget?.skill_id})?
+          </p>
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="danger" loading={deleteLoading} onClick={handleDelete}>
+              Confirm Delete
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

@@ -8,10 +8,9 @@ import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import { validateRequired, validateEmail, validatePhone, validateLength, validateDate } from '../../utils/validation';
 
-import { mockData } from '../../services/mockDb';
 
 export default function CandidatesPage() {
-  const [candidates, setCandidates] = useState(mockData.candidates);
+  const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [genderFilter, setGenderFilter] = useState('ALL');
