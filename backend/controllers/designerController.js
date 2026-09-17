@@ -273,7 +273,21 @@ export async function getForeignKeys(req, res, next) {
 
 export async function getConstraints(req, res, next) {
   try {
-    const { type } = req.query;
+    const rawType = (req.query.type || '').trim().toUpperCase();
+    const typeMapping = {
+      'PRIMARY KEY': 'P',
+      'PRIMARY_KEY': 'P',
+      'P': 'P',
+      'FOREIGN KEY': 'R',
+      'FOREIGN_KEY': 'R',
+      'R': 'R',
+      'CHECK': 'C',
+      'C': 'C',
+      'UNIQUE': 'U',
+      'U': 'U'
+    };
+    const filterType = typeMapping[rawType] || (rawType !== 'ALL' && rawType ? rawType : null);
+
     let sql = `
       SELECT c.constraint_name, c.table_name, c.constraint_type, c.search_condition, c.r_constraint_name, c.status,
              (SELECT LISTAGG(column_name, ', ') WITHIN GROUP (ORDER BY position)
@@ -282,25 +296,35 @@ export async function getConstraints(req, res, next) {
       WHERE 1=1
     `;
     const binds = {};
-    if (type && type !== 'ALL') {
+    if (filterType && filterType !== 'ALL') {
       sql += ` AND c.constraint_type = :type`;
-      binds.type = type;
+      binds.type = filterType;
     }
     sql += ` ORDER BY c.table_name, c.constraint_type`;
 
     const result = await executeQuery(sql, binds);
     const typeNames = { P: 'PRIMARY KEY', R: 'FOREIGN KEY', C: 'CHECK', U: 'UNIQUE' };
 
-    const constraints = result.rows.map(r => ({
-      constraintName: r.CONSTRAINT_NAME,
-      tableName: r.TABLE_NAME,
-      type: typeNames[r.CONSTRAINT_TYPE] || r.CONSTRAINT_TYPE,
-      typeCode: r.CONSTRAINT_TYPE,
-      columns: (r.COLUMNS || '').split(', ').filter(Boolean),
-      searchCondition: r.SEARCH_CONDITION,
-      rConstraintName: r.R_CONSTRAINT_NAME,
-      status: r.STATUS
-    }));
+    const constraints = (result.rows || []).map(r => {
+      let cols = [];
+      const rawCols = r.COLUMNS !== undefined ? r.COLUMNS : r.columns;
+      if (Array.isArray(rawCols)) {
+        cols = rawCols.filter(Boolean);
+      } else if (typeof rawCols === 'string') {
+        cols = rawCols.split(',').map(c => c.trim()).filter(Boolean);
+      }
+      const typeCode = r.CONSTRAINT_TYPE || r.typeCode || '';
+      return {
+        constraintName: r.CONSTRAINT_NAME || r.constraintName || '',
+        tableName: r.TABLE_NAME || r.tableName || '',
+        type: typeNames[typeCode] || typeCode,
+        typeCode: typeCode,
+        columns: cols,
+        searchCondition: r.SEARCH_CONDITION || r.searchCondition || null,
+        rConstraintName: r.R_CONSTRAINT_NAME || r.rConstraintName || null,
+        status: r.STATUS || r.status || 'ENABLED'
+      };
+    });
 
     res.json({ success: true, total: constraints.length, data: constraints });
   } catch (error) {

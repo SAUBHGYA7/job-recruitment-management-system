@@ -271,6 +271,75 @@ export function getMockPrimaryKeys() {
   ];
 }
 
+// Return Schema Constraints list with filtering support
+export function getMockConstraints(typeFilter) {
+  const allConstraints = [
+    // Primary Keys
+    ...getMockPrimaryKeys().map(pk => ({
+      constraintName: pk.constraintName,
+      tableName: pk.tableName,
+      type: 'PRIMARY KEY',
+      typeCode: 'P',
+      columns: pk.columns,
+      searchCondition: null,
+      rConstraintName: null,
+      status: pk.status
+    })),
+    // Foreign Keys
+    { constraintName: 'FK_CADDR_CANDIDATE', tableName: 'CANDIDATE_ADDRESS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_CEMAIL_CANDIDATE', tableName: 'CANDIDATE_EMAIL', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_CPHONE_CANDIDATE', tableName: 'CANDIDATE_PHONE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_JOBDETAILS_JOB', tableName: 'JOB_DETAILS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['JOB_KEY'], searchCondition: null, rConstraintName: 'PK_JOB', status: 'ENABLED' },
+    { constraintName: 'FK_EDUEND_EDU', tableName: 'EDUCATION_END', type: 'FOREIGN KEY', typeCode: 'R', columns: ['EDU_ID'], searchCondition: null, rConstraintName: 'PK_EDUCATION', status: 'ENABLED' },
+    { constraintName: 'FK_EDUEND_DEGREE', tableName: 'EDUCATION_END', type: 'FOREIGN KEY', typeCode: 'R', columns: ['DEGREE'], searchCondition: null, rConstraintName: 'PK_EDUCATION_DEGREE', status: 'ENABLED' },
+    { constraintName: 'FK_APPINFO_APPLICATION', tableName: 'APPLICATION_INFO', type: 'FOREIGN KEY', typeCode: 'R', columns: ['APP_ID'], searchCondition: null, rConstraintName: 'PK_APPLICATION', status: 'ENABLED' },
+    { constraintName: 'FK_APPINFO_DATE', tableName: 'APPLICATION_INFO', type: 'FOREIGN KEY', typeCode: 'R', columns: ['APP_DATE'], searchCondition: null, rConstraintName: 'PK_APPLICATION_DATE', status: 'ENABLED' },
+    { constraintName: 'FK_EXPC_EXP', tableName: 'EXPERIENCE_CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['EXP_ID'], searchCondition: null, rConstraintName: 'PK_EXPERIENCE', status: 'ENABLED' },
+    { constraintName: 'FK_EXPC_CANDIDATE', tableName: 'EXPERIENCE_CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_INTDETAILS_INTERVIEW', tableName: 'INTERVIEW_DETAILS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['INT_ID'], searchCondition: null, rConstraintName: 'PK_INTERVIEW', status: 'ENABLED' },
+    { constraintName: 'FK_EMPDETAILS_EMPLOYER', tableName: 'EMPLOYER_DETAILS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['EMP_ID'], searchCondition: null, rConstraintName: 'PK_EMPLOYER', status: 'ENABLED' },
+    { constraintName: 'FK_EMPPHONE_EMPLOYER', tableName: 'EMPLOYER_PHONE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['EMP_ID'], searchCondition: null, rConstraintName: 'PK_EMPLOYER', status: 'ENABLED' },
+    { constraintName: 'FK_FREELANCER_CANDIDATE', tableName: 'FREELANCER', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_FRESHER_CANDIDATE', tableName: 'FRESHER', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_EXPERIENCED_CANDIDATE', tableName: 'EXPERIENCED', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_COMPANY_EMP_COMP', tableName: 'COMPANY_EMPLOYER', type: 'FOREIGN KEY', typeCode: 'R', columns: ['COMP_ID'], searchCondition: null, rConstraintName: 'PK_COMPANY', status: 'ENABLED' },
+    { constraintName: 'FK_COMPANY_EMP_EMP', tableName: 'COMPANY_EMPLOYER', type: 'FOREIGN KEY', typeCode: 'R', columns: ['EMP_ID'], searchCondition: null, rConstraintName: 'PK_EMPLOYER', status: 'ENABLED' },
+    { constraintName: 'FK_RECRUIT_LICENSE_EMP', tableName: 'RECRUITMENT_LICENSE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['EMP_ID'], searchCondition: null, rConstraintName: 'PK_EMPLOYER', status: 'ENABLED' },
+    { constraintName: 'FK_RECRUIT_EMP', tableName: 'RECRUITMENT', type: 'FOREIGN KEY', typeCode: 'R', columns: ['EMP_ID'], searchCondition: null, rConstraintName: 'PK_EMPLOYER', status: 'ENABLED' },
+    { constraintName: 'FK_RECRUIT_AGENCY', tableName: 'RECRUITMENT', type: 'FOREIGN KEY', typeCode: 'R', columns: ['AGENCY_NO'], searchCondition: null, rConstraintName: 'PK_RECRUITMENT_AGENCY', status: 'ENABLED' },
+    { constraintName: 'FK_REQUIRES_JOB', tableName: 'REQUIRES', type: 'FOREIGN KEY', typeCode: 'R', columns: ['JOB_KEY'], searchCondition: null, rConstraintName: 'PK_JOB', status: 'ENABLED' },
+    { constraintName: 'FK_REQUIRES_SKILL', tableName: 'REQUIRES', type: 'FOREIGN KEY', typeCode: 'R', columns: ['SKILL_ID'], searchCondition: null, rConstraintName: 'PK_SKILL', status: 'ENABLED' },
+    { constraintName: 'FK_MATCHED_CANDIDATE', tableName: 'MATCHED_TO', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_MATCHED_JOB', tableName: 'MATCHED_TO', type: 'FOREIGN KEY', typeCode: 'R', columns: ['JOB_KEY'], searchCondition: null, rConstraintName: 'PK_JOB', status: 'ENABLED' },
+    { constraintName: 'FK_APPLIES_CANDIDATE', tableName: 'APPLIES', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_APPLIES_JOB', tableName: 'APPLIES', type: 'FOREIGN KEY', typeCode: 'R', columns: ['JOB_KEY'], searchCondition: null, rConstraintName: 'PK_JOB', status: 'ENABLED' },
+    { constraintName: 'FK_PREFERS_LOCATION', tableName: 'PREFERS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['PINCODE'], searchCondition: null, rConstraintName: 'PK_LOCATION', status: 'ENABLED' },
+    { constraintName: 'FK_PREFERS_CANDIDATE', tableName: 'PREFERS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_REFERS_CANDIDATE', tableName: 'REFERS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_ASSESS_CANDIDATE', tableName: 'ASSESSED_FOR', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_ASSESS_JOB', tableName: 'ASSESSED_FOR', type: 'FOREIGN KEY', typeCode: 'R', columns: ['JOB_KEY'], searchCondition: null, rConstraintName: 'PK_JOB', status: 'ENABLED' },
+    { constraintName: 'FK_ASSESS_SKILL', tableName: 'ASSESSED_FOR', type: 'FOREIGN KEY', typeCode: 'R', columns: ['SKILL_ID'], searchCondition: null, rConstraintName: 'PK_SKILL', status: 'ENABLED' },
+    { constraintName: 'FK_HAS_CANDIDATE', tableName: 'HAS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
+    { constraintName: 'FK_HAS_SKILL', tableName: 'HAS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['SKILL_ID'], searchCondition: null, rConstraintName: 'PK_SKILL', status: 'ENABLED' },
+    { constraintName: 'FK_CANDIDATE_EDU', tableName: 'CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['EDU_ID'], searchCondition: null, rConstraintName: 'PK_EDUCATION', status: 'ENABLED' },
+    { constraintName: 'FK_CANDIDATE_APP', tableName: 'CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['APP_ID'], searchCondition: null, rConstraintName: 'PK_APPLICATION', status: 'ENABLED' },
+    { constraintName: 'FK_CANDIDATE_DEP', tableName: 'CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['DEP_ID'], searchCondition: null, rConstraintName: 'PK_DEPENDENT', status: 'ENABLED' },
+    { constraintName: 'FK_CANDIDATE_INT', tableName: 'CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['INT_ID'], searchCondition: null, rConstraintName: 'PK_INTERVIEW', status: 'ENABLED' },
+    // Check Constraints
+    { constraintName: 'CK_REQUIRES_MANDATORY', tableName: 'REQUIRES', type: 'CHECK', typeCode: 'C', columns: ['IS_MANDATORY'], searchCondition: "is_mandatory IN ('Y','N')", rConstraintName: null, status: 'ENABLED' },
+    { constraintName: 'CK_ASSESS_MATCH', tableName: 'ASSESSED_FOR', type: 'CHECK', typeCode: 'C', columns: ['MATCH_PER'], searchCondition: 'match_per BETWEEN 0 AND 100', rConstraintName: null, status: 'ENABLED' },
+    { constraintName: 'CK_ASSESS_SCORE', tableName: 'ASSESSED_FOR', type: 'CHECK', typeCode: 'C', columns: ['ASS_SCORE'], searchCondition: 'ass_score BETWEEN 0 AND 100', rConstraintName: null, status: 'ENABLED' },
+    { constraintName: 'CK_APP_USERS_ROLE', tableName: 'APP_USERS', type: 'CHECK', typeCode: 'C', columns: ['ROLE'], searchCondition: "role IN ('USER', 'DATABASE_DESIGNER', 'DBA')", rConstraintName: null, status: 'ENABLED' },
+    // Unique Constraints
+    { constraintName: 'UQ_APP_USERS_USERNAME', tableName: 'APP_USERS', type: 'UNIQUE', typeCode: 'U', columns: ['USERNAME'], searchCondition: null, rConstraintName: null, status: 'ENABLED' }
+  ];
+
+  if (typeFilter && typeFilter !== 'ALL') {
+    return allConstraints.filter(c => c.typeCode === typeFilter);
+  }
+  return allConstraints;
+}
+
 // Return DBA Dashboard state
 export function getMockDbaDashboard() {
   return {
