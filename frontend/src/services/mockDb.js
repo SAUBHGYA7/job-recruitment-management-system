@@ -340,6 +340,53 @@ export function getMockConstraints(typeFilter) {
   return allConstraints;
 }
 
+// Return Foreign Keys metadata
+export function getMockForeignKeys() {
+  const pkMap = {};
+  getMockPrimaryKeys().forEach(pk => {
+    pkMap[pk.constraintName] = pk.tableName;
+  });
+
+  return getMockConstraints('R').map(c => ({
+    constraintName: c.constraintName,
+    tableName: c.tableName,
+    columns: c.columns,
+    referencedTable: c.rConstraintName ? (pkMap[c.rConstraintName] || 'CANDIDATE') : 'CANDIDATE',
+    deleteRule: 'CASCADE',
+    status: c.status
+  }));
+}
+
+// Return Columns metadata
+export function getMockColumns(search = '') {
+  const tableList = getMockDbaTables().data;
+  const allCols = [];
+  tableList.forEach(t => {
+    allCols.push({
+      COLUMN_NAME: `${t.TABLE_NAME}_ID`,
+      TABLE_NAME: t.TABLE_NAME,
+      DATA_TYPE: 'VARCHAR2',
+      DATA_LENGTH: 20,
+      DATA_PRECISION: null,
+      DATA_SCALE: null,
+      NULLABLE: 'N'
+    });
+    allCols.push({
+      COLUMN_NAME: 'CREATED_AT',
+      TABLE_NAME: t.TABLE_NAME,
+      DATA_TYPE: 'DATE',
+      DATA_LENGTH: 7,
+      DATA_PRECISION: null,
+      DATA_SCALE: null,
+      NULLABLE: 'Y'
+    });
+  });
+
+  if (!search) return allCols;
+  const s = search.toLowerCase();
+  return allCols.filter(c => c.COLUMN_NAME.toLowerCase().includes(s) || c.TABLE_NAME.toLowerCase().includes(s));
+}
+
 // Return DBA Dashboard state
 export function getMockDbaDashboard() {
   return {

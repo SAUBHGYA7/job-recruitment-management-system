@@ -1,35 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { Columns, Search, Filter } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Columns, Search, Filter, RefreshCw, AlertCircle, Inbox } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
 import { Badge } from '../../components/common/Badge';
+import Button from '../../components/common/Button';
 
 export default function ColumnsPage() {
   const [columns, setColumns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
   const { addToast } = useToast();
 
-  useEffect(() => {
-    async function fetchColumns() {
-      try {
-        setLoading(true);
-        const res = await api.get('/designer/columns', { params: { search } });
+  const fetchColumns = useCallback(async () => {
+    let isCurrent = true;
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await api.get('/designer/columns', { params: { search: search || undefined } });
+      if (isCurrent) {
         if (res.data?.data) {
           setColumns(res.data.data);
+        } else {
+          setColumns([]);
         }
-      } catch {
+      }
+    } catch (err) {
+      if (isCurrent) {
+        const message = 'Unable to load columns catalog. Please check the database connection and try again.';
+        setError(message);
         addToast('Failed to load columns', 'error');
-      } finally {
+      }
+    } finally {
+      if (isCurrent) {
         setLoading(false);
       }
     }
-    fetchColumns();
-  }, [search]);
+    return () => {
+      isCurrent = false;
+    };
+  }, [search, addToast]);
 
-  const filtered = columns.filter(c => typeFilter === 'ALL' || c.DATA_TYPE === typeFilter);
+  useEffect(() => {
+    fetchColumns();
+  }, [fetchColumns]);
+
+  const filtered = columns.filter((c) => {
+    if (typeFilter === 'ALL') return true;
+    return (c.DATA_TYPE || '').toUpperCase() === typeFilter;
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -37,10 +58,23 @@ export default function ColumnsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-black text-white tracking-tight">Oracle Columns Catalog</h2>
-            <Badge variant="purple">{columns.length} Total Columns</Badge>
+            {!loading && !error && (
+              <Badge variant="purple">{filtered.length} Total Columns</Badge>
+            )}
           </div>
-          <p className="text-xs text-slate-400 mt-1">Global index from Oracle <code className="text-designer-400">USER_TAB_COLUMNS</code></p>
+          <p className="text-xs text-slate-400 mt-1">
+            Global index from Oracle <code className="text-designer-400">USER_TAB_COLUMNS</code>
+          </p>
         </div>
+        <Button
+          size="sm"
+          variant="outline"
+          icon={RefreshCw}
+          loading={loading}
+          onClick={fetchColumns}
+        >
+          Refresh
+        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-900/90 border border-slate-800 rounded p-4 glass-card">
@@ -59,7 +93,7 @@ export default function ColumnsPage() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-designer-500"
+            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-designer-500 cursor-pointer"
           >
             <option value="ALL">All Types</option>
             <option value="NUMBER">NUMBER</option>
@@ -73,6 +107,25 @@ export default function ColumnsPage() {
       <div className="panel p-4">
         {loading ? (
           <Loader text="Loading USER_TAB_COLUMNS..." />
+        ) : error ? (
+          <div className="py-12 px-4 text-center">
+            <AlertCircle className="w-10 h-10 text-rose-400 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-1">Failed to Load Columns</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto mb-4">{error}</p>
+            <Button size="sm" variant="secondary" icon={RefreshCw} onClick={fetchColumns}>
+              Try Again
+            </Button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="py-12 px-4 text-center">
+            <Inbox className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-1">No Columns Found</h3>
+            <p className="text-xs text-slate-400">
+              {search
+                ? `No columns matching "${search}".`
+                : 'No column definitions found in the schema catalog.'}
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -89,7 +142,7 @@ export default function ColumnsPage() {
                 {filtered.map((c, idx) => (
                   <tr key={idx} className="hover:bg-slate-800/30 font-mono text-[11px]">
                     <td className="py-3 px-4 font-bold text-white flex items-center gap-1.5">
-                      <Columns className="w-3.5 h-3.5 text-designer-400" />
+                      <Columns className="w-3.5 h-3.5 text-designer-400 shrink-0" />
                       {c.COLUMN_NAME}
                     </td>
                     <td className="py-3 px-4 text-slate-300 font-semibold">{c.TABLE_NAME}</td>

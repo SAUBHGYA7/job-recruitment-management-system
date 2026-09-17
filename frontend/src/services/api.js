@@ -4,7 +4,9 @@ import {
   getMockUserDashboard,
   getMockDesignerDashboard,
   getMockPrimaryKeys,
+  getMockForeignKeys,
   getMockConstraints,
+  getMockColumns,
   getMockDbaDashboard,
   getMockDbaTables,
   executeMockSql
@@ -89,6 +91,14 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
   }
   if (cleanUrl === '/designer/primary-keys') {
     return { success: true, data: getMockPrimaryKeys() };
+  }
+  if (cleanUrl === '/designer/foreign-keys') {
+    return { success: true, data: getMockForeignKeys() };
+  }
+  if (cleanUrl === '/designer/columns') {
+    const urlParams = new URLSearchParams((url || '').split('?')[1] || '');
+    const search = urlParams.get('search') || '';
+    return { success: true, data: getMockColumns(search) };
   }
   if (cleanUrl === '/designer/constraints') {
     const urlParams = new URLSearchParams((url || '').split('?')[1] || '');

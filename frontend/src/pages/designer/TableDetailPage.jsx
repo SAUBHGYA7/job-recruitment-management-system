@@ -10,27 +10,64 @@ export default function TableDetailPage() {
   const { tableName } = useParams();
   const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { addToast } = useToast();
 
-  useEffect(() => {
-    async function fetchTableDetails() {
-      try {
-        setLoading(true);
-        const res = await api.get(`/designer/tables/${tableName}`);
-        if (res.data?.data) {
-          setDetails(res.data.data);
-        }
-      } catch {
-        addToast(`Failed to load details for table ${tableName}`, 'error');
-      } finally {
-        setLoading(false);
+  const fetchTableDetails = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await api.get(`/designer/tables/${tableName}`);
+      if (res.data?.data) {
+        setDetails(res.data.data);
+      } else {
+        setDetails(null);
       }
+    } catch (err) {
+      const message = `Unable to load details for table ${tableName}. Please check the database connection and try again.`;
+      setError(message);
+      addToast(`Failed to load details for table ${tableName}`, 'error');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchTableDetails();
   }, [tableName]);
 
   if (loading) return <Loader text={`Querying metadata for ${tableName}...`} />;
-  if (!details) return <div className="text-center text-slate-400 p-8">Table not found in Oracle schema.</div>;
+
+  if (error || !details) {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <NavLink
+          to="/designer/tables"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to Tables Catalog
+        </NavLink>
+        <div className="panel p-8 text-center">
+          <Database className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+          <h3 className="text-base font-bold text-white mb-1">
+            {error ? 'Failed to Load Table Metadata' : `Table "${tableName}" Not Found`}
+          </h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto mb-4">
+            {error || `The relation "${tableName}" could not be located in the Oracle schema dictionary.`}
+          </p>
+          {error && (
+            <button
+              onClick={fetchTableDetails}
+              className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium inline-flex items-center gap-1.5"
+            >
+              Try Again
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">

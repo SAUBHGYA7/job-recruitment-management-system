@@ -1,35 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Search, Eye, ArrowUpRight } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Table, Search, Eye, RefreshCw, AlertCircle, Inbox } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
 import { Badge } from '../../components/common/Badge';
+import Button from '../../components/common/Button';
 
 export default function TablesPage() {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const { addToast } = useToast();
 
-  useEffect(() => {
-    async function fetchTables() {
-      try {
-        setLoading(true);
-        const res = await api.get('/designer/tables');
-        if (res.data?.data) {
-          setTables(res.data.data);
-        }
-      } catch {
-        addToast('Failed to load USER_TABLES metadata', 'error');
-      } finally {
-        setLoading(false);
+  const fetchTables = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await api.get('/designer/tables');
+      if (res.data?.data) {
+        setTables(res.data.data);
+      } else {
+        setTables([]);
       }
+    } catch (err) {
+      const message = 'Unable to load database tables metadata. Please check the database connection and try again.';
+      setError(message);
+      addToast('Failed to load tables metadata', 'error');
+    } finally {
+      setLoading(false);
     }
-    fetchTables();
-  }, []);
+  }, [addToast]);
 
-  const filtered = tables.filter(t => t.tableName.toLowerCase().includes(search.toLowerCase()));
+  useEffect(() => {
+    fetchTables();
+  }, [fetchTables]);
+
+  const searchLower = search.trim().toLowerCase();
+  const filtered = tables.filter((t) =>
+    (t.tableName || '').toLowerCase().includes(searchLower)
+  );
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -37,10 +48,23 @@ export default function TablesPage() {
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-black text-white tracking-tight">Oracle Tables Catalog</h2>
-            <Badge variant="purple">{tables.length} Relations</Badge>
+            {!loading && !error && (
+              <Badge variant="purple">{filtered.length} Relations</Badge>
+            )}
           </div>
-          <p className="text-xs text-slate-400 mt-1">Queried from Oracle dictionary view <code className="text-designer-400">USER_TABLES</code></p>
+          <p className="text-xs text-slate-400 mt-1">
+            Queried from Oracle dictionary view <code className="text-designer-400">USER_TABLES</code>
+          </p>
         </div>
+        <Button
+          size="sm"
+          variant="outline"
+          icon={RefreshCw}
+          loading={loading}
+          onClick={fetchTables}
+        >
+          Refresh
+        </Button>
       </div>
 
       {/* Search */}
@@ -58,6 +82,25 @@ export default function TablesPage() {
       <div className="panel p-4">
         {loading ? (
           <Loader text="Fetching USER_TABLES from Oracle dictionary..." />
+        ) : error ? (
+          <div className="py-12 px-4 text-center">
+            <AlertCircle className="w-10 h-10 text-rose-400 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-1">Failed to Load Tables</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto mb-4">{error}</p>
+            <Button size="sm" variant="secondary" icon={RefreshCw} onClick={fetchTables}>
+              Try Again
+            </Button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="py-12 px-4 text-center">
+            <Inbox className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-1">No Tables Found</h3>
+            <p className="text-xs text-slate-400">
+              {search
+                ? `No tables matching "${search}".`
+                : 'No tables found in the database schema.'}
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -76,18 +119,18 @@ export default function TablesPage() {
                 {filtered.map((t) => (
                   <tr key={t.tableName} className="hover:bg-slate-800/30 transition-colors">
                     <td className="py-3.5 px-4 font-mono font-bold text-white flex items-center gap-2">
-                      <Table className="w-3.5 h-3.5 text-designer-400" />
+                      <Table className="w-3.5 h-3.5 text-designer-400 shrink-0" />
                       {t.tableName}
                     </td>
                     <td className="py-3.5 px-4 font-mono text-[11px] text-emerald-400 font-semibold">
-                      {t.primaryKey}
+                      {t.primaryKey || 'NONE'}
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-300">{t.columnCount} cols</td>
-                    <td className="py-3.5 px-4 font-semibold text-indigo-400">{t.foreignKeyCount} FKs</td>
+                    <td className="py-3.5 px-4 font-semibold text-slate-300">{t.columnCount ?? 0} cols</td>
+                    <td className="py-3.5 px-4 font-semibold text-indigo-400">{t.foreignKeyCount ?? 0} FKs</td>
                     <td className="py-3.5 px-4">
-                      <Badge variant={t.rowCount > 0 ? 'success' : 'default'}>{t.rowCount} rows</Badge>
+                      <Badge variant={(t.rowCount || 0) > 0 ? 'success' : 'default'}>{t.rowCount || 0} rows</Badge>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">{t.tablespace}</td>
+                    <td className="py-3.5 px-4 text-slate-400 font-mono text-[11px]">{t.tablespace || 'USERS'}</td>
                     <td className="py-3.5 px-4 text-right">
                       <NavLink
                         to={`/designer/tables/${t.tableName}`}
