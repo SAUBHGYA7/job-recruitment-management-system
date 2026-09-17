@@ -119,6 +119,7 @@ export default function EmployersPage() {
     try {
       await api.delete(`/employers/${deleteTarget.emp_id}`);
       addToast(`Employer ${deleteTarget.company_name} deleted successfully`, 'success');
+      setEmployers(prev => prev.filter(e => e.emp_id !== deleteTarget.emp_id));
       setDeleteTarget(null);
       fetchEmployers();
     } catch {

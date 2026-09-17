@@ -114,6 +114,7 @@ export default function ApplicationsPage() {
     try {
       await api.delete(`/applications/${deleteTarget.app_id}`);
       addToast(`Application #${deleteTarget.app_id} deleted successfully`, 'success');
+      setApplications(prev => prev.filter(a => a.app_id !== deleteTarget.app_id));
       setDeleteTarget(null);
       fetchApplications();
     } catch {

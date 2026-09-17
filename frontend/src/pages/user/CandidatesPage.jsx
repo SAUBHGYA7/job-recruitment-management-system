@@ -153,6 +153,7 @@ export default function CandidatesPage() {
     try {
       await api.delete(`/candidates/${id}`);
       addToast(`Candidate #${id} deleted from database`, 'success');
+      setCandidates(prev => prev.filter(c => c.cand_id !== id));
       fetchCandidates();
     } catch {
       addToast('Failed to delete candidate', 'error');

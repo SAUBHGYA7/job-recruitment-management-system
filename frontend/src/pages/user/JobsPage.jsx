@@ -100,6 +100,7 @@ export default function JobsPage() {
     try {
       await api.delete(`/jobs/${deleteTarget.job_key}`);
       addToast(`Job posting #${deleteTarget.job_id || deleteTarget.job_key} deleted successfully`, 'success');
+      setJobs(prev => prev.filter(j => j.job_key !== deleteTarget.job_key && j.job_id !== deleteTarget.job_id));
       setDeleteTarget(null);
       fetchJobs();
     } catch {

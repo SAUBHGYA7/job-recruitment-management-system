@@ -87,6 +87,7 @@ export default function SkillsPage() {
     try {
       await api.delete(`/skills/${deleteTarget.skill_id}`);
       addToast(`Skill ${deleteTarget.skill_name} deleted successfully`, 'success');
+      setSkills(prev => prev.filter(s => s.skill_id !== deleteTarget.skill_id));
       setDeleteTarget(null);
       fetchSkills();
     } catch {

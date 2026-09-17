@@ -535,3 +535,41 @@ export function executeMockSql(query) {
     durationMs: 8
   };
 }
+
+// ─── Browser Persistence Sync (For Hosted Cloud / Vercel Fallback Mode) ──────
+if (typeof window !== 'undefined' && window.localStorage) {
+  try {
+    const saved = localStorage.getItem('jrms_cloud_dataset');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed.candidates)) mockData.candidates = parsed.candidates;
+        if (Array.isArray(parsed.jobs)) mockData.jobs = parsed.jobs;
+        if (Array.isArray(parsed.applications)) mockData.applications = parsed.applications;
+        if (Array.isArray(parsed.interviews)) mockData.interviews = parsed.interviews;
+        if (Array.isArray(parsed.employers)) mockData.employers = parsed.employers;
+        if (Array.isArray(parsed.skills)) mockData.skills = parsed.skills;
+      }
+    }
+  } catch (e) {
+    console.warn('[Cloud Dataset] Could not read from localStorage:', e);
+  }
+}
+
+export function saveMockData() {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      localStorage.setItem('jrms_cloud_dataset', JSON.stringify({
+        candidates: mockData.candidates,
+        jobs: mockData.jobs,
+        applications: mockData.applications,
+        interviews: mockData.interviews,
+        employers: mockData.employers,
+        skills: mockData.skills
+      }));
+    } catch (e) {
+      console.warn('[Cloud Dataset] Could not save to localStorage:', e);
+    }
+  }
+}
+

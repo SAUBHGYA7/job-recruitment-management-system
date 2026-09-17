@@ -108,6 +108,7 @@ export default function InterviewsPage() {
     try {
       await api.delete(`/interviews/${deleteTarget.int_id}`);
       addToast(`Interview #${deleteTarget.int_id} deleted successfully`, 'success');
+      setInterviews(prev => prev.filter(i => i.int_id !== deleteTarget.int_id));
       setDeleteTarget(null);
       fetchInterviews();
     } catch {
