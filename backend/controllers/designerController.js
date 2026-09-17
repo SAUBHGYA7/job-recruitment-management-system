@@ -224,12 +224,21 @@ export async function getPrimaryKeys(req, res, next) {
       ORDER BY c.table_name ASC
     `;
     const result = await executeQuery(sql);
-    const pks = result.rows.map(r => ({
-      constraintName: r.CONSTRAINT_NAME,
-      tableName: r.TABLE_NAME,
-      columns: (r.COLUMNS || '').split(', '),
-      status: r.STATUS
-    }));
+    const pks = (result.rows || []).map(r => {
+      let cols = [];
+      const rawCols = r.COLUMNS !== undefined ? r.COLUMNS : r.columns;
+      if (Array.isArray(rawCols)) {
+        cols = rawCols.filter(Boolean);
+      } else if (typeof rawCols === 'string') {
+        cols = rawCols.split(',').map(c => c.trim()).filter(Boolean);
+      }
+      return {
+        constraintName: r.CONSTRAINT_NAME || r.constraintName || '',
+        tableName: r.TABLE_NAME || r.tableName || '',
+        columns: cols,
+        status: r.STATUS || r.status || 'ENABLED'
+      };
+    });
     res.json({ success: true, total: pks.length, data: pks });
   } catch (error) {
     next(error);

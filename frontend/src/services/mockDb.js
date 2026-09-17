@@ -222,6 +222,55 @@ export function getMockDesignerDashboard() {
   };
 }
 
+// Return Primary Keys metadata
+export function getMockPrimaryKeys() {
+  return [
+    { constraintName: 'PK_CANDIDATE', tableName: 'CANDIDATE', columns: ['CAND_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_CANDIDATE_ADDRESS', tableName: 'CANDIDATE_ADDRESS', columns: ['CAND_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_CANDIDATE_EMAIL', tableName: 'CANDIDATE_EMAIL', columns: ['CAND_ID', 'EMAIL'], status: 'ENABLED' },
+    { constraintName: 'PK_CANDIDATE_PHONE', tableName: 'CANDIDATE_PHONE', columns: ['CAND_ID', 'PHONE'], status: 'ENABLED' },
+    { constraintName: 'PK_JOB', tableName: 'JOB', columns: ['JOB_KEY'], status: 'ENABLED' },
+    { constraintName: 'PK_JOB_DETAILS', tableName: 'JOB_DETAILS', columns: ['JOB_KEY'], status: 'ENABLED' },
+    { constraintName: 'PK_JOB_POSTING', tableName: 'JOB_POSTING', columns: ['JOB_TITLE'], status: 'ENABLED' },
+    { constraintName: 'PK_APPLICATION', tableName: 'APPLICATION', columns: ['APP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_APPLICATION_DATE', tableName: 'APPLICATION_DATE', columns: ['APP_DATE'], status: 'ENABLED' },
+    { constraintName: 'PK_APPLICATION_INFO', tableName: 'APPLICATION_INFO', columns: ['APP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_EDUCATION', tableName: 'EDUCATION', columns: ['EDU_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_EDUCATION_DEGREE', tableName: 'EDUCATION_DEGREE', columns: ['DEGREE'], status: 'ENABLED' },
+    { constraintName: 'PK_EDUCATION_END', tableName: 'EDUCATION_END', columns: ['EDU_ID', 'DEGREE'], status: 'ENABLED' },
+    { constraintName: 'PK_EXPERIENCE', tableName: 'EXPERIENCE', columns: ['EXP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_EXP_CANDIDATE', tableName: 'EXPERIENCE_CANDIDATE', columns: ['EXP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_EXP_COMPANY', tableName: 'EXPERIENCE_COMPANY', columns: ['COMP_NAME', 'JOB_TITLE', 'END_DATE'], status: 'ENABLED' },
+    { constraintName: 'PK_LOCATION', tableName: 'LOCATION', columns: ['PINCODE'], status: 'ENABLED' },
+    { constraintName: 'PK_STATE_CITY', tableName: 'STATE_CITY', columns: ['STATE'], status: 'ENABLED' },
+    { constraintName: 'PK_DEPENDENT', tableName: 'DEPENDENT', columns: ['DEP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_INTERVIEW', tableName: 'INTERVIEW', columns: ['INT_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_INTERVIEW_DETAILS', tableName: 'INTERVIEW_DETAILS', columns: ['INT_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_EMPLOYER', tableName: 'EMPLOYER', columns: ['EMP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_EMPLOYER_DETAILS', tableName: 'EMPLOYER_DETAILS', columns: ['EMP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_EMPLOYER_PHONE', tableName: 'EMPLOYER_PHONE', columns: ['EMP_ID', 'PHONE_NO'], status: 'ENABLED' },
+    { constraintName: 'PK_SKILL', tableName: 'SKILL', columns: ['SKILL_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_SKILL_DETAILS', tableName: 'SKILL_DETAILS', columns: ['SKILL_NAME'], status: 'ENABLED' },
+    { constraintName: 'PK_FREELANCER', tableName: 'FREELANCER', columns: ['CAND_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_FRESHER', tableName: 'FRESHER', columns: ['CAND_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_EXPERIENCED', tableName: 'EXPERIENCED', columns: ['CAND_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_COMPANY', tableName: 'COMPANY', columns: ['COMP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_COMPANY_EMPLOYER', tableName: 'COMPANY_EMPLOYER', columns: ['COMP_ID', 'EMP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_RECRUITMENT_AGENCY', tableName: 'RECRUITMENT_AGENCY', columns: ['AGENCY_NO'], status: 'ENABLED' },
+    { constraintName: 'PK_RECRUITMENT_LICENSE', tableName: 'RECRUITMENT_LICENSE', columns: ['EMP_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_RECRUITMENT', tableName: 'RECRUITMENT', columns: ['EMP_ID', 'AGENCY_NO'], status: 'ENABLED' },
+    { constraintName: 'PK_REQUIRES', tableName: 'REQUIRES', columns: ['JOB_KEY', 'SKILL_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_MATCHED_TO', tableName: 'MATCHED_TO', columns: ['MATCH_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_APPLIES', tableName: 'APPLIES', columns: ['CAND_ID', 'JOB_KEY'], status: 'ENABLED' },
+    { constraintName: 'PK_PREFERS', tableName: 'PREFERS', columns: ['PINCODE', 'CAND_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_REFERS', tableName: 'REFERS', columns: ['CAND_ID', 'REFERRAL_DATE'], status: 'ENABLED' },
+    { constraintName: 'PK_ASSESSED_FOR', tableName: 'ASSESSED_FOR', columns: ['CAND_ID', 'JOB_KEY', 'SKILL_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_HAS', tableName: 'HAS', columns: ['CAND_ID', 'SKILL_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_APP_USERS', tableName: 'APP_USERS', columns: ['USER_ID'], status: 'ENABLED' },
+    { constraintName: 'PK_APP_AUDIT_LOG', tableName: 'APP_AUDIT_LOG', columns: ['LOG_ID'], status: 'ENABLED' }
+  ];
+}
+
 // Return DBA Dashboard state
 export function getMockDbaDashboard() {
   return {

@@ -3,6 +3,7 @@ import {
   mockData,
   getMockUserDashboard,
   getMockDesignerDashboard,
+  getMockPrimaryKeys,
   getMockDbaDashboard,
   getMockDbaTables,
   executeMockSql
@@ -84,6 +85,9 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
   // Designer
   if (cleanUrl === '/designer/dashboard') {
     return { success: true, data: getMockDesignerDashboard() };
+  }
+  if (cleanUrl === '/designer/primary-keys') {
+    return { success: true, data: getMockPrimaryKeys() };
   }
   if (cleanUrl.startsWith('/designer/tables') || cleanUrl.startsWith('/database/tables')) {
     return { success: true, data: getMockDbaTables().data };

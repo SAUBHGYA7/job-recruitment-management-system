@@ -111,18 +111,54 @@ function handleInMemoryQuery(sql, binds = {}) {
   }
 
   if (normalizedSql.includes('FROM USER_CONSTRAINTS')) {
-    let cons = inMemoryDb.schemaMetadata.USER_CONSTRAINTS;
-    if (binds.tableName || binds.TABLE_NAME) {
-      const target = (binds.tableName || binds.TABLE_NAME).toUpperCase();
+    let cons = inMemoryDb.schemaMetadata.USER_CONSTRAINTS.map(c => {
+      const cols = inMemoryDb.schemaMetadata.USER_CONS_COLUMNS
+        .filter(cc => cc.CONSTRAINT_NAME === c.CONSTRAINT_NAME)
+        .sort((a, b) => (a.POSITION || 0) - (b.POSITION || 0))
+        .map(cc => cc.COLUMN_NAME);
+
+      const refTable = c.R_CONSTRAINT_NAME
+        ? inMemoryDb.schemaMetadata.USER_CONSTRAINTS.find(p => p.CONSTRAINT_NAME === c.R_CONSTRAINT_NAME)?.TABLE_NAME || null
+        : null;
+
+      return {
+        ...c,
+        COLUMNS: cols.join(', '),
+        REF_TABLE: refTable
+      };
+    });
+
+    if (binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME) {
+      const target = (binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME).toUpperCase();
       cons = cons.filter(c => c.TABLE_NAME === target);
     }
+
+    if (binds.type || binds.TYPE) {
+      const t = (binds.type || binds.TYPE).toUpperCase();
+      if (t !== 'ALL') {
+        cons = cons.filter(c => c.CONSTRAINT_TYPE === t);
+      }
+    } else if (normalizedSql.includes("CONSTRAINT_TYPE = 'P'") || normalizedSql.includes("C.CONSTRAINT_TYPE = 'P'")) {
+      cons = cons.filter(c => c.CONSTRAINT_TYPE === 'P');
+    } else if (normalizedSql.includes("CONSTRAINT_TYPE = 'R'") || normalizedSql.includes("C.CONSTRAINT_TYPE = 'R'")) {
+      cons = cons.filter(c => c.CONSTRAINT_TYPE === 'R');
+    } else if (normalizedSql.includes("CONSTRAINT_TYPE = 'C'") || normalizedSql.includes("C.CONSTRAINT_TYPE = 'C'")) {
+      cons = cons.filter(c => c.CONSTRAINT_TYPE === 'C');
+    } else if (normalizedSql.includes("CONSTRAINT_TYPE = 'U'") || normalizedSql.includes("C.CONSTRAINT_TYPE = 'U'")) {
+      cons = cons.filter(c => c.CONSTRAINT_TYPE === 'U');
+    }
+
+    if (normalizedSql.includes('COUNT(*)')) {
+      return { rows: [{ COUNT: cons.length }], rowsAffected: 0, isOracle: false };
+    }
+
     return { rows: cons, rowsAffected: 0, isOracle: false };
   }
 
   if (normalizedSql.includes('FROM USER_CONS_COLUMNS')) {
     let consCols = inMemoryDb.schemaMetadata.USER_CONS_COLUMNS;
-    if (binds.tableName || binds.TABLE_NAME) {
-      const target = (binds.tableName || binds.TABLE_NAME).toUpperCase();
+    if (binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME) {
+      const target = (binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME).toUpperCase();
       consCols = consCols.filter(c => c.TABLE_NAME === target);
     }
     return { rows: consCols, rowsAffected: 0, isOracle: false };
