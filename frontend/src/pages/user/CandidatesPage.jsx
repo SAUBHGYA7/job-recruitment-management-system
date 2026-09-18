@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCheck, Plus, Search, Filter, Trash2, Eye } from 'lucide-react';
+import { UserCheck, Plus, Search, Filter, Trash2, Eye, Edit } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
@@ -16,9 +16,11 @@ export default function CandidatesPage() {
   const [genderFilter, setGenderFilter] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     fname: '',
@@ -160,6 +162,50 @@ export default function CandidatesPage() {
     }
   };
 
+  const handleEdit = (candidate) => {
+    setSelectedCandidate(candidate);
+    setFormData({
+      fname: candidate.fname || '',
+      mname: candidate.mname || '',
+      lname: candidate.lname || '',
+      dob: candidate.dob || '2001-01-01',
+      gender: candidate.gender || 'Male',
+      house_no: candidate.address?.house_no || '',
+      city: candidate.address?.city || '',
+      street: candidate.address?.street || '',
+      email: candidate.emails?.[0] || '',
+      phone: candidate.phones?.[0] || '',
+      edu_id: candidate.edu_id || 'ED001',
+      app_id: candidate.app_id || 'APP001',
+      dep_id: candidate.dep_id || 'D001',
+      int_id: candidate.int_id || 'INT001'
+    });
+    setErrors({});
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      addToast('Please correct the validation errors', 'error');
+      return;
+    }
+    if (!selectedCandidate) return;
+    setEditLoading(true);
+    try {
+      const res = await api.put(`/candidates/${selectedCandidate.cand_id}`, formData);
+      if (res.data.success) {
+        addToast('Candidate updated in Oracle Database', 'success');
+        setShowEditModal(false);
+        fetchCandidates();
+      }
+    } catch {
+      addToast('Failed to update candidate', 'error');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
       {/* Heading & Description */}
@@ -276,6 +322,13 @@ export default function CandidatesPage() {
                         title="View Full Profile"
                       >
                         <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(c)}
+                        className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-400 transition-colors"
+                        title="Edit Candidate"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(c.cand_id)}
@@ -557,6 +610,191 @@ export default function CandidatesPage() {
             </Button>
             <Button size="sm" type="submit" variant="primary" loading={addLoading}>
               Insert Candidate Record
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Candidate Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title={selectedCandidate ? `Edit Candidate #${selectedCandidate.cand_id}` : 'Edit Candidate'}
+        subtitle="Updates Candidate, Candidate_Address, Candidate_Phone, and Candidate_Email"
+      >
+        <form onSubmit={handleUpdate} noValidate className="space-y-3 text-xs">
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">First Name *</label>
+              <input
+                type="text"
+                value={formData.fname}
+                onChange={(e) => {
+                  setFormData({ ...formData, fname: e.target.value });
+                  if (errors.fname) setErrors({ ...errors, fname: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.fname ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="First"
+              />
+              {errors.fname && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.fname}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Middle Name</label>
+              <input
+                type="text"
+                value={formData.mname}
+                onChange={(e) => {
+                  setFormData({ ...formData, mname: e.target.value });
+                  if (errors.mname) setErrors({ ...errors, mname: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.mname ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="Middle"
+              />
+              {errors.mname && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.mname}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Last Name *</label>
+              <input
+                type="text"
+                value={formData.lname}
+                onChange={(e) => {
+                  setFormData({ ...formData, lname: e.target.value });
+                  if (errors.lname) setErrors({ ...errors, lname: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.lname ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="Last"
+              />
+              {errors.lname && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.lname}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Date of Birth *</label>
+              <input
+                type="date"
+                value={formData.dob}
+                onChange={(e) => {
+                  setFormData({ ...formData, dob: e.target.value });
+                  if (errors.dob) setErrors({ ...errors, dob: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.dob ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+              />
+              {errors.dob && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.dob}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Gender</label>
+              <select
+                value={formData.gender}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">House No</label>
+              <input
+                type="text"
+                value={formData.house_no}
+                onChange={(e) => {
+                  setFormData({ ...formData, house_no: e.target.value });
+                  if (errors.house_no) setErrors({ ...errors, house_no: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.house_no ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="e.g. 104"
+              />
+              {errors.house_no && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.house_no}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Street</label>
+              <input
+                type="text"
+                value={formData.street}
+                onChange={(e) => {
+                  setFormData({ ...formData, street: e.target.value });
+                  if (errors.street) setErrors({ ...errors, street: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.street ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="Main St"
+              />
+              {errors.street && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.street}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">City</label>
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) => {
+                  setFormData({ ...formData, city: e.target.value });
+                  if (errors.city) setErrors({ ...errors, city: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.city ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="Bengaluru"
+              />
+              {errors.city && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.city}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  if (errors.email) setErrors({ ...errors, email: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.email ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="cand@example.com"
+              />
+              {errors.email && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.email}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Phone</label>
+              <input
+                type="text"
+                value={formData.phone}
+                onChange={(e) => {
+                  setFormData({ ...formData, phone: e.target.value });
+                  if (errors.phone) setErrors({ ...errors, phone: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.phone ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="9876543210"
+              />
+              {errors.phone && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.phone}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" onClick={() => setShowEditModal(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" type="submit" variant="primary" loading={editLoading}>
+              Update Candidate Record
             </Button>
           </div>
         </form>

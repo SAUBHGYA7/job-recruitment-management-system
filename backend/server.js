@@ -23,11 +23,21 @@ async function startServer() {
   // Attempt Oracle DB connection
   await initOraclePool();
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Server] Live Server listening on http://0.0.0.0:${PORT}`);
     console.log(`[Server] Local URL:   http://localhost:${PORT}`);
     console.log(`[Server] Health Check: http://localhost:${PORT}/api/health`);
     console.log('============================================================');
+  });
+  
+  server.on('error', (err) => {
+    console.error('[Server Error]:', err);
+  });
+  
+  server.on('listening', () => {
+    console.log('[Server] Event: listening');
+    const addr = server.address();
+    console.log('[Server] Bound to:', addr);
   });
 }
 

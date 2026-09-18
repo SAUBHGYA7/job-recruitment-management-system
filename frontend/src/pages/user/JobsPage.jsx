@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Plus, Search, Filter, Trash2 } from 'lucide-react';
+import { Briefcase, Plus, Search, Filter, Trash2, Edit } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
@@ -17,7 +17,10 @@ export default function JobsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editJob, setEditJob] = useState(null);
   const [addLoading, setAddLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     job_title: '',
@@ -107,6 +110,42 @@ export default function JobsPage() {
       addToast('Failed to delete job posting', 'error');
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const handleEdit = (job) => {
+    setEditJob(job);
+    setFormData({
+      job_title: job.job_title || '',
+      job_status: job.job_status || 'Open',
+      salary: job.salary || 65000,
+      descriptive: job.descriptive || '',
+      closing_date: job.closing_date || '2026-10-31',
+      app_id: job.app_id || 'APP001'
+    });
+    setErrors({});
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      addToast('Please correct the validation errors', 'error');
+      return;
+    }
+    if (!editJob) return;
+    setEditLoading(true);
+    try {
+      const res = await api.put(`/jobs/${editJob.job_key}`, formData);
+      if (res.data.success) {
+        addToast('Job updated in Oracle Database', 'success');
+        setShowEditModal(false);
+        fetchJobs();
+      }
+    } catch {
+      addToast('Failed to update job', 'error');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -211,8 +250,15 @@ export default function JobsPage() {
                     <td className="font-mono font-semibold text-slate-300">{j.applicant_count}</td>
                     <td className="text-right">
                       <button
+                        onClick={() => handleEdit(j)}
+                        className="px-2 py-1 rounded bg-amber-900/40 hover:bg-amber-800/60 text-amber-300 text-xs font-medium inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Edit className="w-3 h-3" />
+                        Edit
+                      </button>
+                      <button
                         onClick={() => setDeleteTarget(j)}
-                        className="px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-medium inline-flex items-center gap-1 transition-colors"
+                        className="px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-medium inline-flex items-center gap-1 transition-colors ml-1"
                       >
                         <Trash2 className="w-3 h-3" />
                         Delete
@@ -343,6 +389,103 @@ export default function JobsPage() {
             </Button>
           </div>
         </div>
+      </Modal>
+      {/* Edit Job Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title={editJob ? `Edit Job #${editJob.job_id || editJob.job_key}` : 'Edit Job Posting'}
+        subtitle="Updates Job, Job_Details, and Job_Posting tables"
+      >
+        <form onSubmit={handleUpdate} noValidate className="space-y-3 text-xs">
+          <div>
+            <label className="block font-medium text-slate-300 mb-1">Job Title *</label>
+            <input
+              type="text"
+              value={formData.job_title}
+              onChange={(e) => {
+                setFormData({ ...formData, job_title: e.target.value });
+                if (errors.job_title) setErrors({ ...errors, job_title: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.job_title ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+              placeholder="e.g. S/W Dev or Data Analyst"
+            />
+            {errors.job_title && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.job_title}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Status</label>
+              <select
+                value={formData.job_status}
+                onChange={(e) => setFormData({ ...formData, job_status: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="Open">Open</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Salary (INR)</label>
+              <input
+                type="number"
+                value={formData.salary}
+                onChange={(e) => {
+                  setFormData({ ...formData, salary: e.target.value });
+                  if (errors.salary) setErrors({ ...errors, salary: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.salary ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+              />
+              {errors.salary && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.salary}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-medium text-slate-300 mb-1">Closing Date</label>
+            <input
+              type="date"
+              value={formData.closing_date}
+              onChange={(e) => {
+                setFormData({ ...formData, closing_date: e.target.value });
+                if (errors.closing_date) setErrors({ ...errors, closing_date: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.closing_date ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+            />
+            {errors.closing_date && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.closing_date}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block font-medium text-slate-300 mb-1">Job Description</label>
+            <textarea
+              rows={3}
+              value={formData.descriptive}
+              onChange={(e) => {
+                setFormData({ ...formData, descriptive: e.target.value });
+                if (errors.descriptive) setErrors({ ...errors, descriptive: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.descriptive ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+              placeholder="Core responsibilities and requirements..."
+            />
+            {errors.descriptive && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.descriptive}</p>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" onClick={() => setShowEditModal(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" type="submit" variant="primary" loading={editLoading}>
+              Update Job Record
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

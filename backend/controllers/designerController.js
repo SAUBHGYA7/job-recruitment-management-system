@@ -333,6 +333,24 @@ export async function getConstraints(req, res, next) {
   }
 }
 
+const APP_TABLES = new Set([
+  'CANDIDATE', 'CANDIDATE_ADDRESS', 'CANDIDATE_EMAIL', 'CANDIDATE_PHONE',
+  'JOB', 'JOB_DETAILS', 'JOB_POSTING',
+  'APPLICATION', 'APPLICATION_DATE', 'APPLICATION_INFO',
+  'EDUCATION', 'EDUCATION_DEGREE', 'EDUCATION_END',
+  'EXPERIENCE', 'EXPERIENCE_CANDIDATE', 'EXPERIENCE_COMPANY',
+  'LOCATION', 'STATE_CITY',
+  'DEPENDENT',
+  'INTERVIEW', 'INTERVIEW_DETAILS',
+  'EMPLOYER', 'EMPLOYER_DETAILS', 'EMPLOYER_PHONE',
+  'SKILL', 'SKILL_DETAILS',
+  'FREELANCER', 'FRESHER', 'EXPERIENCED',
+  'COMPANY', 'COMPANY_EMPLOYER',
+  'RECRUITMENT_AGENCY', 'RECRUITMENT_LICENSE', 'RECRUITMENT',
+  'REQUIRES', 'MATCHED_TO', 'APPLIES', 'PREFERS', 'REFERS', 'ASSESSED_FOR', 'HAS',
+  'APP_USERS', 'APP_AUDIT_LOG'
+]);
+
 export async function getRelationships(req, res, next) {
   try {
     const tablesRes = await executeQuery('SELECT table_name FROM user_tables ORDER BY table_name ASC');
@@ -343,7 +361,9 @@ export async function getRelationships(req, res, next) {
       WHERE c.constraint_type = 'R'
     `);
 
-    const nodes = await Promise.all(tablesRes.rows.map(async (t) => {
+    const filteredTables = tablesRes.rows.filter(t => APP_TABLES.has(t.TABLE_NAME));
+
+    const nodes = await Promise.all(filteredTables.map(async (t) => {
       const name = t.TABLE_NAME;
       let group = 'entity';
       if (['FREELANCER', 'FRESHER', 'EXPERIENCED'].includes(name)) group = 'subtype';
@@ -372,7 +392,7 @@ export async function getRelationships(req, res, next) {
     }));
 
     const edges = fksRes.rows
-      .filter(r => r.REF_TABLE)
+      .filter(r => r.REF_TABLE && APP_TABLES.has(r.TABLE_NAME) && APP_TABLES.has(r.REF_TABLE))
       .map(r => ({
         from: r.TABLE_NAME,
         to: r.REF_TABLE,
