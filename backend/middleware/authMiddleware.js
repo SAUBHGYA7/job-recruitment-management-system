@@ -44,7 +44,10 @@ export async function authenticateUser(req, res, next) {
           isActive: (row.IS_ACTIVE !== undefined ? row.IS_ACTIVE : row.is_active) === 1
         };
       }
-    } catch {}
+    } catch (dbErr) {
+      console.error('[Auth Middleware] DB query error:', dbErr.message);
+      // Will fallback to in-memory below
+    }
 
     if (!user) {
       const found = inMemoryDb.tables.APP_USERS.find(u => u.USER_ID === decoded.userId || u.USERNAME === decoded.username);

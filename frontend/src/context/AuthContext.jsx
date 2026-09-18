@@ -32,8 +32,8 @@ export function AuthProvider({ children }) {
         setUser(userData);
         return { success: true, user: userData };
       }
-    } catch {
-      // Fallback for cloud/hosted Vercel environments
+    } catch (err) {
+      console.info('[Auth] Login API failed, using offline demo mode:', err.message);
     }
 
     // Determine role from username for academic demo

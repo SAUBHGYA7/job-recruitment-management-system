@@ -210,9 +210,20 @@ export async function executeSqlConsole(req, res, next) {
       });
     }
 
-    // Check for dangerous prohibited DDL/DML keywords anywhere in query
-    const prohibited = /\b(DROP|TRUNCATE|ALTER|CREATE\s+USER|DROP\s+USER|SHUTDOWN|GRANT|REVOKE|DELETE|UPDATE|INSERT|MERGE|EXEC|EXECUTE)\b/i;
-    if (prohibited.test(cleanQuery)) {
+    // Check for dangerous prohibited DDL/DML keywords (outside string literals and comments)
+    function stripLiteralsAndComments(sql) {
+      // Remove single-line comments
+      let stripped = sql.replace(/--.*$/gm, '');
+      // Remove multi-line comments
+      stripped = stripped.replace(/\/\*[\s\S]*?\*\//g, '');
+      // Remove string literals (single-quoted)
+      stripped = stripped.replace(/'([^']|'')*'/g, "''");
+      return stripped;
+    }
+
+    const strippedQuery = stripLiteralsAndComments(cleanQuery);
+    const prohibited = /\b(DROP|TRUNCATE|ALTER|CREATE\s+USER|DROP\s+USER|SHUTDOWN|GRANT|REVOKE|DELETE|UPDATE|INSERT|MERGE|EXEC\b)(?!\w)/i;
+    if (prohibited.test(strippedQuery)) {
       return res.status(403).json({
         success: false,
         message: 'Security Violation: Destructive operations (DROP, ALTER, DELETE, UPDATE, INSERT, GRANT, REVOKE) are rejected. The web console is read-only.'

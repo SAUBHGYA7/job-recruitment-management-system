@@ -170,7 +170,8 @@ export async function getTableDetails(req, res, next) {
 
     let sampleRows = [];
     try {
-      const dataRes = await executeQuery(`SELECT * FROM "${upper}" FETCH FIRST 20 ROWS ONLY`);
+      // Use ROWNUM for compatibility with older Oracle versions
+      const dataRes = await executeQuery(`SELECT * FROM "${upper}" WHERE ROWNUM <= 20`);
       sampleRows = dataRes.rows;
     } catch {
       sampleRows = [];

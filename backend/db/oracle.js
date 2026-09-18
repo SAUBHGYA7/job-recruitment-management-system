@@ -324,7 +324,7 @@ function handleInMemoryQuery(sql, binds = {}) {
       const newRow = {};
 
       // 1. Parse column names and value expressions from SQL
-      const insertMatch = sql.match(/INSERT\s+INTO\s+[\w"]+\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+?\))/i);
+      const insertMatch = sql.match(/INSERT\s+INTO\s+[\w"]+\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+?)\)/i);
       if (insertMatch) {
         const cols = insertMatch[1].split(',').map(c => c.trim().toUpperCase());
         const vals = insertMatch[2].split(',').map(v => v.trim());
@@ -360,6 +360,17 @@ function handleInMemoryQuery(sql, binds = {}) {
     return { rows: [], rowsAffected: 1, isOracle: false };
   }
 
+  // ─── Multi-statement INSERT handling (e.g., Candidate + Candidate_Address) ──────────
+  if (normalizedSql.startsWith('INSERT INTO') && sql.includes(';')) {
+    const statements = sql.split(';').filter(s => s.trim().toUpperCase().startsWith('INSERT INTO'));
+    let totalAffected = 0;
+    for (const stmt of statements) {
+      const result = handleInMemoryQuery(stmt.trim(), binds);
+      totalAffected += result.rowsAffected || 0;
+    }
+    return { rows: [], rowsAffected: totalAffected, isOracle: false };
+  }
+
   // ─── UPDATE <table> ────────────────────────────────────────────────────────────────
   if (normalizedSql.startsWith('UPDATE')) {
     const tblName = extractTableFromDML(sql);
@@ -373,19 +384,24 @@ function handleInMemoryQuery(sql, binds = {}) {
         const pkBind = Object.entries(binds).find(([k]) =>
           k.toLowerCase().includes('id') || k.toLowerCase().includes('key') || k.toLowerCase().includes('num')
         );
+        let rowMatch = false;
         if (pkBind) {
           const pkVal = String(pkBind[1]);
-          const rowMatch = Object.values(row).some(v => String(v) === pkVal);
-          if (rowMatch) {
-            affectedCount++;
-            const updated = { ...row };
-            for (const [k, v] of Object.entries(binds)) {
-              if (!k.toLowerCase().includes('id') && !k.toLowerCase().includes('key') && !k.toLowerCase().includes('num')) {
-                updated[k.toUpperCase()] = v;
-              }
+          rowMatch = Object.values(row).some(v => String(v) === pkVal);
+        } else {
+          // Fallback: try to match any bind value against row values
+          const bindValues = Object.values(binds).map(v => String(v));
+          rowMatch = Object.values(row).some(v => bindValues.includes(String(v)));
+        }
+        if (rowMatch) {
+          affectedCount++;
+          const updated = { ...row };
+          for (const [k, v] of Object.entries(binds)) {
+            if (!k.toLowerCase().includes('id') && !k.toLowerCase().includes('key') && !k.toLowerCase().includes('num')) {
+              updated[k.toUpperCase()] = v;
             }
-            return updated;
           }
+          return updated;
         }
         return row;
       });
@@ -414,7 +430,7 @@ function handleInMemoryQuery(sql, binds = {}) {
         Interview: ['Interview_Details'],
         Employer: ['Employer_Details', 'Employer_Phone', 'Company_Employer'],
         Skill: ['Skill_Details', 'Requires', 'Has', 'Assessed_For'],
-        Application: ['Application_Info']
+        Application: ['Application_Info', 'Application_Date']
       };
       if (childMap[tbl]) {
         for (const childTbl of childMap[tbl]) {
