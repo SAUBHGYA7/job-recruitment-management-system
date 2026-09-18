@@ -624,7 +624,7 @@ To bridge cloud hosting platforms (such as Vercel) with an on-premises or contai
 
 ## Contributors
 
-- **Project Lead & Relational Design:** SAUBHAGYA
+- **Project Contributors:** SAUBHAGYA, OM, DIVYAM
 - **Course:** Database Management Systems (DBMS DA1 / DA2)
 - **Institution:** Academic Relational Database Project
 
