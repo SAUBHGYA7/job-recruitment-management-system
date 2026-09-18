@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, Plus, Search, Trash2 } from 'lucide-react';
+import { Building2, Plus, Search, Trash2, Edit } from 'lucide-react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { Loader } from '../../components/common/Loader';
@@ -15,7 +15,10 @@ export default function EmployersPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editEmployer, setEditEmployer] = useState(null);
   const [addLoading, setAddLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     company_name: '',
@@ -129,6 +132,45 @@ export default function EmployersPage() {
     }
   };
 
+  const handleEdit = (emp) => {
+    setEditEmployer(emp);
+    setFormData({
+      company_name: emp.company_name || '',
+      founded_year: emp.founded_year || 2012,
+      headquarter: emp.headquarter || '',
+      company_mail: emp.company_mail || '',
+      website: emp.website || '',
+      phone_no: emp.phones?.[0] || emp.phone_no || '',
+      comp_type: emp.comp_type || 'Private Tech Corp',
+      emp_count: emp.emp_count || 500,
+      agency_no: ''
+    });
+    setErrors({});
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      addToast('Please correct the validation errors', 'error');
+      return;
+    }
+    if (!editEmployer) return;
+    setEditLoading(true);
+    try {
+      const res = await api.put(`/employers/${editEmployer.emp_id}`, formData);
+      if (res.data.success) {
+        addToast('Employer updated in Oracle Database', 'success');
+        setShowEditModal(false);
+        fetchEmployers();
+      }
+    } catch {
+      addToast('Failed to update employer', 'error');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const filtered = employers.filter(
     (e) =>
       e.company_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -209,8 +251,15 @@ export default function EmployersPage() {
                     <td className="text-slate-400 text-xs">{emp.agency_name || 'Direct'}</td>
                     <td className="text-right">
                       <button
+                        onClick={() => handleEdit(emp)}
+                        className="px-2 py-1 rounded bg-amber-900/40 hover:bg-amber-800/60 text-amber-300 text-xs font-medium inline-flex items-center gap-1 transition-colors"
+                      >
+                        <Edit className="w-3 h-3" />
+                        Edit
+                      </button>
+                      <button
                         onClick={() => setDeleteTarget(emp)}
-                        className="px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-medium inline-flex items-center gap-1 transition-colors"
+                        className="px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 text-xs font-medium inline-flex items-center gap-1 transition-colors ml-1"
                       >
                         <Trash2 className="w-3 h-3" />
                         Delete
@@ -366,6 +415,127 @@ export default function EmployersPage() {
             </Button>
           </div>
         </div>
+      </Modal>
+      {/* Edit Employer Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title={editEmployer ? `Edit Employer #${editEmployer.emp_id}` : 'Edit Employer'}
+        subtitle="Updates Employer, Employer_Details, and Employer_Phone tables"
+      >
+        <form onSubmit={handleUpdate} noValidate className="space-y-3 text-xs">
+          <div>
+            <label className="block font-medium text-slate-300 mb-1">Company Name *</label>
+            <input
+              type="text"
+              value={formData.company_name}
+              onChange={(e) => {
+                setFormData({ ...formData, company_name: e.target.value });
+                if (errors.company_name) setErrors({ ...errors, company_name: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.company_name ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+              placeholder="e.g. Apex Global Tech"
+            />
+            {errors.company_name && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.company_name}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Founded Year</label>
+              <input
+                type="number"
+                value={formData.founded_year}
+                onChange={(e) => {
+                  setFormData({ ...formData, founded_year: e.target.value });
+                  if (errors.founded_year) setErrors({ ...errors, founded_year: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.founded_year ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+              />
+              {errors.founded_year && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.founded_year}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Headquarters</label>
+              <input
+                type="text"
+                value={formData.headquarter}
+                onChange={(e) => {
+                  setFormData({ ...formData, headquarter: e.target.value });
+                  if (errors.headquarter) setErrors({ ...errors, headquarter: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.headquarter ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="Bengaluru"
+              />
+              {errors.headquarter && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.headquarter}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Company Email</label>
+              <input
+                type="email"
+                value={formData.company_mail}
+                onChange={(e) => {
+                  setFormData({ ...formData, company_mail: e.target.value });
+                  if (errors.company_mail) setErrors({ ...errors, company_mail: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.company_mail ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="contact@company.com"
+              />
+              {errors.company_mail && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.company_mail}</p>
+              )}
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Contact Phone</label>
+              <input
+                type="text"
+                value={formData.phone_no}
+                onChange={(e) => {
+                  setFormData({ ...formData, phone_no: e.target.value });
+                  if (errors.phone_no) setErrors({ ...errors, phone_no: null });
+                }}
+                className={`w-full bg-slate-950 border ${errors.phone_no ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+                placeholder="080-22345678"
+              />
+              {errors.phone_no && (
+                <p className="text-rose-400 text-[11px] mt-1">{errors.phone_no}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-medium text-slate-300 mb-1">Website</label>
+            <input
+              type="text"
+              value={formData.website}
+              onChange={(e) => {
+                setFormData({ ...formData, website: e.target.value });
+                if (errors.website) setErrors({ ...errors, website: null });
+              }}
+              className={`w-full bg-slate-950 border ${errors.website ? 'border-rose-500' : 'border-slate-700'} rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500`}
+              placeholder="https://company.com"
+            />
+            {errors.website && (
+              <p className="text-rose-400 text-[11px] mt-1">{errors.website}</p>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" onClick={() => setShowEditModal(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" type="submit" variant="primary" loading={editLoading}>
+              Update Employer
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

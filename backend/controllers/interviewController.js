@@ -74,13 +74,28 @@ export async function createInterview(req, res, next) {
 export async function updateInterview(req, res, next) {
   try {
     const { id } = req.params;
-    const { int_status, score, feedback } = req.body;
+    const { int_date, int_time, int_mode, location, int_status, score, feedback } = req.body;
+
+    if (int_date || int_time) {
+      await executeQuery(`
+        UPDATE Interview
+        SET int_date = TO_DATE(:int_date, 'YYYY-MM-DD'), int_time = :int_time
+        WHERE int_id = :id
+      `, { int_date: int_date || '2026-09-15', int_time: int_time || '10:00', id });
+    }
 
     await executeQuery(`
       UPDATE Interview_Details
-      SET int_status = :int_status, score = :score, feedback = :feedback
+      SET int_mode = :int_mode, location = :location, int_status = :int_status, score = :score, feedback = :feedback
       WHERE int_id = :id
-    `, { int_status, score: score ? parseFloat(score) : null, feedback, id });
+    `, { int_mode: int_mode || 'Online', location: location || 'Virtual', int_status, score: score ? parseFloat(score) : null, feedback, id });
+
+    await logAuditEvent({
+      username: req.user?.username || 'USER',
+      role: req.user?.role || 'USER',
+      action: 'UPDATE_INTERVIEW',
+      details: `Updated Interview #${id} in Oracle Database`
+    });
 
     res.json({ success: true, message: `Interview #${id} updated successfully.` });
   } catch (error) {

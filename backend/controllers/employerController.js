@@ -1,6 +1,45 @@
 import { executeQuery } from '../db/oracle.js';
 import { logAuditEvent } from '../services/auditService.js';
 
+export async function updateEmployer(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { company_name, founded_year, company_mail, website, headquarter, phone_no } = req.body;
+
+    if (!company_name) {
+      return res.status(400).json({ success: false, message: 'Company name is required.' });
+    }
+
+    await executeQuery(`
+      UPDATE Employer SET company_name = :company_name, founded_year = :founded_year WHERE emp_id = :id
+    `, { company_name, founded_year: founded_year ? parseInt(founded_year, 10) : 2020, id });
+
+    await executeQuery(`
+      UPDATE Employer_Details SET company_mail = :company_mail, website = :website, headquarter = :headquarter WHERE emp_id = :id
+    `, { id, company_mail: company_mail || 'contact@company.com', website: website || 'https://company.example.com', headquarter: headquarter || 'Bengaluru' });
+
+    const phoneCheck = await executeQuery(`SELECT emp_id FROM Employer_Phone WHERE emp_id = :id`, { id });
+    if (phoneCheck.rows.length > 0) {
+      if (phone_no) {
+        await executeQuery(`UPDATE Employer_Phone SET phone_no = :phone_no WHERE emp_id = :id`, { id, phone_no });
+      }
+    } else if (phone_no) {
+      await executeQuery(`INSERT INTO Employer_Phone (emp_id, phone_no) VALUES (:id, :phone_no)`, { id, phone_no });
+    }
+
+    await logAuditEvent({
+      username: req.user?.username || 'USER',
+      role: req.user?.role || 'USER',
+      action: 'UPDATE_EMPLOYER',
+      details: `Updated Employer #${id} in Oracle Database`
+    });
+
+    res.json({ success: true, message: `Employer #${id} updated successfully in Oracle.` });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getEmployers(req, res, next) {
   try {
     const sql = `

@@ -72,6 +72,46 @@ export async function createSkill(req, res, next) {
   }
 }
 
+export async function updateSkill(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { skill_name, skill_category, description } = req.body;
+
+    if (!skill_name) {
+      return res.status(400).json({ success: false, message: 'Skill name is required.' });
+    }
+
+    // Get the old skill name to update Skill_Details
+    const skillRes = await executeQuery(`SELECT skill_name FROM Skill WHERE skill_id = :id`, { id });
+    const oldSkillName = skillRes.rows[0]?.SKILL_NAME || skillRes.rows[0]?.skill_name;
+
+    await executeQuery(`
+      UPDATE Skill SET skill_name = :skill_name WHERE skill_id = :id
+    `, { skill_name, id });
+
+    if (oldSkillName && oldSkillName !== skill_name) {
+      await executeQuery(`
+        UPDATE Skill_Details SET skill_name = :skill_name WHERE skill_name = :oldSkillName
+      `, { skill_name, oldSkillName });
+    }
+
+    await executeQuery(`
+      UPDATE Skill_Details SET skill_category = :skill_category, description = :description WHERE skill_name = :skill_name
+    `, { skill_name, skill_category: skill_category || 'General', description: description || '' });
+
+    await logAuditEvent({
+      username: req.user?.username || 'USER',
+      role: req.user?.role || 'USER',
+      action: 'UPDATE_SKILL',
+      details: `Updated Skill #${id} (${skill_name}) in Oracle Database`
+    });
+
+    res.json({ success: true, message: `Skill #${id} updated successfully.` });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function deleteSkill(req, res, next) {
   try {
     const { id } = req.params;
