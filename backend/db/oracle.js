@@ -42,10 +42,10 @@ export async function initOraclePool() {
   try {
     console.log(`[OracleDB] Attempting connection to Oracle DB at: ${dbConfig.connectString} (User: ${dbConfig.user})...`);
     
-    // Connect with a 15 second timeout guard
+    // Connect with a very short timeout guard for fast fail
     const poolPromise = oracledb.createPool(dbConfig);
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Connection timed out after 15000ms')), 15000)
+      setTimeout(() => reject(new Error('Connection timed out after 2000ms')), 2000)
     );
 
     pool = await Promise.race([poolPromise, timeoutPromise]);
@@ -61,6 +61,11 @@ export async function initOraclePool() {
 }
 
 export async function executeQuery(sql, binds = {}, options = {}) {
+  // If forced in-memory mode, never attempt Oracle
+  if (forceInMemory) {
+    return handleInMemoryQuery(sql, binds);
+  }
+
   // If connected to live Oracle, run on Oracle pool
   if (isOracleConnected && pool) {
     let connection;
