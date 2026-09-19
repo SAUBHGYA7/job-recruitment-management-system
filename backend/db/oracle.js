@@ -1,4 +1,3 @@
-import oracledb from 'oracledb';
 import dotenv from 'dotenv';
 import { inMemoryDb } from './inMemoryDb.js';
 
@@ -10,13 +9,16 @@ const forceInMemory = process.env.FORCE_IN_MEMORY === 'true'
   || process.env.VERCEL_ENV === 'production'
   || process.env.NODE_ENV === 'production';
 
-// If forced in-memory, skip Oracle entirely - don't even configure oracledb
-if (!forceInMemory) {
-  // Enable object output format
-  oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-  oracledb.autoCommit = true;
-} else {
-  console.log('[OracleDB] FORCE_IN_MEMORY=true: Skipping Oracle entirely, using Academic In-Memory Database.');
+let oracledb = null;
+
+async function loadOracleDB() {
+  if (!oracledb) {
+    const mod = await import('oracledb');
+    oracledb = mod.default || mod;
+    oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+    oracledb.autoCommit = true;
+  }
+  return oracledb;
 }
 
 const dbConfig = {
@@ -44,6 +46,7 @@ export async function initOraclePool() {
   }
 
   try {
+    await loadOracleDB();
     console.log(`[OracleDB] Attempting connection to Oracle DB at: ${dbConfig.connectString} (User: ${dbConfig.user})...`);
     
     // Connect with a very short timeout guard for fast fail
@@ -74,6 +77,7 @@ export async function executeQuery(sql, binds = {}, options = {}) {
   if (isOracleConnected && pool) {
     let connection;
     try {
+      await loadOracleDB();
       connection = await pool.getConnection();
       const result = await connection.execute(sql, binds, {
         outFormat: oracledb.OUT_FORMAT_OBJECT,
