@@ -8,6 +8,9 @@ let pool = null;
 let isOracleConnected = false;
 let connectionAttempted = false;
 
+// Force in-memory mode (for Vercel/serverless where Oracle is not accessible)
+const forceInMemory = process.env.FORCE_IN_MEMORY === 'true' || process.env.VERCEL === '1';
+
 // Enable object output format
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 oracledb.autoCommit = true;
@@ -24,6 +27,13 @@ const dbConfig = {
 export async function initOraclePool() {
   if (connectionAttempted) return isOracleConnected;
   connectionAttempted = true;
+
+  // Skip Oracle connection entirely if forced to in-memory mode
+  if (forceInMemory) {
+    isOracleConnected = false;
+    console.log('[OracleDB] FORCE_IN_MEMORY=true: Skipping Oracle connection, using Academic In-Memory Database.');
+    return false;
+  }
 
   try {
     console.log(`[OracleDB] Attempting connection to Oracle DB at: ${dbConfig.connectString} (User: ${dbConfig.user})...`);
