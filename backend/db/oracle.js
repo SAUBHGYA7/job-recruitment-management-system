@@ -31,6 +31,8 @@ const dbConfig = {
 let pool = null;
 let isOracleConnected = false;
 let connectionAttempted = false;
+
+export async function initOraclePool() {
   if (connectionAttempted) return isOracleConnected;
   connectionAttempted = true;
 
