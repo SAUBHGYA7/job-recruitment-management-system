@@ -4,20 +4,20 @@ import { inMemoryDb } from './inMemoryDb.js';
 
 dotenv.config();
 
-let pool = null;
-let isOracleConnected = false;
-let connectionAttempted = false;
-
 // Force in-memory mode (for Vercel/serverless where Oracle is not accessible)
-// Check multiple ways Vercel might be detected
 const forceInMemory = process.env.FORCE_IN_MEMORY === 'true' 
-  || process.env.VERCEL === '1' 
+  || (process.env.VERCEL && process.env.VERCEL !== '0')
   || process.env.VERCEL_ENV === 'production'
   || process.env.NODE_ENV === 'production';
 
-// Enable object output format
-oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-oracledb.autoCommit = true;
+// If forced in-memory, skip Oracle entirely - don't even configure oracledb
+if (!forceInMemory) {
+  // Enable object output format
+  oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+  oracledb.autoCommit = true;
+} else {
+  console.log('[OracleDB] FORCE_IN_MEMORY=true: Skipping Oracle entirely, using Academic In-Memory Database.');
+}
 
 const dbConfig = {
   user: process.env.ORACLE_USER || 'system',
@@ -28,7 +28,9 @@ const dbConfig = {
   poolIncrement: parseInt(process.env.ORACLE_POOL_INCREMENT || '2', 10),
 };
 
-export async function initOraclePool() {
+let pool = null;
+let isOracleConnected = false;
+let connectionAttempted = false;
   if (connectionAttempted) return isOracleConnected;
   connectionAttempted = true;
 
