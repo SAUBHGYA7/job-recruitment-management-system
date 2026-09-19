@@ -9,7 +9,11 @@ let isOracleConnected = false;
 let connectionAttempted = false;
 
 // Force in-memory mode (for Vercel/serverless where Oracle is not accessible)
-const forceInMemory = process.env.FORCE_IN_MEMORY === 'true' || process.env.VERCEL === '1';
+// Check multiple ways Vercel might be detected
+const forceInMemory = process.env.FORCE_IN_MEMORY === 'true' 
+  || process.env.VERCEL === '1' 
+  || process.env.VERCEL_ENV === 'production'
+  || process.env.NODE_ENV === 'production';
 
 // Enable object output format
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
