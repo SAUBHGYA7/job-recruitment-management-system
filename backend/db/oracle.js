@@ -3,15 +3,22 @@ import { inMemoryDb } from './inMemoryDb.js';
 
 dotenv.config();
 
-// Force in-memory mode (for Vercel/serverless where Oracle is not accessible)
-const forceInMemory = process.env.FORCE_IN_MEMORY === 'true' 
-  || (process.env.VERCEL && process.env.VERCEL !== '0')
-  || process.env.VERCEL_ENV === 'production'
-  || process.env.NODE_ENV === 'production';
+// Force in-memory mode on Vercel and in production
+const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production';
+const forceInMemory = process.env.FORCE_IN_MEMORY === 'true' || isVercel || isProduction;
 
+if (forceInMemory) {
+  console.log('[OracleDB] Running in in-memory mode (Vercel/production detected)');
+}
+
+// Only load oracledb if NOT in forced in-memory mode
 let oracledb = null;
 
 async function loadOracleDB() {
+  if (forceInMemory) {
+    throw new Error('Oracle not available in in-memory mode');
+  }
   if (!oracledb) {
     const mod = await import('oracledb');
     oracledb = mod.default || mod;
