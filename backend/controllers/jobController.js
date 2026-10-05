@@ -172,17 +172,50 @@ export async function updateJob(req, res, next) {
   try {
     const { id } = req.params;
     const jobKey = parseInt(id, 10);
-    const { job_status, salary, descriptive } = req.body;
+    const { job_title, job_status, salary, descriptive, closing_date } = req.body;
 
     await executeQuery(`
       UPDATE Job SET job_status = :job_status, salary = :salary WHERE job_key = :jobKey
-    `, { job_status, salary: parseFloat(salary), jobKey });
+    `, { job_status: job_status || 'Open', salary: parseFloat(salary) || 60000, jobKey });
 
-    if (descriptive) {
+    const detailsRes = await executeQuery(`SELECT job_title, descriptive, app_id FROM Job_Details WHERE job_key = :jobKey`, { jobKey });
+    const existingDetails = detailsRes.rows[0] || {};
+    const targetTitle = job_title || existingDetails.JOB_TITLE || existingDetails.job_title || 'General Role';
+    const targetDesc = descriptive !== undefined ? descriptive : (existingDetails.DESCRIPTIVE || existingDetails.descriptive || '');
+
+    if (detailsRes.rows.length > 0) {
       await executeQuery(`
-        UPDATE Job_Details SET descriptive = :descriptive WHERE job_key = :jobKey
-      `, { descriptive, jobKey });
+        UPDATE Job_Details SET job_title = :job_title, descriptive = :descriptive WHERE job_key = :jobKey
+      `, { job_title: targetTitle, descriptive: targetDesc, jobKey });
+    } else {
+      await executeQuery(`
+        INSERT INTO Job_Details (job_key, job_title, descriptive, app_id)
+        VALUES (:jobKey, :job_title, :descriptive, 'APP001')
+      `, { jobKey, job_title: targetTitle, descriptive: targetDesc });
     }
+
+    if (targetTitle) {
+      const postingCheck = await executeQuery(`SELECT job_title FROM Job_Posting WHERE job_title = :job_title`, { job_title: targetTitle });
+      if (postingCheck.rows.length > 0) {
+        if (closing_date) {
+          await executeQuery(`
+            UPDATE Job_Posting SET closing_date = TO_DATE(:closing_date, 'YYYY-MM-DD') WHERE job_title = :job_title
+          `, { closing_date, job_title: targetTitle });
+        }
+      } else {
+        await executeQuery(`
+          INSERT INTO Job_Posting (job_title, closing_date, posted_date)
+          VALUES (:job_title, TO_DATE(:closing_date, 'YYYY-MM-DD'), SYSDATE)
+        `, { job_title: targetTitle, closing_date: closing_date || '2026-10-31' });
+      }
+    }
+
+    await logAuditEvent({
+      username: req.user?.username || 'USER',
+      role: req.user?.role || 'USER',
+      action: 'UPDATE_JOB',
+      details: `Updated Job #${jobKey} (${targetTitle}) in Oracle Database`
+    });
 
     res.json({ success: true, message: `Job #${jobKey} updated successfully.` });
   } catch (error) {
@@ -195,6 +228,11 @@ export async function deleteJob(req, res, next) {
     const { id } = req.params;
     const jobKey = parseInt(id, 10);
 
+    await executeQuery(`DELETE FROM Requires WHERE job_key = :jobKey`, { jobKey });
+    await executeQuery(`DELETE FROM Applies WHERE job_key = :jobKey`, { jobKey });
+    await executeQuery(`DELETE FROM Matched_To WHERE job_key = :jobKey`, { jobKey });
+    await executeQuery(`DELETE FROM Assessed_For WHERE job_key = :jobKey`, { jobKey });
+    await executeQuery(`DELETE FROM Job_Details WHERE job_key = :jobKey`, { jobKey });
     await executeQuery(`DELETE FROM Job WHERE job_key = :jobKey`, { jobKey });
 
     await logAuditEvent({

@@ -257,22 +257,30 @@ export async function updateCandidate(req, res, next) {
   try {
     const { id } = req.params;
     const candId = parseInt(id, 10);
-    const { fname, mname, lname, dob, gender, house_no, city, street } = req.body;
+    const { fname, mname, lname, dob, gender, house_no, city, street, email, phone, edu_id, app_id, dep_id, int_id } = req.body;
+
+    const existingRes = await executeQuery(`SELECT * FROM Candidate WHERE cand_id = :candId`, { candId });
+    const existing = existingRes.rows[0] || {};
 
     await executeQuery(`
       UPDATE Candidate
-      SET fname = :fname, mname = :mname, lname = :lname, gender = :gender, dob = TO_DATE(:dob, 'YYYY-MM-DD')
+      SET fname = :fname, mname = :mname, lname = :lname, gender = :gender, dob = TO_DATE(:dob, 'YYYY-MM-DD'),
+          edu_id = :edu_id, app_id = :app_id, dep_id = :dep_id, int_id = :int_id
       WHERE cand_id = :candId
     `, {
       candId,
-      fname,
-      mname: mname || null,
-      lname,
-      gender,
-      dob: dob || '2001-01-01'
+      fname: fname ?? existing.FNAME ?? existing.fname,
+      mname: mname !== undefined ? (mname || null) : (existing.MNAME ?? existing.mname ?? null),
+      lname: lname ?? existing.LNAME ?? existing.lname,
+      gender: gender ?? existing.GENDER ?? existing.gender ?? 'Male',
+      dob: dob || existing.DOB || existing.dob || '2001-01-01',
+      edu_id: edu_id || existing.EDU_ID || existing.edu_id || 'ED001',
+      app_id: app_id || existing.APP_ID || existing.app_id || 'APP001',
+      dep_id: dep_id || existing.DEP_ID || existing.dep_id || 'D001',
+      int_id: int_id || existing.INT_ID || existing.int_id || 'INT001'
     });
 
-    if (house_no || city || street) {
+    if (house_no !== undefined || city !== undefined || street !== undefined) {
       const addrCheck = await executeQuery(`SELECT cand_id FROM Candidate_Address WHERE cand_id = :candId`, { candId });
       if (addrCheck.rows.length > 0) {
         await executeQuery(`
@@ -285,11 +293,31 @@ export async function updateCandidate(req, res, next) {
       }
     }
 
+    if (email !== undefined) {
+      await executeQuery(`DELETE FROM Candidate_Email WHERE cand_id = :candId`, { candId });
+      const emailList = Array.isArray(email)
+        ? email
+        : String(email).split(',').map(e => e.trim()).filter(Boolean);
+      for (const em of emailList) {
+        await executeQuery(`INSERT INTO Candidate_Email (cand_id, email) VALUES (:candId, :email)`, { candId, email: em });
+      }
+    }
+
+    if (phone !== undefined) {
+      await executeQuery(`DELETE FROM Candidate_Phone WHERE cand_id = :candId`, { candId });
+      const phoneList = Array.isArray(phone)
+        ? phone
+        : String(phone).split(',').map(p => p.trim()).filter(Boolean);
+      for (const ph of phoneList) {
+        await executeQuery(`INSERT INTO Candidate_Phone (cand_id, phone) VALUES (:candId, :phone)`, { candId, phone: ph });
+      }
+    }
+
     await logAuditEvent({
       username: req.user?.username || 'USER',
       role: req.user?.role || 'USER',
       action: 'UPDATE_CANDIDATE',
-      details: `Updated Candidate #${candId} in Oracle Database`
+      details: `Updated Candidate #${candId} (${fname} ${lname}) in Oracle Database`
     });
 
     res.json({ success: true, message: 'Candidate updated successfully in Oracle.' });
@@ -303,6 +331,14 @@ export async function deleteCandidate(req, res, next) {
     const { id } = req.params;
     const candId = parseInt(id, 10);
 
+    await executeQuery(`DELETE FROM Candidate_Address WHERE cand_id = :candId`, { candId });
+    await executeQuery(`DELETE FROM Candidate_Email WHERE cand_id = :candId`, { candId });
+    await executeQuery(`DELETE FROM Candidate_Phone WHERE cand_id = :candId`, { candId });
+    await executeQuery(`DELETE FROM Applies WHERE cand_id = :candId`, { candId });
+    await executeQuery(`DELETE FROM Has WHERE cand_id = :candId`, { candId });
+    await executeQuery(`DELETE FROM Experience_Candidate WHERE cand_id = :candId`, { candId });
+    await executeQuery(`DELETE FROM Refers WHERE cand_id = :candId`, { candId });
+    await executeQuery(`DELETE FROM Assessed_For WHERE cand_id = :candId`, { candId });
     await executeQuery(`DELETE FROM Candidate WHERE cand_id = :candId`, { candId });
 
     await logAuditEvent({

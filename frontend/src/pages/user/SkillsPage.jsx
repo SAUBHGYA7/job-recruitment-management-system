@@ -51,11 +51,11 @@ export default function SkillsPage() {
   const validateForm = () => {
     const errors = {};
     const nameErr = validateRequired(formData.skill_name, 'Skill name') ||
-      validateLength(formData.skill_name, 2, 50, 'Skill name');
+      validateLength(formData.skill_name, { min: 2, max: 50, label: 'Skill name' });
     if (nameErr) errors.skill_name = nameErr;
 
     if (formData.description) {
-      const descErr = validateLength(formData.description, 0, 300, 'Description');
+      const descErr = validateLength(formData.description, { max: 300, label: 'Description' });
       if (descErr) errors.description = descErr;
     }
 
@@ -242,8 +242,16 @@ export default function SkillsPage() {
               <option value="Programming">Programming</option>
               <option value="Database">Database</option>
               <option value="Database Administration">Database Administration</option>
+              <option value="Frontend Development">Frontend Development</option>
+              <option value="Backend Development">Backend Development</option>
+              <option value="Cloud Infrastructure">Cloud Infrastructure</option>
+              <option value="DevOps & Tooling">DevOps &amp; Tooling</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Data Engineering">Data Engineering</option>
+              <option value="Security & Audit">Security &amp; Audit</option>
               <option value="Design">Design</option>
               <option value="Cloud / DevOps">Cloud / DevOps</option>
+              <option value="General">General</option>
             </select>
           </div>
 
@@ -340,8 +348,16 @@ export default function SkillsPage() {
               <option value="Programming">Programming</option>
               <option value="Database">Database</option>
               <option value="Database Administration">Database Administration</option>
+              <option value="Frontend Development">Frontend Development</option>
+              <option value="Backend Development">Backend Development</option>
+              <option value="Cloud Infrastructure">Cloud Infrastructure</option>
+              <option value="DevOps & Tooling">DevOps &amp; Tooling</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Data Engineering">Data Engineering</option>
+              <option value="Security & Audit">Security &amp; Audit</option>
               <option value="Design">Design</option>
               <option value="Cloud / DevOps">Cloud / DevOps</option>
+              <option value="General">General</option>
             </select>
           </div>
 

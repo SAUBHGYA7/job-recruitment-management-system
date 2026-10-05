@@ -136,11 +136,55 @@ export const mockData = {
     { skill_id: 'S013', skill_name: 'Machine Learning', skill_category: 'Data Science', description: 'Scikit-learn, PyTorch, statistical modeling, and inference pipelines', demandCount: 1, candidatesWithSkill: 2 },
     { skill_id: 'S014', skill_name: 'Go / Golang', skill_category: 'Programming', description: 'High-concurrency systems programming, goroutines, and channels', demandCount: 1, candidatesWithSkill: 1 },
     { skill_id: 'S015', skill_name: 'Kafka', skill_category: 'Data Engineering', description: 'Distributed streaming event architecture, topic partitions, and consumer groups', demandCount: 1, candidatesWithSkill: 1 }
+  ],
+  users: [
+    { user_id: 1, USER_ID: 1, username: 'recruiter', USERNAME: 'recruiter', role: 'USER', ROLE: 'USER', is_active: 1, IS_ACTIVE: 1, full_name: 'Alex Mercer (Recruitment Lead)', FULL_NAME: 'Alex Mercer (Recruitment Lead)', email: 'recruiter@jrms.org', EMAIL: 'recruiter@jrms.org', created_at: '2026-09-01 09:00:00', CREATED_AT: '2026-09-01 09:00:00' },
+    { user_id: 2, USER_ID: 2, username: 'designer', USERNAME: 'designer', role: 'DATABASE_DESIGNER', ROLE: 'DATABASE_DESIGNER', is_active: 1, IS_ACTIVE: 1, full_name: 'Dr. Elena Rostova (Schema Architect)', FULL_NAME: 'Dr. Elena Rostova (Schema Architect)', email: 'designer@jrms.org', EMAIL: 'designer@jrms.org', created_at: '2026-09-01 09:05:00', CREATED_AT: '2026-09-01 09:05:00' },
+    { user_id: 3, USER_ID: 3, username: 'dba_admin', USERNAME: 'dba_admin', role: 'DBA', ROLE: 'DBA', is_active: 1, IS_ACTIVE: 1, full_name: 'Marcus Vance (Chief DBA)', FULL_NAME: 'Marcus Vance (Chief DBA)', email: 'dba@jrms.org', EMAIL: 'dba@jrms.org', created_at: '2026-09-01 09:10:00', CREATED_AT: '2026-09-01 09:10:00' }
+  ],
+  auditLogs: [
+    { LOG_ID: 101, ACTION: 'SCHEMA_INITIALIZATION', ROLE: 'DBA', USERNAME: 'SYSTEM', DETAILS: 'Database initialized with 41 normalized BCNF tables', IP_ADDRESS: '127.0.0.1', CREATED_AT: '2026-09-13 10:00:00' },
+    { LOG_ID: 102, ACTION: 'EXPANDED_SEED_LOADED', ROLE: 'DBA', USERNAME: 'SYSTEM', DETAILS: '25 Candidates, 20 Jobs, 25 Applications loaded', IP_ADDRESS: '127.0.0.1', CREATED_AT: '2026-09-13 10:05:00' },
+    { LOG_ID: 103, ACTION: 'LOGIN_SUCCESS', ROLE: 'USER', USERNAME: 'recruiter', DETAILS: 'User authenticated from web client', IP_ADDRESS: '127.0.0.1', CREATED_AT: '2026-09-13 10:15:00' }
   ]
 };
 
+// Ensure every candidate has fname, mname, lname populated from fullName
+function normalizeMockCandidates() {
+  mockData.candidates.forEach(c => {
+    if (!c.fname && c.fullName) {
+      const parts = c.fullName.trim().split(/\s+/);
+      c.fname = parts[0] || '';
+      c.lname = parts.length > 1 ? parts[parts.length - 1] : '';
+      c.mname = parts.length > 2 ? parts.slice(1, -1).join(' ') : '';
+    }
+  });
+}
+normalizeMockCandidates();
+
+const initialSeedSnapshot = JSON.parse(JSON.stringify(mockData));
+
+export function logMockAudit(action, details, role = 'USER', username = 'recruiter') {
+  const nextId = (mockData.auditLogs.reduce((mx, l) => Math.max(mx, l.LOG_ID || 0), 100)) + 1;
+  mockData.auditLogs.unshift({
+    LOG_ID: nextId,
+    ACTION: action,
+    ROLE: role,
+    USERNAME: username,
+    DETAILS: details,
+    IP_ADDRESS: '127.0.0.1',
+    CREATED_AT: new Date().toISOString().replace('T', ' ').substring(0, 19)
+  });
+}
+
 // Return full dashboard state
 export function getMockUserDashboard() {
+  const statusMap = {};
+  mockData.applications.forEach(a => {
+    const st = a.app_status || 'In Review';
+    statusMap[st] = (statusMap[st] || 0) + 1;
+  });
+
   return {
     kpis: {
       totalCandidates: mockData.candidates.length,
@@ -151,28 +195,17 @@ export function getMockUserDashboard() {
       totalEmployers: mockData.employers.length
     },
     charts: {
-      demandedSkills: [
-        { skill: 'Python', demand: 4 },
-        { skill: 'SQL', demand: 3 },
-        { skill: 'React.js', demand: 3 },
-        { skill: 'UI Design', demand: 2 },
-        { skill: 'Node.js', demand: 2 },
-        { skill: 'AWS Cloud', demand: 2 },
-        { skill: 'Java', demand: 2 },
-        { skill: 'Oracle DB', demand: 2 }
-      ],
-      applicationsByStatus: [
-        { status: 'Shortlisted', count: 14 },
-        { status: 'In Review', count: 6 },
-        { status: 'Rejected', count: 4 },
-        { status: 'On Hold', count: 1 }
-      ]
+      demandedSkills: mockData.skills.slice(0, 8).map(s => ({
+        skill: s.skill_name,
+        demand: s.demandCount || 1
+      })),
+      applicationsByStatus: Object.entries(statusMap).map(([status, count]) => ({ status, count }))
     },
     recentApplications: mockData.applications.slice(0, 5).map(a => ({
-      cand_id: a.candidate.id,
-      candidate_name: a.candidate.name,
-      job_id: `J00${a.job.job_key}`,
-      job_title: a.job.job_title,
+      cand_id: a.candidate?.id || a.candidate?.cand_id || 101,
+      candidate_name: a.candidate?.name || 'Applicant',
+      job_id: a.job?.job_id || `J00${a.job?.job_key || 1}`,
+      job_title: a.job?.job_title || 'General Role',
       app_status: a.app_status,
       final_result: a.final_result
     })),
@@ -197,18 +230,18 @@ export function getMockDesignerDashboard() {
       totalConstraints: 91
     },
     tableRowCounts: [
-      { tableName: 'CANDIDATE', rowCount: 25 },
-      { tableName: 'JOB', rowCount: 20 },
-      { tableName: 'APPLICATION', rowCount: 25 },
-      { tableName: 'INTERVIEW', rowCount: 25 },
-      { tableName: 'EMPLOYER', rowCount: 15 },
-      { tableName: 'SKILL', rowCount: 15 },
-      { tableName: 'EDUCATION', rowCount: 25 },
-      { tableName: 'EXPERIENCE', rowCount: 25 },
+      { tableName: 'CANDIDATE', rowCount: mockData.candidates.length },
+      { tableName: 'JOB', rowCount: mockData.jobs.length },
+      { tableName: 'APPLICATION', rowCount: mockData.applications.length },
+      { tableName: 'INTERVIEW', rowCount: mockData.interviews.length },
+      { tableName: 'EMPLOYER', rowCount: mockData.employers.length },
+      { tableName: 'SKILL', rowCount: mockData.skills.length },
+      { tableName: 'EDUCATION', rowCount: mockData.candidates.length },
+      { tableName: 'EXPERIENCE', rowCount: mockData.candidates.length },
       { tableName: 'HAS', rowCount: 35 },
       { tableName: 'REQUIRES', rowCount: 27 },
       { tableName: 'MATCHED_TO', rowCount: 20 },
-      { tableName: 'APPLIES', rowCount: 25 }
+      { tableName: 'APPLIES', rowCount: mockData.applications.length }
     ],
     normalizationMetrics: {
       decomposedRelations: [
@@ -274,7 +307,6 @@ export function getMockPrimaryKeys() {
 // Return Schema Constraints list with filtering support
 export function getMockConstraints(typeFilter) {
   const allConstraints = [
-    // Primary Keys
     ...getMockPrimaryKeys().map(pk => ({
       constraintName: pk.constraintName,
       tableName: pk.tableName,
@@ -285,7 +317,6 @@ export function getMockConstraints(typeFilter) {
       rConstraintName: null,
       status: pk.status
     })),
-    // Foreign Keys
     { constraintName: 'FK_CADDR_CANDIDATE', tableName: 'CANDIDATE_ADDRESS', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
     { constraintName: 'FK_CEMAIL_CANDIDATE', tableName: 'CANDIDATE_EMAIL', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
     { constraintName: 'FK_CPHONE_CANDIDATE', tableName: 'CANDIDATE_PHONE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['CAND_ID'], searchCondition: null, rConstraintName: 'PK_CANDIDATE', status: 'ENABLED' },
@@ -325,12 +356,10 @@ export function getMockConstraints(typeFilter) {
     { constraintName: 'FK_CANDIDATE_APP', tableName: 'CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['APP_ID'], searchCondition: null, rConstraintName: 'PK_APPLICATION', status: 'ENABLED' },
     { constraintName: 'FK_CANDIDATE_DEP', tableName: 'CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['DEP_ID'], searchCondition: null, rConstraintName: 'PK_DEPENDENT', status: 'ENABLED' },
     { constraintName: 'FK_CANDIDATE_INT', tableName: 'CANDIDATE', type: 'FOREIGN KEY', typeCode: 'R', columns: ['INT_ID'], searchCondition: null, rConstraintName: 'PK_INTERVIEW', status: 'ENABLED' },
-    // Check Constraints
     { constraintName: 'CK_REQUIRES_MANDATORY', tableName: 'REQUIRES', type: 'CHECK', typeCode: 'C', columns: ['IS_MANDATORY'], searchCondition: "is_mandatory IN ('Y','N')", rConstraintName: null, status: 'ENABLED' },
     { constraintName: 'CK_ASSESS_MATCH', tableName: 'ASSESSED_FOR', type: 'CHECK', typeCode: 'C', columns: ['MATCH_PER'], searchCondition: 'match_per BETWEEN 0 AND 100', rConstraintName: null, status: 'ENABLED' },
     { constraintName: 'CK_ASSESS_SCORE', tableName: 'ASSESSED_FOR', type: 'CHECK', typeCode: 'C', columns: ['ASS_SCORE'], searchCondition: 'ass_score BETWEEN 0 AND 100', rConstraintName: null, status: 'ENABLED' },
     { constraintName: 'CK_APP_USERS_ROLE', tableName: 'APP_USERS', type: 'CHECK', typeCode: 'C', columns: ['ROLE'], searchCondition: "role IN ('USER', 'DATABASE_DESIGNER', 'DBA')", rConstraintName: null, status: 'ENABLED' },
-    // Unique Constraints
     { constraintName: 'UQ_APP_USERS_USERNAME', tableName: 'APP_USERS', type: 'UNIQUE', typeCode: 'U', columns: ['USERNAME'], searchCondition: null, rConstraintName: null, status: 'ENABLED' }
   ];
 
@@ -389,12 +418,15 @@ export function getMockColumns(search = '') {
 
 // Return DBA Dashboard state
 export function getMockDbaDashboard() {
+  const allTables = getMockDbaTables().data;
+  const totalRows = allTables.reduce((sum, t) => sum + (t.ROW_COUNT || 0), 0);
   return {
     summary: {
       totalTables: 41,
       totalIndexes: 49,
-      totalUsers: 3,
-      activeUsers: 3,
+      totalUsers: mockData.users.length,
+      activeUsers: mockData.users.filter(u => (u.is_active ?? u.IS_ACTIVE) === 1).length,
+      totalRows,
       dbStatus: {
         connectString: 'Oracle 23c (Academic Deployment)',
         user: 'SYSTEM'
@@ -412,60 +444,64 @@ export function getMockDbaDashboard() {
       { type: 'VIEW', count: 6 },
       { type: 'TRIGGER', count: 4 }
     ],
-    recentAudit: [
-      { LOG_ID: 101, ACTION: 'SCHEMA_INITIALIZATION', ROLE: 'DBA', USERNAME: 'SYSTEM', DETAILS: 'Database initialized with 41 normalized BCNF tables', CREATED_AT: '2026-09-13 10:00:00' },
-      { LOG_ID: 102, ACTION: 'EXPANDED_SEED_LOADED', ROLE: 'DBA', USERNAME: 'SYSTEM', DETAILS: '25 Candidates, 20 Jobs, 25 Applications loaded', CREATED_AT: '2026-09-13 10:05:00' },
-      { LOG_ID: 103, ACTION: 'LOGIN_SUCCESS', ROLE: 'USER', USERNAME: 'recruiter', DETAILS: 'User authenticated from web client', CREATED_AT: '2026-09-13 10:15:00' }
-    ]
+    recentAudit: mockData.auditLogs.slice(0, 10)
   };
 }
 
-// Return DBA Tables Explorer list
+// Return DBA Tables Explorer list with live row counts
 export function getMockDbaTables() {
+  const cLen = mockData.candidates.length;
+  const jLen = mockData.jobs.length;
+  const aLen = mockData.applications.length;
+  const iLen = mockData.interviews.length;
+  const eLen = mockData.employers.length;
+  const sLen = mockData.skills.length;
+  const uLen = mockData.users.length;
+
   const tableList = [
-    { TABLE_NAME: 'CANDIDATE', ROW_COUNT: 25, COLUMN_COUNT: 11, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'CANDIDATE_ADDRESS', ROW_COUNT: 25, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'CANDIDATE_EMAIL', ROW_COUNT: 25, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'CANDIDATE_PHONE', ROW_COUNT: 25, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'JOB', ROW_COUNT: 20, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'JOB_DETAILS', ROW_COUNT: 20, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'JOB_POSTING', ROW_COUNT: 18, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'APPLICATION', ROW_COUNT: 25, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'CANDIDATE', ROW_COUNT: cLen, COLUMN_COUNT: 11, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'CANDIDATE_ADDRESS', ROW_COUNT: cLen, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'CANDIDATE_EMAIL', ROW_COUNT: cLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'CANDIDATE_PHONE', ROW_COUNT: cLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'JOB', ROW_COUNT: jLen, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'JOB_DETAILS', ROW_COUNT: jLen, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'JOB_POSTING', ROW_COUNT: jLen, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'APPLICATION', ROW_COUNT: aLen, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'APPLICATION_DATE', ROW_COUNT: 7, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'APPLICATION_INFO', ROW_COUNT: 25, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'INTERVIEW', ROW_COUNT: 25, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'INTERVIEW_DETAILS', ROW_COUNT: 25, COLUMN_COUNT: 6, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'EMPLOYER', ROW_COUNT: 15, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'EMPLOYER_DETAILS', ROW_COUNT: 15, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'EMPLOYER_PHONE', ROW_COUNT: 15, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'SKILL', ROW_COUNT: 15, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'SKILL_DETAILS', ROW_COUNT: 15, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'EDUCATION', ROW_COUNT: 25, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'APPLICATION_INFO', ROW_COUNT: aLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'INTERVIEW', ROW_COUNT: iLen, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'INTERVIEW_DETAILS', ROW_COUNT: iLen, COLUMN_COUNT: 6, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'EMPLOYER', ROW_COUNT: eLen, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'EMPLOYER_DETAILS', ROW_COUNT: eLen, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'EMPLOYER_PHONE', ROW_COUNT: eLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'SKILL', ROW_COUNT: sLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'SKILL_DETAILS', ROW_COUNT: sLen, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'EDUCATION', ROW_COUNT: cLen, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'EDUCATION_DEGREE', ROW_COUNT: 7, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'EDUCATION_END', ROW_COUNT: 25, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'EXPERIENCE', ROW_COUNT: 25, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'EXPERIENCE_CANDIDATE', ROW_COUNT: 25, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'EDUCATION_END', ROW_COUNT: cLen, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'EXPERIENCE', ROW_COUNT: cLen, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'EXPERIENCE_CANDIDATE', ROW_COUNT: cLen, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'EXPERIENCE_COMPANY', ROW_COUNT: 10, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'LOCATION', ROW_COUNT: 12, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'STATE_CITY', ROW_COUNT: 11, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'REQUIRES', ROW_COUNT: 27, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'MATCHED_TO', ROW_COUNT: 20, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'APPLIES', ROW_COUNT: 25, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'APPLIES', ROW_COUNT: aLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'HAS', ROW_COUNT: 35, COLUMN_COUNT: 4, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'ASSESSED_FOR', ROW_COUNT: 20, COLUMN_COUNT: 6, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'PREFERS', ROW_COUNT: 25, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'PREFERS', ROW_COUNT: cLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'REFERS', ROW_COUNT: 14, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'FREELANCER', ROW_COUNT: 10, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'FRESHER', ROW_COUNT: 12, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'EXPERIENCED', ROW_COUNT: 13, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'COMPANY', ROW_COUNT: 8, COLUMN_COUNT: 3, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'COMPANY_EMPLOYER', ROW_COUNT: 15, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'COMPANY_EMPLOYER', ROW_COUNT: eLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
     { TABLE_NAME: 'RECRUITMENT_AGENCY', ROW_COUNT: 5, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'RECRUITMENT_LICENSE', ROW_COUNT: 15, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'RECRUITMENT', ROW_COUNT: 15, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
-    { TABLE_NAME: 'APP_USERS', ROW_COUNT: 3, COLUMN_COUNT: 6, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' }
+    { TABLE_NAME: 'RECRUITMENT_LICENSE', ROW_COUNT: eLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'RECRUITMENT', ROW_COUNT: eLen, COLUMN_COUNT: 2, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' },
+    { TABLE_NAME: 'APP_USERS', ROW_COUNT: uLen, COLUMN_COUNT: 6, TABLESPACE_NAME: 'USERS', STATUS: 'VALID' }
   ];
-  // Normalize keys to support both UPPERCASE and camelCase consumers
+
   const normalized = tableList.map(t => {
     const pk = getMockPrimaryKeys().find(p => p.tableName === t.TABLE_NAME);
     const fks = getMockConstraints('R').filter(c => c.tableName === t.TABLE_NAME);
@@ -486,12 +522,12 @@ export function getMockDbaTables() {
   return { total: normalized.length, data: normalized };
 }
 
-// Return detailed metadata and sample rows for a specific table in Fallback/Cloud mode
+// Return detailed metadata and live rows for a specific table in Fallback/Cloud mode
 export function getMockTableDetails(tableName) {
   const upper = (tableName || '').toUpperCase();
   const allTables = getMockDbaTables().data;
   const tableMeta = allTables.find(t => t.tableName === upper || t.TABLE_NAME === upper);
-  
+
   if (!tableMeta) {
     return null;
   }
@@ -502,38 +538,135 @@ export function getMockTableDetails(tableName) {
   const fks = getMockConstraints('R').filter(c => c.tableName === upper);
   const fkCols = new Set(fks.flatMap(c => c.columns));
 
-  // Determine columns
-  const tableCols = getMockColumns().filter(c => c.TABLE_NAME === upper);
-  const columns = tableCols.map(c => ({
-    COLUMN_NAME: c.COLUMN_NAME,
-    DATA_TYPE: c.DATA_TYPE,
-    DATA_LENGTH: c.DATA_LENGTH,
-    DATA_PRECISION: c.DATA_PRECISION,
-    DATA_SCALE: c.DATA_SCALE,
-    NULLABLE: c.NULLABLE,
-    isPrimaryKey: pkCols.has(c.COLUMN_NAME) || c.COLUMN_NAME.endsWith('_ID') || c.COLUMN_NAME.endsWith('_KEY'),
-    isForeignKey: fkCols.has(c.COLUMN_NAME)
-  }));
-
-  // Ensure at least PK and default columns exist if mock columns was generic
-  if (columns.length <= 2 && pkCols.size > 0) {
-    pkCols.forEach(col => {
-      if (!columns.some(c => c.COLUMN_NAME === col)) {
-        columns.unshift({
-          COLUMN_NAME: col,
-          DATA_TYPE: 'NUMBER',
-          DATA_LENGTH: 10,
-          DATA_PRECISION: 10,
-          DATA_SCALE: 0,
-          NULLABLE: 'N',
-          isPrimaryKey: true,
-          isForeignKey: false
-        });
-      }
-    });
+  let sampleRows = [];
+  if (upper === 'CANDIDATE') {
+    sampleRows = mockData.candidates.map(c => ({
+      CAND_ID: c.cand_id,
+      FNAME: c.fname || (c.fullName || '').split(' ')[0] || '',
+      MNAME: c.mname || '',
+      LNAME: c.lname || (c.fullName || '').split(' ').slice(-1)[0] || '',
+      GENDER: c.gender,
+      DOB: c.dob,
+      EDU_ID: c.edu_id || 'ED001',
+      APP_ID: c.application?.app_id || c.app_id || 'APP001'
+    }));
+  } else if (upper === 'CANDIDATE_ADDRESS') {
+    sampleRows = mockData.candidates.map(c => ({
+      CAND_ID: c.cand_id,
+      HOUSE_NO: c.address?.house_no || '',
+      CITY: c.address?.city || '',
+      STREET: c.address?.street || ''
+    }));
+  } else if (upper === 'CANDIDATE_EMAIL') {
+    sampleRows = mockData.candidates.flatMap(c =>
+      (c.emails || []).map(em => ({ CAND_ID: c.cand_id, EMAIL: em }))
+    );
+  } else if (upper === 'CANDIDATE_PHONE') {
+    sampleRows = mockData.candidates.flatMap(c =>
+      (c.phones || []).map(ph => ({ CAND_ID: c.cand_id, PHONE: ph }))
+    );
+  } else if (upper === 'JOB') {
+    sampleRows = mockData.jobs.map(j => ({
+      JOB_KEY: j.job_key,
+      JOB_ID: j.job_id,
+      JOB_STATUS: j.job_status,
+      SALARY: j.salary
+    }));
+  } else if (upper === 'JOB_DETAILS') {
+    sampleRows = mockData.jobs.map(j => ({
+      JOB_KEY: j.job_key,
+      JOB_TITLE: j.job_title,
+      DESCRIPTIVE: j.descriptive || '',
+      APP_ID: j.app_id || 'APP001'
+    }));
+  } else if (upper === 'JOB_POSTING') {
+    sampleRows = mockData.jobs.map(j => ({
+      JOB_TITLE: j.job_title,
+      CLOSING_DATE: j.closing_date || '2026-10-31',
+      POSTED_DATE: j.posted_date || '2026-08-01'
+    }));
+  } else if (upper === 'APPLICATION') {
+    sampleRows = mockData.applications.map(a => ({
+      APP_ID: a.app_id,
+      APP_STATUS: a.app_status,
+      FINAL_RESULT: a.final_result
+    }));
+  } else if (upper === 'APPLICATION_INFO') {
+    sampleRows = mockData.applications.map(a => ({
+      APP_ID: a.app_id,
+      APP_DATE: a.app_date || '2026-08-15'
+    }));
+  } else if (upper === 'INTERVIEW') {
+    sampleRows = mockData.interviews.map(i => ({
+      INT_ID: i.int_id,
+      INT_DATE: i.int_date,
+      INT_TIME: i.int_time
+    }));
+  } else if (upper === 'INTERVIEW_DETAILS') {
+    sampleRows = mockData.interviews.map(i => ({
+      INT_ID: i.int_id,
+      INT_MODE: i.int_mode,
+      LOCATION: i.location,
+      INT_STATUS: i.int_status,
+      SCORE: i.score,
+      FEEDBACK: i.feedback
+    }));
+  } else if (upper === 'EMPLOYER') {
+    sampleRows = mockData.employers.map(e => ({
+      EMP_ID: e.emp_id,
+      COMPANY_NAME: e.company_name,
+      FOUNDED_YEAR: e.founded_year
+    }));
+  } else if (upper === 'EMPLOYER_DETAILS') {
+    sampleRows = mockData.employers.map(e => ({
+      EMP_ID: e.emp_id,
+      COMPANY_MAIL: e.company_mail || '',
+      WEBSITE: e.website || 'https://enterprise.org',
+      HEADQUARTER: e.headquarter || ''
+    }));
+  } else if (upper === 'EMPLOYER_PHONE') {
+    sampleRows = mockData.employers.flatMap(e =>
+      (e.phones || []).map(ph => ({ EMP_ID: e.emp_id, PHONE_NO: ph }))
+    );
+  } else if (upper === 'SKILL') {
+    sampleRows = mockData.skills.map(s => ({
+      SKILL_ID: s.skill_id,
+      SKILL_NAME: s.skill_name
+    }));
+  } else if (upper === 'SKILL_DETAILS') {
+    sampleRows = mockData.skills.map(s => ({
+      SKILL_NAME: s.skill_name,
+      SKILL_CATEGORY: s.skill_category,
+      DESCRIPTION: s.description
+    }));
+  } else if (upper === 'APP_USERS') {
+    sampleRows = mockData.users.map(u => ({
+      USER_ID: u.user_id ?? u.USER_ID,
+      USERNAME: u.username ?? u.USERNAME,
+      FULL_NAME: u.full_name ?? u.FULL_NAME,
+      EMAIL: u.email ?? u.EMAIL,
+      ROLE: u.role ?? u.ROLE,
+      IS_ACTIVE: u.is_active ?? u.IS_ACTIVE
+    }));
+  } else {
+    sampleRows = [
+      { RECORD_ID: 1, RECORD_NAME: `${upper} Record 1`, STATUS: 'ACTIVE', CREATED_DATE: '2026-09-01' },
+      { RECORD_ID: 2, RECORD_NAME: `${upper} Record 2`, STATUS: 'ACTIVE', CREATED_DATE: '2026-09-02' }
+    ];
   }
 
-  // Constraints for this table
+  const rowKeys = sampleRows.length > 0 ? Object.keys(sampleRows[0]) : [`${upper}_ID`, 'CREATED_AT'];
+  const columns = rowKeys.map(colName => ({
+    COLUMN_NAME: colName,
+    DATA_TYPE: colName.includes('DATE') || colName === 'DOB' ? 'DATE' : (typeof sampleRows[0]?.[colName] === 'number' ? 'NUMBER' : 'VARCHAR2'),
+    DATA_LENGTH: 50,
+    DATA_PRECISION: null,
+    DATA_SCALE: null,
+    NULLABLE: pkCols.has(colName) ? 'N' : 'Y',
+    isPrimaryKey: pkCols.has(colName),
+    isForeignKey: fkCols.has(colName)
+  }));
+
   const constraints = getMockConstraints('ALL')
     .filter(c => c.tableName === upper)
     .map(c => ({
@@ -545,115 +678,36 @@ export function getMockTableDetails(tableName) {
       STATUS: c.status
     }));
 
-  // Sample rows from dataset
-  let sampleRows = [];
-  if (upper === 'CANDIDATE') {
-    sampleRows = mockData.candidates.slice(0, 10).map(c => ({
-      CAND_ID: c.cand_id,
-      NAME: c.fullName,
-      GENDER: c.gender,
-      DOB: c.dob,
-      CITY: c.address?.city || 'Delhi'
-    }));
-  } else if (upper === 'JOB') {
-    sampleRows = mockData.jobs.slice(0, 10).map(j => ({
-      JOB_KEY: j.job_key,
-      JOB_ID: j.job_id,
-      JOB_TITLE: j.job_title,
-      STATUS: j.job_status,
-      SALARY: j.salary
-    }));
-  } else if (upper === 'APPLICATION') {
-    sampleRows = mockData.applications.slice(0, 10).map(a => ({
-      APP_ID: a.app_id,
-      CANDIDATE: a.candidate?.name,
-      JOB: a.job?.job_title,
-      STATUS: a.app_status,
-      RESULT: a.final_result
-    }));
-  } else if (upper === 'EMPLOYER') {
-    sampleRows = mockData.employers.slice(0, 10).map(e => ({
-      EMP_ID: e.emp_id,
-      COMPANY_NAME: e.company_name,
-      HEADQUARTER: e.headquarter,
-      FOUNDED_YEAR: e.founded_year
-    }));
-  } else if (upper === 'SKILL') {
-    sampleRows = mockData.skills.slice(0, 10).map(s => ({
-      SKILL_ID: s.skill_id,
-      SKILL_NAME: s.skill_name,
-      CATEGORY: s.skill_category
-    }));
-  } else {
-    sampleRows = [
-      { RECORD_ID: 1, RECORD_NAME: `${upper} Record 1`, STATUS: 'ACTIVE', CREATED_DATE: '2026-09-01' },
-      { RECORD_ID: 2, RECORD_NAME: `${upper} Record 2`, STATUS: 'ACTIVE', CREATED_DATE: '2026-09-02' }
-    ];
-  }
-
   return {
     tableName: upper,
-    rowCount: tableMeta.ROW_COUNT || sampleRows.length,
+    rowCount: sampleRows.length,
     columns,
     constraints,
-    sampleRows
+    sampleRows,
+    rows: sampleRows
   };
 }
 
 // SQL Query Console executor for Cloud Fallback
 export function executeMockSql(query) {
   const q = (query || '').trim().toUpperCase();
-  if (q.includes('FROM CANDIDATE')) {
-    const rows = mockData.candidates.map(c => ({
-      CAND_ID: c.cand_id,
-      NAME: c.fullName,
-      GENDER: c.gender,
-      DOB: c.dob,
-      CITY: c.address.city,
-      STATUS: c.application.app_status
-    }));
-    return {
-      query,
-      rowCount: rows.length,
-      columns: Object.keys(rows[0] || {}),
-      rows,
-      durationMs: 12
-    };
+  const fromMatch = q.match(/FROM\s+"?(\w+)"?/);
+  if (fromMatch) {
+    const tblName = fromMatch[1];
+    const details = getMockTableDetails(tblName);
+    if (details && details.sampleRows) {
+      const rows = details.sampleRows;
+      return {
+        query,
+        rowCount: rows.length,
+        columns: Object.keys(rows[0] || {}),
+        rows,
+        executionTimeMs: 11,
+        durationMs: 11
+      };
+    }
   }
-  if (q.includes('FROM JOB')) {
-    const rows = mockData.jobs.map(j => ({
-      JOB_KEY: j.job_key,
-      JOB_ID: j.job_id,
-      JOB_TITLE: j.job_title,
-      STATUS: j.job_status,
-      SALARY: j.salary,
-      CLOSING_DATE: j.closing_date
-    }));
-    return {
-      query,
-      rowCount: rows.length,
-      columns: Object.keys(rows[0] || {}),
-      rows,
-      durationMs: 14
-    };
-  }
-  if (q.includes('FROM APPLICATION')) {
-    const rows = mockData.applications.map(a => ({
-      APP_ID: a.app_id,
-      CANDIDATE: a.candidate.name,
-      JOB: a.job.job_title,
-      STATUS: a.app_status,
-      RESULT: a.final_result
-    }));
-    return {
-      query,
-      rowCount: rows.length,
-      columns: Object.keys(rows[0] || {}),
-      rows,
-      durationMs: 10
-    };
-  }
-  // Default to tables list
+
   const tables = getMockDbaTables().data.map(t => ({
     TABLE_NAME: t.TABLE_NAME,
     NUM_ROWS: t.ROW_COUNT,
@@ -664,6 +718,7 @@ export function executeMockSql(query) {
     rowCount: tables.length,
     columns: ['TABLE_NAME', 'NUM_ROWS', 'STATUS'],
     rows: tables,
+    executionTimeMs: 8,
     durationMs: 8
   };
 }
@@ -681,6 +736,9 @@ if (typeof window !== 'undefined' && window.localStorage) {
         if (Array.isArray(parsed.interviews)) mockData.interviews = parsed.interviews;
         if (Array.isArray(parsed.employers)) mockData.employers = parsed.employers;
         if (Array.isArray(parsed.skills)) mockData.skills = parsed.skills;
+        if (Array.isArray(parsed.users)) mockData.users = parsed.users;
+        if (Array.isArray(parsed.auditLogs)) mockData.auditLogs = parsed.auditLogs;
+        normalizeMockCandidates();
       }
     }
   } catch (e) {
@@ -697,11 +755,26 @@ export function saveMockData() {
         applications: mockData.applications,
         interviews: mockData.interviews,
         employers: mockData.employers,
-        skills: mockData.skills
+        skills: mockData.skills,
+        users: mockData.users,
+        auditLogs: mockData.auditLogs
       }));
     } catch (e) {
       console.warn('[Cloud Dataset] Could not save to localStorage:', e);
     }
   }
 }
+
+export function resetMockData() {
+  mockData.candidates = JSON.parse(JSON.stringify(initialSeedSnapshot.candidates));
+  mockData.jobs = JSON.parse(JSON.stringify(initialSeedSnapshot.jobs));
+  mockData.applications = JSON.parse(JSON.stringify(initialSeedSnapshot.applications));
+  mockData.interviews = JSON.parse(JSON.stringify(initialSeedSnapshot.interviews));
+  mockData.employers = JSON.parse(JSON.stringify(initialSeedSnapshot.employers));
+  mockData.skills = JSON.parse(JSON.stringify(initialSeedSnapshot.skills));
+  mockData.users = JSON.parse(JSON.stringify(initialSeedSnapshot.users));
+  mockData.auditLogs = JSON.parse(JSON.stringify(initialSeedSnapshot.auditLogs));
+  saveMockData();
+}
+
 

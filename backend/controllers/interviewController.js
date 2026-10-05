@@ -3,7 +3,9 @@ import { logAuditEvent } from '../services/auditService.js';
 
 export async function getInterviews(req, res, next) {
   try {
-    const sql = `
+    const { search, mode } = req.query;
+
+    let sql = `
       SELECT i.int_id, 
              TO_CHAR(i.int_date, 'YYYY-MM-DD') AS int_date, 
              i.int_time,
@@ -12,10 +14,27 @@ export async function getInterviews(req, res, next) {
       FROM Interview i
       LEFT JOIN Interview_Details id ON id.int_id = i.int_id
       LEFT JOIN Candidate c ON c.int_id = i.int_id
-      ORDER BY i.int_id ASC
+      WHERE 1=1
     `;
 
-    const result = await executeQuery(sql);
+    const binds = {};
+    if (mode && mode !== 'ALL') {
+      sql += ` AND LOWER(id.int_mode) = LOWER(:mode)`;
+      binds.mode = mode;
+    }
+    if (search) {
+      sql += ` AND (
+        LOWER(i.int_id) LIKE '%' || LOWER(:search) || '%' OR
+        LOWER(c.fname || ' ' || c.lname) LIKE '%' || LOWER(:search) || '%' OR
+        LOWER(id.location) LIKE '%' || LOWER(:search) || '%' OR
+        LOWER(id.feedback) LIKE '%' || LOWER(:search) || '%'
+      )`;
+      binds.search = search;
+    }
+
+    sql += ` ORDER BY i.int_id ASC`;
+
+    const result = await executeQuery(sql, binds);
 
     const interviews = result.rows.map(r => ({
       int_id: r.INT_ID ?? r.int_id,
@@ -37,11 +56,11 @@ export async function getInterviews(req, res, next) {
 
 export async function createInterview(req, res, next) {
   try {
-    const { int_date, int_time, int_mode, location, feedback } = req.body;
+    const { int_date, int_time, int_mode, location, int_status, score, feedback, cand_id } = req.body;
 
     const maxIdResult = await executeQuery('SELECT NVL(MAX(TO_NUMBER(SUBSTR(int_id, 4))), 0) + 1 AS next_num FROM Interview');
     const nextNum = maxIdResult.rows[0]?.NEXT_NUM ?? maxIdResult.rows[0]?.next_num ?? 6;
-    const nextId = `INT00${nextNum}`;
+    const nextId = `INT${String(nextNum).padStart(3, '0')}`;
 
     await executeQuery(`
       INSERT INTO Interview (int_id, int_date, int_time)
@@ -49,14 +68,23 @@ export async function createInterview(req, res, next) {
     `, { nextId, int_date: int_date || '2026-09-15', int_time: int_time || '10:00' });
 
     await executeQuery(`
-      INSERT INTO Interview_Details (int_id, int_mode, location, int_status, feedback)
-      VALUES (:nextId, :int_mode, :location, 'Scheduled', :feedback)
+      INSERT INTO Interview_Details (int_id, int_mode, location, int_status, score, feedback)
+      VALUES (:nextId, :int_mode, :location, :int_status, :score, :feedback)
     `, {
       nextId,
       int_mode: int_mode || 'Online',
       location: location || 'Virtual',
+      int_status: int_status || 'Scheduled',
+      score: score !== undefined && score !== '' && score !== null ? parseFloat(score) : null,
       feedback: feedback || 'Technical interview scheduled'
     });
+
+    if (cand_id) {
+      await executeQuery(`UPDATE Candidate SET int_id = :nextId WHERE cand_id = :candId`, {
+        nextId,
+        candId: parseInt(cand_id, 10)
+      });
+    }
 
     await logAuditEvent({
       username: req.user?.username || 'USER',
@@ -74,7 +102,7 @@ export async function createInterview(req, res, next) {
 export async function updateInterview(req, res, next) {
   try {
     const { id } = req.params;
-    const { int_date, int_time, int_mode, location, int_status, score, feedback } = req.body;
+    const { int_date, int_time, int_mode, location, int_status, score, feedback, cand_id } = req.body;
 
     if (int_date || int_time) {
       await executeQuery(`
@@ -88,7 +116,21 @@ export async function updateInterview(req, res, next) {
       UPDATE Interview_Details
       SET int_mode = :int_mode, location = :location, int_status = :int_status, score = :score, feedback = :feedback
       WHERE int_id = :id
-    `, { int_mode: int_mode || 'Online', location: location || 'Virtual', int_status, score: score ? parseFloat(score) : null, feedback, id });
+    `, {
+      int_mode: int_mode || 'Online',
+      location: location || 'Virtual',
+      int_status: int_status || 'Scheduled',
+      score: score !== undefined && score !== '' && score !== null ? parseFloat(score) : null,
+      feedback: feedback ?? '',
+      id
+    });
+
+    if (cand_id) {
+      await executeQuery(`UPDATE Candidate SET int_id = :id WHERE cand_id = :candId`, {
+        id,
+        candId: parseInt(cand_id, 10)
+      });
+    }
 
     await logAuditEvent({
       username: req.user?.username || 'USER',

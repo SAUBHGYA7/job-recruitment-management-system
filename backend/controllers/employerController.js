@@ -14,24 +14,33 @@ export async function updateEmployer(req, res, next) {
       UPDATE Employer SET company_name = :company_name, founded_year = :founded_year WHERE emp_id = :id
     `, { company_name, founded_year: founded_year ? parseInt(founded_year, 10) : 2020, id });
 
-    await executeQuery(`
-      UPDATE Employer_Details SET company_mail = :company_mail, website = :website, headquarter = :headquarter WHERE emp_id = :id
-    `, { id, company_mail: company_mail || 'contact@company.com', website: website || 'https://company.example.com', headquarter: headquarter || 'Bengaluru' });
+    const detailsCheck = await executeQuery(`SELECT emp_id FROM Employer_Details WHERE emp_id = :id`, { id });
+    if (detailsCheck.rows.length > 0) {
+      await executeQuery(`
+        UPDATE Employer_Details SET company_mail = :company_mail, website = :website, headquarter = :headquarter WHERE emp_id = :id
+      `, { id, company_mail: company_mail || 'contact@company.com', website: website || 'https://company.example.com', headquarter: headquarter || 'Bengaluru' });
+    } else {
+      await executeQuery(`
+        INSERT INTO Employer_Details (emp_id, company_mail, website, headquarter)
+        VALUES (:id, :company_mail, :website, :headquarter)
+      `, { id, company_mail: company_mail || 'contact@company.com', website: website || 'https://company.example.com', headquarter: headquarter || 'Bengaluru' });
+    }
 
-    const phoneCheck = await executeQuery(`SELECT emp_id FROM Employer_Phone WHERE emp_id = :id`, { id });
-    if (phoneCheck.rows.length > 0) {
-      if (phone_no) {
-        await executeQuery(`UPDATE Employer_Phone SET phone_no = :phone_no WHERE emp_id = :id`, { id, phone_no });
+    if (phone_no !== undefined) {
+      await executeQuery(`DELETE FROM Employer_Phone WHERE emp_id = :id`, { id });
+      const phoneList = Array.isArray(phone_no)
+        ? phone_no
+        : String(phone_no).split(',').map(p => p.trim()).filter(Boolean);
+      for (const ph of phoneList) {
+        await executeQuery(`INSERT INTO Employer_Phone (emp_id, phone_no) VALUES (:id, :phone_no)`, { id, phone_no: ph });
       }
-    } else if (phone_no) {
-      await executeQuery(`INSERT INTO Employer_Phone (emp_id, phone_no) VALUES (:id, :phone_no)`, { id, phone_no });
     }
 
     await logAuditEvent({
       username: req.user?.username || 'USER',
       role: req.user?.role || 'USER',
       action: 'UPDATE_EMPLOYER',
-      details: `Updated Employer #${id} in Oracle Database`
+      details: `Updated Employer #${id} (${company_name}) in Oracle Database`
     });
 
     res.json({ success: true, message: `Employer #${id} updated successfully in Oracle.` });
@@ -90,7 +99,7 @@ export async function createEmployer(req, res, next) {
 
     const maxIdResult = await executeQuery('SELECT NVL(MAX(TO_NUMBER(SUBSTR(emp_id, 2))), 0) + 1 AS next_num FROM Employer');
     const nextNum = maxIdResult.rows[0]?.NEXT_NUM ?? maxIdResult.rows[0]?.next_num ?? 6;
-    const nextId = `E00${nextNum}`;
+    const nextId = `E${String(nextNum).padStart(3, '0')}`;
 
     await executeQuery(`
       INSERT INTO Employer (emp_id, company_name, founded_year)

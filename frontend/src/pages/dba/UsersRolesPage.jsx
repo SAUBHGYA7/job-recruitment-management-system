@@ -112,43 +112,51 @@ export default function UsersRolesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 text-slate-200">
-                {users.map((u) => (
-                  <tr key={u.user_id} className="hover:bg-slate-800/30">
-                    <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">#{u.user_id}</td>
-                    <td className="py-3.5 px-4 font-bold text-white font-mono">{u.username}</td>
-                    <td className="py-3.5 px-4">{u.full_name}</td>
-                    <td className="py-3.5 px-4 text-slate-400">{u.email}</td>
-                    <td className="py-3.5 px-4">
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleChangeRole(u.user_id, e.target.value)}
-                        className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-semibold text-white focus:outline-none focus:border-emerald-500"
-                      >
-                        <option value="USER">USER</option>
-                        <option value="DATABASE_DESIGNER">DATABASE_DESIGNER</option>
-                        <option value="DBA">DBA</option>
-                      </select>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <Badge variant={u.is_active ? 'success' : 'danger'}>
-                        {u.is_active ? 'ACTIVE' : 'DEACTIVATED'}
-                      </Badge>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => handleToggleStatus(u.user_id)}
-                        className={`p-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                          u.is_active
-                            ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400'
-                            : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400'
-                        }`}
-                        title={u.is_active ? 'Deactivate Account' : 'Activate Account'}
-                      >
-                        {u.is_active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {users.map((u) => {
+                  const uid = u.user_id ?? u.USER_ID;
+                  const uname = u.username ?? u.USERNAME;
+                  const fname = u.full_name ?? u.FULL_NAME;
+                  const uemail = u.email ?? u.EMAIL ?? `${uname}@jrms.org`;
+                  const urole = u.role ?? u.ROLE ?? 'USER';
+                  const active = (u.is_active !== undefined ? u.is_active : u.IS_ACTIVE) === 1;
+                  return (
+                    <tr key={uid || uname} className="hover:bg-slate-800/30">
+                      <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">#{uid}</td>
+                      <td className="py-3.5 px-4 font-bold text-white font-mono">{uname}</td>
+                      <td className="py-3.5 px-4">{fname}</td>
+                      <td className="py-3.5 px-4 text-slate-400">{uemail}</td>
+                      <td className="py-3.5 px-4">
+                        <select
+                          value={urole}
+                          onChange={(e) => handleChangeRole(uid, e.target.value)}
+                          className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-semibold text-white focus:outline-none focus:border-emerald-500"
+                        >
+                          <option value="USER">USER</option>
+                          <option value="DATABASE_DESIGNER">DATABASE_DESIGNER</option>
+                          <option value="DBA">DBA</option>
+                        </select>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Badge variant={active ? 'success' : 'danger'}>
+                          {active ? 'ACTIVE' : 'DEACTIVATED'}
+                        </Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          onClick={() => handleToggleStatus(uid)}
+                          className={`p-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                            active
+                              ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400'
+                              : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400'
+                          }`}
+                          title={active ? 'Deactivate Account' : 'Activate Account'}
+                        >
+                          {active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

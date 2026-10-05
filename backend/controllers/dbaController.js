@@ -1,4 +1,5 @@
 import { executeQuery, getDbStatus } from '../db/oracle.js';
+import { inMemoryDb } from '../db/inMemoryDb.js';
 import { logAuditEvent } from '../services/auditService.js';
 import bcrypt from 'bcryptjs';
 
@@ -21,11 +22,12 @@ export async function getDbaDashboard(req, res, next) {
       )
     `);
 
-    const totalTables = tableRes.rows[0]?.COUNT ?? 41;
-    const totalIndexes = indexRes.rows[0]?.COUNT ?? 0;
-    const totalUsers = userRes.rows[0]?.COUNT ?? 3;
-    const activeUsers = activeUserRes.rows[0]?.COUNT ?? 3;
-    const totalRows = rowCountRes.rows[0]?.TOTAL_ROWS ?? 33;
+    const liveInMemoryRows = Object.values(inMemoryDb.tables).reduce((acc, arr) => acc + (arr?.length || 0), 0);
+    const totalTables = tableRes.rows[0]?.COUNT ?? Object.keys(inMemoryDb.tables).length;
+    const totalIndexes = indexRes.rows[0]?.COUNT ?? inMemoryDb.schemaMetadata.USER_INDEXES.length;
+    const totalUsers = userRes.rows[0]?.COUNT ?? inMemoryDb.tables.APP_USERS.length;
+    const activeUsers = activeUserRes.rows[0]?.COUNT ?? inMemoryDb.tables.APP_USERS.filter(u => u.IS_ACTIVE === 1).length;
+    const totalRows = rowCountRes.rows[0]?.TOTAL_ROWS ?? liveInMemoryRows;
 
     // Real Tablespaces from Oracle
     let storageMetrics = [];
@@ -302,7 +304,33 @@ export async function getUsers(req, res, next) {
       ORDER BY user_id ASC
     `);
 
-    res.json({ success: true, total: result.rows.length, data: result.rows });
+    const users = result.rows.map(r => {
+      const userId = r.USER_ID ?? r.user_id;
+      const username = r.USERNAME ?? r.username;
+      const fullName = r.FULL_NAME ?? r.full_name;
+      const email = r.EMAIL ?? r.email;
+      const role = r.ROLE ?? r.role;
+      const isActive = r.IS_ACTIVE !== undefined ? r.IS_ACTIVE : r.is_active;
+      const createdAt = r.CREATED_AT ?? r.created_at;
+      return {
+        user_id: userId,
+        USER_ID: userId,
+        username,
+        USERNAME: username,
+        full_name: fullName,
+        FULL_NAME: fullName,
+        email,
+        EMAIL: email,
+        role,
+        ROLE: role,
+        is_active: isActive,
+        IS_ACTIVE: isActive,
+        created_at: createdAt,
+        CREATED_AT: createdAt
+      };
+    });
+
+    res.json({ success: true, total: users.length, data: users });
   } catch (error) {
     next(error);
   }
@@ -316,13 +344,17 @@ export async function createUser(req, res, next) {
       return res.status(400).json({ success: false, message: 'Username and password are required.' });
     }
 
+    const maxIdRes = await executeQuery('SELECT NVL(MAX(user_id), 0) + 1 AS next_id FROM APP_USERS');
+    const nextId = maxIdRes.rows[0]?.NEXT_ID ?? maxIdRes.rows[0]?.next_id ?? 4;
+
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
     await executeQuery(`
-      INSERT INTO APP_USERS (username, password_hash, full_name, email, role, is_active)
-      VALUES (:username, :passwordHash, :full_name, :email, :role, 1)
+      INSERT INTO APP_USERS (user_id, username, password_hash, full_name, email, role, is_active, created_at)
+      VALUES (:nextId, :username, :passwordHash, :full_name, :email, :role, 1, SYSDATE)
     `, {
+      nextId,
       username,
       passwordHash,
       full_name: full_name || username,
@@ -337,7 +369,7 @@ export async function createUser(req, res, next) {
       details: `Created new user account: ${username} with role: ${role || 'USER'}`
     });
 
-    res.status(201).json({ success: true, message: `User "${username}" created successfully.` });
+    res.status(201).json({ success: true, message: `User "${username}" created successfully.`, data: { user_id: nextId, username, role: role || 'USER' } });
   } catch (error) {
     next(error);
   }
@@ -531,7 +563,18 @@ export async function runMaintenance(req, res, next) {
       return res.json({ success: true, message: 'Integrity verified: all foreign key relations are healthy.' });
     }
 
-    res.status(400).json({ success: false, message: 'Invalid maintenance action specified.' });
+    if (action === 'RESET_SEED_DATA') {
+      inMemoryDb.resetData();
+      await logAuditEvent({
+        username: req.user?.username || 'DBA',
+        role: req.user?.role || 'DBA',
+        action: 'RESET_SEED_DATA',
+        details: 'Restored academic seed dataset across all 41 BCNF relations'
+      });
+      return res.json({ success: true, message: 'Academic seed dataset restored to clean baseline.' });
+    }
+
+    res.status(400).json({ success: true === false, message: 'Invalid maintenance action specified.' });
   } catch (error) {
     next(error);
   }

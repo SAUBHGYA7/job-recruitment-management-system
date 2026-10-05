@@ -40,7 +40,7 @@ export async function createSkill(req, res, next) {
 
     const maxIdResult = await executeQuery('SELECT NVL(MAX(TO_NUMBER(SUBSTR(skill_id, 2))), 0) + 1 AS next_num FROM Skill');
     const nextNum = maxIdResult.rows[0]?.NEXT_NUM ?? maxIdResult.rows[0]?.next_num ?? 6;
-    const nextId = `S00${nextNum}`;
+    const nextId = `S${String(nextNum).padStart(3, '0')}`;
 
     await executeQuery(`
       INSERT INTO Skill (skill_id, skill_name)
@@ -52,6 +52,14 @@ export async function createSkill(req, res, next) {
       await executeQuery(`
         INSERT INTO Skill_Details (skill_name, skill_category, description)
         VALUES (:skill_name, :skill_category, :description)
+      `, {
+        skill_name,
+        skill_category: skill_category || 'General',
+        description: description || 'Technical skill definition'
+      });
+    } else {
+      await executeQuery(`
+        UPDATE Skill_Details SET skill_category = :skill_category, description = :description WHERE skill_name = :skill_name
       `, {
         skill_name,
         skill_category: skill_category || 'General',
@@ -81,7 +89,6 @@ export async function updateSkill(req, res, next) {
       return res.status(400).json({ success: false, message: 'Skill name is required.' });
     }
 
-    // Get the old skill name to update Skill_Details
     const skillRes = await executeQuery(`SELECT skill_name FROM Skill WHERE skill_id = :id`, { id });
     const oldSkillName = skillRes.rows[0]?.SKILL_NAME || skillRes.rows[0]?.skill_name;
 
@@ -95,9 +102,17 @@ export async function updateSkill(req, res, next) {
       `, { skill_name, oldSkillName });
     }
 
-    await executeQuery(`
-      UPDATE Skill_Details SET skill_category = :skill_category, description = :description WHERE skill_name = :skill_name
-    `, { skill_name, skill_category: skill_category || 'General', description: description || '' });
+    const detailCheck = await executeQuery(`SELECT skill_name FROM Skill_Details WHERE skill_name = :skill_name`, { skill_name });
+    if (detailCheck.rows.length > 0) {
+      await executeQuery(`
+        UPDATE Skill_Details SET skill_category = :skill_category, description = :description WHERE skill_name = :skill_name
+      `, { skill_name, skill_category: skill_category || 'General', description: description || '' });
+    } else {
+      await executeQuery(`
+        INSERT INTO Skill_Details (skill_name, skill_category, description)
+        VALUES (:skill_name, :skill_category, :description)
+      `, { skill_name, skill_category: skill_category || 'General', description: description || '' });
+    }
 
     await logAuditEvent({
       username: req.user?.username || 'USER',
@@ -116,14 +131,14 @@ export async function deleteSkill(req, res, next) {
   try {
     const { id } = req.params;
 
-    // Get skill name first
-    const skillRes = await executeQuery(`SELECT skill_name FROM Skill WHERE skill_id = :id OR skill_name = :id`, { id });
+    const skillRes = await executeQuery(`SELECT skill_name FROM Skill WHERE skill_id = :id`, { id });
     const skillName = skillRes.rows[0]?.SKILL_NAME || skillRes.rows[0]?.skill_name || id;
 
     await executeQuery(`DELETE FROM Has WHERE skill_id = :id`, { id });
     await executeQuery(`DELETE FROM Requires WHERE skill_id = :id`, { id });
+    await executeQuery(`DELETE FROM Assessed_For WHERE skill_id = :id`, { id });
     await executeQuery(`DELETE FROM Skill_Details WHERE skill_name = :skillName`, { skillName });
-    await executeQuery(`DELETE FROM Skill WHERE skill_id = :id OR skill_name = :id`, { id });
+    await executeQuery(`DELETE FROM Skill WHERE skill_id = :id`, { id });
 
     await logAuditEvent({
       username: req.user?.username || 'USER',

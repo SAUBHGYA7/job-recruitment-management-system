@@ -41,8 +41,8 @@ export async function createApplication(req, res, next) {
     const { app_status, final_result, app_date, cand_id, job_key, offer_letter } = req.body;
 
     const maxIdResult = await executeQuery("SELECT NVL(MAX(TO_NUMBER(SUBSTR(app_id, 4))), 0) + 1 AS next_num FROM Application");
-    const nextNum = maxIdResult.rows[0]?.NEXT_NUM ?? maxIdResult.rows[0]?.next_num ?? 26;
-    const nextId = `APP00${nextNum}`;
+    const nextNum = maxIdResult.rows[0]?.NEXT_NUM ?? maxIdResult.rows[0]?.next_num ?? 6;
+    const nextId = `APP${String(nextNum).padStart(3, '0')}`;
     const dateVal = app_date || new Date().toISOString().split('T')[0];
     const statusVal = app_status || 'In Review';
     const resultVal = final_result || 'Pending';
@@ -66,12 +66,34 @@ export async function createApplication(req, res, next) {
         INSERT INTO Application_Date (app_date, offer_letter, final_result)
         VALUES (TO_DATE(:dateVal, 'YYYY-MM-DD'), :offer_letter, :resultVal)
       `, { dateVal, offer_letter: offer_letter || 'Standard Application', resultVal });
+    } else if (offer_letter) {
+      await executeQuery(`
+        UPDATE Application_Date SET offer_letter = :offer_letter WHERE final_result = :resultVal
+      `, { offer_letter, resultVal });
     }
 
     if (cand_id) {
       await executeQuery(`
         UPDATE Candidate SET app_id = :nextId WHERE cand_id = :candId
       `, { nextId, candId: parseInt(cand_id, 10) });
+    }
+
+    if (job_key) {
+      await executeQuery(`
+        UPDATE Job_Details SET app_id = :nextId WHERE job_key = :jobKey
+      `, { nextId, jobKey: parseInt(job_key, 10) });
+    }
+
+    if (cand_id && job_key) {
+      const cId = parseInt(cand_id, 10);
+      const jKey = parseInt(job_key, 10);
+      const appliesCheck = await executeQuery(
+        `SELECT cand_id FROM Applies WHERE cand_id = :cId AND job_key = :jKey`,
+        { cId, jKey }
+      );
+      if (appliesCheck.rows.length === 0) {
+        await executeQuery(`INSERT INTO Applies (cand_id, job_key) VALUES (:cId, :jKey)`, { cId, jKey });
+      }
     }
 
     await logAuditEvent({
@@ -94,13 +116,42 @@ export async function createApplication(req, res, next) {
 export async function updateApplicationStatus(req, res, next) {
   try {
     const { id } = req.params;
-    const { app_status, final_result } = req.body;
+    const { app_status, final_result, app_date, offer_letter, cand_id, job_key } = req.body;
 
     await executeQuery(`
       UPDATE Application
       SET app_status = :app_status, final_result = :final_result
       WHERE app_id = :id
     `, { app_status, final_result, id });
+
+    if (app_date) {
+      const infoCheck = await executeQuery(`SELECT app_id FROM Application_Info WHERE app_id = :id`, { id });
+      if (infoCheck.rows.length > 0) {
+        await executeQuery(`UPDATE Application_Info SET app_date = TO_DATE(:app_date, 'YYYY-MM-DD') WHERE app_id = :id`, { app_date, id });
+      } else {
+        await executeQuery(`INSERT INTO Application_Info (app_id, app_date) VALUES (:id, TO_DATE(:app_date, 'YYYY-MM-DD'))`, { id, app_date });
+      }
+    }
+
+    if (offer_letter !== undefined && final_result) {
+      const adCheck = await executeQuery(`SELECT final_result FROM Application_Date WHERE final_result = :final_result`, { final_result });
+      if (adCheck.rows.length > 0) {
+        await executeQuery(`UPDATE Application_Date SET offer_letter = :offer_letter WHERE final_result = :final_result`, { offer_letter, final_result });
+      } else {
+        await executeQuery(`
+          INSERT INTO Application_Date (app_date, offer_letter, final_result)
+          VALUES (TO_DATE(:dateVal, 'YYYY-MM-DD'), :offer_letter, :final_result)
+        `, { dateVal: app_date || new Date().toISOString().split('T')[0], offer_letter, final_result });
+      }
+    }
+
+    if (cand_id) {
+      await executeQuery(`UPDATE Candidate SET app_id = :id WHERE cand_id = :candId`, { id, candId: parseInt(cand_id, 10) });
+    }
+
+    if (job_key) {
+      await executeQuery(`UPDATE Job_Details SET app_id = :id WHERE job_key = :jobKey`, { id, jobKey: parseInt(job_key, 10) });
+    }
 
     await logAuditEvent({
       username: req.user?.username || 'USER',

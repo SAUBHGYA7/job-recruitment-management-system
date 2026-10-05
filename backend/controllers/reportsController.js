@@ -1,27 +1,41 @@
+import { executeQuery } from '../db/oracle.js';
 import { inMemoryDb } from '../db/inMemoryDb.js';
 
 export async function getUserReports(req, res, next) {
   try {
     // 1. Applications by Status & Result
-    const appReport = inMemoryDb.tables.Application.map(a => {
-      const c = inMemoryDb.tables.Candidate.find(cand => cand.APP_ID === a.APP_ID) || {};
-      const jd = inMemoryDb.tables.Job_Details.find(j => j.APP_ID === a.APP_ID) || {};
-      return {
-        app_id: a.APP_ID,
-        candidate_name: `${c.FNAME || 'Unknown'} ${c.LNAME || ''}`,
-        job_title: jd.JOB_TITLE || 'Software Engineer',
-        app_status: a.APP_STATUS,
-        final_result: a.FINAL_RESULT
-      };
-    });
+    const appRes = await executeQuery(`
+      SELECT a.app_id, a.app_status, a.final_result,
+             c.fname || ' ' || c.lname AS candidate_name,
+             jd.job_title
+      FROM Application a
+      LEFT JOIN Candidate c ON c.app_id = a.app_id
+      LEFT JOIN Job_Details jd ON jd.app_id = a.app_id
+      ORDER BY a.app_id ASC
+    `);
+    const appReport = appRes.rows.map(a => ({
+      app_id: a.APP_ID ?? a.app_id,
+      candidate_name: (a.CANDIDATE_NAME ?? a.candidate_name ?? 'Unknown Candidate').trim(),
+      job_title: a.JOB_TITLE ?? a.job_title ?? 'General Role',
+      app_status: a.APP_STATUS ?? a.app_status,
+      final_result: a.FINAL_RESULT ?? a.final_result
+    }));
 
     // 2. Skill Demand vs Supply
-    const skillReport = inMemoryDb.tables.Skill.map(s => {
-      const requiredInJobs = inMemoryDb.tables.Requires.filter(r => r.SKILL_ID === s.SKILL_ID).length;
-      const candidatePossessing = inMemoryDb.tables.Has.filter(h => h.SKILL_ID === s.SKILL_ID).length;
+    const skillRes = await executeQuery(`
+      SELECT s.skill_id, s.skill_name,
+             (SELECT COUNT(*) FROM Requires WHERE skill_id = s.skill_id) AS demand_count,
+             (SELECT COUNT(*) FROM Has WHERE skill_id = s.skill_id) AS candidate_count
+      FROM Skill s
+      LEFT JOIN Skill_Details sd ON sd.skill_name = s.skill_name
+      ORDER BY s.skill_id ASC
+    `);
+    const skillReport = skillRes.rows.map(s => {
+      const requiredInJobs = Number(s.DEMAND_COUNT ?? s.demand_count ?? 0);
+      const candidatePossessing = Number(s.CANDIDATE_COUNT ?? s.candidate_count ?? 0);
       return {
-        skill_id: s.SKILL_ID,
-        skill_name: s.SKILL_NAME,
+        skill_id: s.SKILL_ID ?? s.skill_id,
+        skill_name: s.SKILL_NAME ?? s.skill_name,
         jobDemandCount: requiredInJobs,
         candidateSupplyCount: candidatePossessing,
         gap: requiredInJobs - candidatePossessing
@@ -29,15 +43,18 @@ export async function getUserReports(req, res, next) {
     });
 
     // 3. Compensation by Job Title
-    const salaryReport = inMemoryDb.tables.Job.map(j => {
-      const jd = inMemoryDb.tables.Job_Details.find(d => d.JOB_KEY === j.JOB_KEY) || {};
-      return {
-        job_id: j.JOB_ID,
-        job_title: jd.JOB_TITLE || 'Position',
-        job_status: j.JOB_STATUS,
-        salary: j.SALARY
-      };
-    });
+    const jobRes = await executeQuery(`
+      SELECT j.job_key, j.job_id, j.job_status, j.salary, jd.job_title
+      FROM Job j
+      LEFT JOIN Job_Details jd ON jd.job_key = j.job_key
+      ORDER BY j.job_key ASC
+    `);
+    const salaryReport = jobRes.rows.map(j => ({
+      job_id: j.JOB_ID ?? j.job_id,
+      job_title: j.JOB_TITLE ?? j.job_title ?? 'Position',
+      job_status: j.JOB_STATUS ?? j.job_status,
+      salary: j.SALARY ?? j.salary
+    }));
 
     res.json({
       success: true,
@@ -79,14 +96,18 @@ export async function getDesignerReports(req, res, next) {
 
 export async function getDbaReports(req, res, next) {
   try {
+    const usersRes = await executeQuery(`SELECT role FROM APP_USERS`);
     const userRoleCounts = {};
-    inMemoryDb.tables.APP_USERS.forEach(u => {
-      userRoleCounts[u.ROLE] = (userRoleCounts[u.ROLE] || 0) + 1;
+    usersRes.rows.forEach(u => {
+      const role = u.ROLE ?? u.role;
+      userRoleCounts[role] = (userRoleCounts[role] || 0) + 1;
     });
 
+    const auditRes = await executeQuery(`SELECT action FROM APP_AUDIT_LOG`);
     const auditActionCounts = {};
-    inMemoryDb.tables.APP_AUDIT_LOG.forEach(l => {
-      auditActionCounts[l.ACTION] = (auditActionCounts[l.ACTION] || 0) + 1;
+    auditRes.rows.forEach(l => {
+      const action = l.ACTION ?? l.action;
+      auditActionCounts[action] = (auditActionCounts[action] || 0) + 1;
     });
 
     res.json({

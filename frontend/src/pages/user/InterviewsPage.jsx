@@ -11,6 +11,7 @@ import { validateRequired, validateDate, validateLength } from '../../utils/vali
 
 export default function InterviewsPage() {
   const [interviews, setInterviews] = useState([]);
+  const [candidatesList, setCandidatesList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [modeFilter, setModeFilter] = useState('ALL');
@@ -23,12 +24,13 @@ export default function InterviewsPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [formData, setFormData] = useState({
+    cand_id: '',
     int_date: '2026-09-20',
     int_time: '11:00',
     int_mode: 'Online',
     location: 'Google Meet (Room Alpha)',
     int_status: 'Scheduled',
-    score: null,
+    score: '',
     feedback: ''
   });
 
@@ -51,6 +53,12 @@ export default function InterviewsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    api.get('/candidates').then(res => {
+      if (res.data?.data) setCandidatesList(res.data.data);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchInterviews();
@@ -91,9 +99,10 @@ export default function InterviewsPage() {
         addToast('Interview round scheduled in Oracle DB', 'success');
         setShowAddModal(false);
         setFormData({
+          cand_id: '',
           int_date: '2026-09-20', int_time: '11:00', int_mode: 'Online',
           location: 'Google Meet (Room Alpha)', int_status: 'Scheduled',
-          score: null, feedback: ''
+          score: '', feedback: ''
         });
         setErrors({});
         fetchInterviews();
@@ -108,12 +117,13 @@ export default function InterviewsPage() {
   const handleEdit = (intV) => {
     setEditInterview(intV);
     setFormData({
+      cand_id: intV.candidate?.cand_id || intV.candidate?.id || '',
       int_date: intV.int_date || '2026-09-20',
       int_time: intV.int_time || '11:00',
       int_mode: intV.int_mode || 'Online',
       location: intV.location || 'Google Meet (Room Alpha)',
       int_status: intV.int_status || 'Scheduled',
-      score: intV.score || null,
+      score: intV.score !== null && intV.score !== undefined ? String(intV.score) : '',
       feedback: intV.feedback || ''
     });
     setErrors({});
@@ -289,6 +299,22 @@ export default function InterviewsPage() {
         subtitle="Saves to Interview and Interview_Details tables in Oracle"
       >
         <form onSubmit={handleSchedule} noValidate className="space-y-3 text-xs">
+          <div>
+            <label className="block font-medium text-slate-300 mb-1">Candidate</label>
+            <select
+              value={formData.cand_id}
+              onChange={(e) => setFormData({ ...formData, cand_id: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+            >
+              <option value="">-- Select Candidate --</option>
+              {candidatesList.map(c => (
+                <option key={c.cand_id} value={c.cand_id}>
+                  #{c.cand_id} — {c.fullName || `${c.fname} ${c.lname}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block font-medium text-slate-300 mb-1">Interview Date *</label>
@@ -404,6 +430,7 @@ export default function InterviewsPage() {
           </div>
         </div>
       </Modal>
+
       {/* Edit Interview Modal */}
       <Modal
         isOpen={showEditModal}
@@ -412,6 +439,22 @@ export default function InterviewsPage() {
         subtitle="Updates Interview and Interview_Details tables"
       >
         <form onSubmit={handleUpdate} noValidate className="space-y-3 text-xs">
+          <div>
+            <label className="block font-medium text-slate-300 mb-1">Candidate</label>
+            <select
+              value={formData.cand_id}
+              onChange={(e) => setFormData({ ...formData, cand_id: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+            >
+              <option value="">-- Select Candidate --</option>
+              {candidatesList.map(c => (
+                <option key={c.cand_id} value={c.cand_id}>
+                  #{c.cand_id} — {c.fullName || `${c.fname} ${c.lname}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block font-medium text-slate-300 mb-1">Interview Date *</label>
@@ -476,8 +519,36 @@ export default function InterviewsPage() {
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Interview Status</label>
+              <select
+                value={formData.int_status}
+                onChange={(e) => setFormData({ ...formData, int_status: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="Scheduled">Scheduled</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Evaluation Score (0-100)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.5"
+                value={formData.score}
+                onChange={(e) => setFormData({ ...formData, score: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+                placeholder="e.g. 88"
+              />
+            </div>
+          </div>
+
           <div>
-            <label className="block font-medium text-slate-300 mb-1">Instructions / Notes</label>
+            <label className="block font-medium text-slate-300 mb-1">Evaluator Feedback / Notes</label>
             <textarea
               rows={3}
               value={formData.feedback}

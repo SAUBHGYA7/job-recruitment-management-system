@@ -10,6 +10,8 @@ import { validateRequired } from '../../utils/validation';
 
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState([]);
+  const [candidatesList, setCandidatesList] = useState([]);
+  const [jobsList, setJobsList] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Update-status modal
@@ -17,6 +19,10 @@ export default function ApplicationsPage() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState('Shortlisted');
   const [newResult, setNewResult] = useState('Selected');
+  const [editDate, setEditDate] = useState('');
+  const [editOfferLetter, setEditOfferLetter] = useState('');
+  const [editCandId, setEditCandId] = useState('');
+  const [editJobKey, setEditJobKey] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 
@@ -24,6 +30,8 @@ export default function ApplicationsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
   const [addForm, setAddForm] = useState({
+    cand_id: '',
+    job_key: '',
     app_status: 'In Review',
     final_result: 'Pending',
     app_date: new Date().toISOString().split('T')[0],
@@ -52,6 +60,12 @@ export default function ApplicationsPage() {
 
   useEffect(() => {
     fetchApplications();
+    api.get('/candidates').then(res => {
+      if (res.data?.data) setCandidatesList(res.data.data);
+    }).catch(() => {});
+    api.get('/jobs').then(res => {
+      if (res.data?.data) setJobsList(res.data.data);
+    }).catch(() => {});
   }, []);
 
   /* ── Update Status ── */
@@ -59,6 +73,10 @@ export default function ApplicationsPage() {
     setSelectedApp(app);
     setNewStatus(app.app_status || 'Shortlisted');
     setNewResult(app.final_result || 'Selected');
+    setEditDate(app.app_date || new Date().toISOString().split('T')[0]);
+    setEditOfferLetter(app.offer_letter || 'Standard Application');
+    setEditCandId(app.candidate?.cand_id || app.candidate?.id || '');
+    setEditJobKey(app.job?.job_key || '');
     setFormErrors({});
     setShowStatusModal(true);
   };
@@ -76,7 +94,11 @@ export default function ApplicationsPage() {
     try {
       await api.put(`/applications/${selectedApp.app_id}/status`, {
         app_status: newStatus,
-        final_result: newResult
+        final_result: newResult,
+        app_date: editDate,
+        offer_letter: editOfferLetter,
+        cand_id: editCandId || undefined,
+        job_key: editJobKey || undefined
       });
       addToast(`Updated Application #${selectedApp.app_id} status`, 'success');
       setShowStatusModal(false);
@@ -97,7 +119,14 @@ export default function ApplicationsPage() {
       if (res.data.success) {
         addToast(`Application ${res.data.data?.app_id} created successfully`, 'success');
         setShowAddModal(false);
-        setAddForm({ app_status: 'In Review', final_result: 'Pending', app_date: new Date().toISOString().split('T')[0], offer_letter: 'Standard Application' });
+        setAddForm({
+          cand_id: '',
+          job_key: '',
+          app_status: 'In Review',
+          final_result: 'Pending',
+          app_date: new Date().toISOString().split('T')[0],
+          offer_letter: 'Standard Application'
+        });
         fetchApplications();
       }
     } catch {
@@ -221,6 +250,39 @@ export default function ApplicationsPage() {
         <form onSubmit={handleAddApplication} noValidate className="space-y-3 text-xs">
           <div className="grid grid-cols-2 gap-2">
             <div>
+              <label className="block font-medium text-slate-300 mb-1">Candidate</label>
+              <select
+                value={addForm.cand_id}
+                onChange={(e) => setAddForm({ ...addForm, cand_id: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="">-- Select Candidate --</option>
+                {candidatesList.map(c => (
+                  <option key={c.cand_id} value={c.cand_id}>
+                    #{c.cand_id} — {c.fullName || `${c.fname} ${c.lname}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Job Posting</label>
+              <select
+                value={addForm.job_key}
+                onChange={(e) => setAddForm({ ...addForm, job_key: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="">-- Select Job --</option>
+                {jobsList.map(j => (
+                  <option key={j.job_key} value={j.job_key}>
+                    {j.job_id} — {j.job_title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
               <label className="block font-medium text-slate-300 mb-1">Application Status</label>
               <select
                 value={addForm.app_status}
@@ -287,46 +349,102 @@ export default function ApplicationsPage() {
           setFormErrors({});
         }}
         title={`Update Application #${selectedApp?.app_id}`}
-        subtitle="Modifies Application and Application_Date entities"
+        subtitle="Modifies Application, Application_Info, and Application_Date entities"
       >
         <form onSubmit={handleUpdateStatus} noValidate className="space-y-3 text-xs">
-          <div>
-            <label className="block font-medium text-slate-300 mb-1">Application Status</label>
-            <select
-              value={newStatus}
-              onChange={(e) => {
-                setNewStatus(e.target.value);
-                if (formErrors.newStatus) setFormErrors({ ...formErrors, newStatus: null });
-              }}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
-            >
-              <option value="Shortlisted">Shortlisted</option>
-              <option value="In Review">In Review</option>
-              <option value="Rejected">Rejected</option>
-              <option value="On Hold">On Hold</option>
-            </select>
-            {formErrors.newStatus && (
-              <p className="text-rose-400 text-[11px] mt-1">{formErrors.newStatus}</p>
-            )}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Candidate</label>
+              <select
+                value={editCandId}
+                onChange={(e) => setEditCandId(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="">-- Keep Current --</option>
+                {candidatesList.map(c => (
+                  <option key={c.cand_id} value={c.cand_id}>
+                    #{c.cand_id} — {c.fullName || `${c.fname} ${c.lname}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Job Posting</label>
+              <select
+                value={editJobKey}
+                onChange={(e) => setEditJobKey(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="">-- Keep Current --</option>
+                {jobsList.map(j => (
+                  <option key={j.job_key} value={j.job_key}>
+                    {j.job_id} — {j.job_title}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label className="block font-medium text-slate-300 mb-1">Final Result</label>
-            <select
-              value={newResult}
-              onChange={(e) => {
-                setNewResult(e.target.value);
-                if (formErrors.newResult) setFormErrors({ ...formErrors, newResult: null });
-              }}
-              className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
-            >
-              <option value="Selected">Selected</option>
-              <option value="Pending">Pending</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-            {formErrors.newResult && (
-              <p className="text-rose-400 text-[11px] mt-1">{formErrors.newResult}</p>
-            )}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Application Status</label>
+              <select
+                value={newStatus}
+                onChange={(e) => {
+                  setNewStatus(e.target.value);
+                  if (formErrors.newStatus) setFormErrors({ ...formErrors, newStatus: null });
+                }}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="Shortlisted">Shortlisted</option>
+                <option value="In Review">In Review</option>
+                <option value="Rejected">Rejected</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+              {formErrors.newStatus && (
+                <p className="text-rose-400 text-[11px] mt-1">{formErrors.newStatus}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Final Result</label>
+              <select
+                value={newResult}
+                onChange={(e) => {
+                  setNewResult(e.target.value);
+                  if (formErrors.newResult) setFormErrors({ ...formErrors, newResult: null });
+                }}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="Selected">Selected</option>
+                <option value="Pending">Pending</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+              {formErrors.newResult && (
+                <p className="text-rose-400 text-[11px] mt-1">{formErrors.newResult}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Application Date</label>
+              <input
+                type="date"
+                value={editDate}
+                onChange={(e) => setEditDate(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block font-medium text-slate-300 mb-1">Offer Letter / Notes</label>
+              <input
+                type="text"
+                value={editOfferLetter}
+                onChange={(e) => setEditOfferLetter(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">

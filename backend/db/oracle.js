@@ -140,30 +140,158 @@ function extractTableFromDML(normalizedSql) {
   return null;
 }
 
+// ─── Helper: split comma-separated SQL expressions ignoring commas inside parens/quotes
+function splitTopLevelCommas(str) {
+  const result = [];
+  let current = '';
+  let depth = 0;
+  let inQuotes = false;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (ch === "'" && str[i - 1] !== '\\') {
+      inQuotes = !inQuotes;
+      current += ch;
+    } else if (!inQuotes && ch === '(') {
+      depth++;
+      current += ch;
+    } else if (!inQuotes && ch === ')') {
+      depth = Math.max(0, depth - 1);
+      current += ch;
+    } else if (!inQuotes && depth === 0 && ch === ',') {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim().length > 0) {
+    result.push(current.trim());
+  }
+  return result;
+}
+
+// ─── Helper: resolve bind value case-insensitively ───────────────────────────────────
+function getBindValue(binds, bindKey) {
+  if (!binds || !bindKey) return undefined;
+  if (Object.prototype.hasOwnProperty.call(binds, bindKey)) return binds[bindKey];
+  const foundKey = Object.keys(binds).find(k => k.toLowerCase() === bindKey.toLowerCase());
+  return foundKey !== undefined ? binds[foundKey] : undefined;
+}
+
+// ─── Helper: evaluate a SQL value expression (e.g., :bind, TO_DATE(:d,...), NULL, SYSDATE)
+function evalSqlExpr(expr, binds) {
+  const trimmed = (expr || '').trim();
+  if (/^NULL$/i.test(trimmed)) return null;
+  if (/^SYSDATE$/i.test(trimmed) || /^SYSTIMESTAMP$/i.test(trimmed)) {
+    return new Date().toISOString().split('T')[0];
+  }
+  // TO_DATE(:bind, 'YYYY-MM-DD') or TO_DATE('2026-01-01', ...)
+  const toDateBind = trimmed.match(/^TO_DATE\s*\(\s*:(\w+)/i);
+  if (toDateBind) {
+    const val = getBindValue(binds, toDateBind[1]);
+    return val !== undefined ? val : null;
+  }
+  const toDateLit = trimmed.match(/^TO_DATE\s*\(\s*'([^']*)'/i);
+  if (toDateLit) {
+    return toDateLit[1];
+  }
+  // Simple :bind
+  const bindMatch = trimmed.match(/^:(\w+)$/);
+  if (bindMatch) {
+    const val = getBindValue(binds, bindMatch[1]);
+    return val !== undefined ? val : null;
+  }
+  // String literal
+  if (/^'([^']*)'$/.test(trimmed)) {
+    return trimmed.slice(1, -1);
+  }
+  // Number literal
+  if (trimmed !== '' && !isNaN(Number(trimmed))) {
+    return Number(trimmed);
+  }
+  // Fallback if expression contains a bind anywhere
+  const anyBind = trimmed.match(/:(\w+)/);
+  if (anyBind) {
+    const val = getBindValue(binds, anyBind[1]);
+    return val !== undefined ? val : null;
+  }
+  return trimmed;
+}
+
+// ─── Helper: evaluate WHERE conditions against a row ─────────────────────────────────
+function rowMatchesWhere(row, whereClause, binds) {
+  if (!whereClause) return true;
+  // Split by AND (ignoring ROWNUM conditions which are handled separately)
+  const conditions = whereClause.split(/\bAND\b/i).map(c => c.trim()).filter(Boolean);
+  for (const cond of conditions) {
+    if (/ROWNUM/i.test(cond) || /^1\s*=\s*1$/.test(cond)) continue;
+
+    // Handle col IS NULL / IS NOT NULL
+    const isNullMatch = cond.match(/^(?:[\w]+\.)?["']?(\w+)["']?\s+IS\s+NULL$/i);
+    if (isNullMatch) {
+      const col = isNullMatch[1].toUpperCase();
+      if (row[col] !== null && row[col] !== undefined && row[col] !== '') return false;
+      continue;
+    }
+    const isNotNullMatch = cond.match(/^(?:[\w]+\.)?["']?(\w+)["']?\s+IS\s+NOT\s+NULL$/i);
+    if (isNotNullMatch) {
+      const col = isNotNullMatch[1].toUpperCase();
+      if (row[col] === null || row[col] === undefined || row[col] === '') return false;
+      continue;
+    }
+
+    // Handle col = expr
+    const eqMatch = cond.match(/^(?:[\w]+\.)?["']?(\w+)["']?\s*=\s*(.+)$/i);
+    if (eqMatch) {
+      const col = eqMatch[1].toUpperCase();
+      const targetVal = evalSqlExpr(eqMatch[2], binds);
+      const rowKey = Object.keys(row).find(k => k.toUpperCase() === col);
+      const actualVal = rowKey ? row[rowKey] : undefined;
+      if (actualVal === undefined || String(actualVal) !== String(targetVal)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 // ─── Fallback In-Memory Query Router simulating Oracle views and tables ───────────────
 function handleInMemoryQuery(sql, binds = {}) {
   const normalizedSql = sql.trim().toUpperCase();
 
+  // ─── Multi-statement DML handling (separated by ;) ─────────────────────────────────
+  if (sql.includes(';') && (normalizedSql.startsWith('INSERT') || normalizedSql.startsWith('UPDATE') || normalizedSql.startsWith('DELETE'))) {
+    const statements = sql.split(';').map(s => s.trim()).filter(Boolean);
+    if (statements.length > 1) {
+      let totalAffected = 0;
+      for (const stmt of statements) {
+        const result = handleInMemoryQuery(stmt, binds);
+        totalAffected += result.rowsAffected || 0;
+      }
+      return { rows: [], rowsAffected: totalAffected, isOracle: false };
+    }
+  }
+
   // ─── MAX / NVL helpers for ID generation ───────────────────────────────────────────
   if (normalizedSql.includes('NVL(MAX(') || normalizedSql.includes('NVL( MAX(')) {
-    // Detect which table we are querying
-    const fromMatch = normalizedSql.match(/FROM\s+(\w+)/);
+    const fromMatch = normalizedSql.match(/FROM\s+"?(\w+)"?/);
     const tableName = fromMatch ? fromMatch[1] : null;
     const tbl = tableName ? resolveTableName(tableName) : null;
 
     if (tbl && inMemoryDb.tables[tbl]) {
       const rows = inMemoryDb.tables[tbl];
-      // Return next_id / next_num / next_key – generic approach: find numeric primary key
+      if (rows.length === 0) {
+        return { rows: [{ NEXT_ID: 1, NEXT_NUM: 1, NEXT_KEY: 1, CNT: 0 }], rowsAffected: 0, isOracle: false };
+      }
       const sampleRow = rows[0] || {};
       const numKeys = Object.keys(sampleRow).filter(k => typeof sampleRow[k] === 'number');
       if (numKeys.length > 0) {
-        const maxVal = rows.reduce((mx, r) => Math.max(mx, r[numKeys[0]] || 0), 0);
+        const maxVal = rows.reduce((mx, r) => Math.max(mx, Number(r[numKeys[0]]) || 0), 0);
         return { rows: [{ NEXT_ID: maxVal + 1, NEXT_NUM: maxVal + 1, NEXT_KEY: maxVal + 1, CNT: rows.length }], rowsAffected: 0, isOracle: false };
       }
-      // String PKs (like APP001, INT001)
       const strKeys = Object.keys(sampleRow).filter(k => typeof sampleRow[k] === 'string');
       const maxNum = rows.reduce((mx, r) => {
-        const v = parseInt((r[strKeys[0]] || '').replace(/\D/g, ''), 10);
+        const v = parseInt(String(r[strKeys[0]] || '').replace(/\D/g, ''), 10);
         return isNaN(v) ? mx : Math.max(mx, v);
       }, 0);
       return { rows: [{ NEXT_ID: maxNum + 1, NEXT_NUM: maxNum + 1, NEXT_KEY: maxNum + 1, CNT: rows.length }], rowsAffected: 0, isOracle: false };
@@ -176,21 +304,25 @@ function handleInMemoryQuery(sql, binds = {}) {
     const fromMatch = normalizedSql.match(/FROM\s+"?(\w+)"?/);
     if (fromMatch) {
       const tbl = resolveTableName(fromMatch[1]);
-      const cnt = tbl ? inMemoryDb.tables[tbl]?.length ?? 0 : 0;
+      let rows = tbl ? (inMemoryDb.tables[tbl] || []) : [];
+      const whereMatch = sql.match(/\bWHERE\b\s+([\s\S]+?)(?:\bORDER\s+BY\b|\bGROUP\s+BY\b|$)/i);
+      if (whereMatch) {
+        rows = rows.filter(r => rowMatchesWhere(r, whereMatch[1], binds));
+      }
+      const cnt = rows.length;
       return { rows: [{ COUNT: cnt, CNT: cnt }], rowsAffected: 0, isOracle: false };
     }
   }
 
   // ─── SELECT * / SELECT ... FROM <table> ────────────────────────────────────────────
   if (normalizedSql.startsWith('SELECT') && normalizedSql.includes('FROM ')) {
-    // Oracle dictionary views handled below
     if (normalizedSql.includes('FROM USER_TABLES')) {
       const tables = Object.keys(inMemoryDb.tables).map(t => ({
         TABLE_NAME: t.toUpperCase(),
         TABLESPACE_NAME: 'USERS',
         STATUS: 'VALID',
         NUM_ROWS: inMemoryDb.tables[t].length,
-        LAST_ANALYZED: '2026-09-03 23:00:00'
+        LAST_ANALYZED: new Date().toISOString().replace('T', ' ').substring(0, 19)
       }));
       return { rows: tables, rowsAffected: 0, isOracle: false };
     }
@@ -263,87 +395,272 @@ function handleInMemoryQuery(sql, binds = {}) {
       return { rows: inMemoryDb.schemaMetadata.USER_OBJECTS, rowsAffected: 0, isOracle: false };
     }
 
-    // Generic table SELECT — return joined/enriched rows from in-memory tables
     const fromMatch = normalizedSql.match(/FROM\s+"?(\w+)"?/);
     if (fromMatch) {
       const tbl = resolveTableName(fromMatch[1]);
       if (tbl) {
-        if (tbl === 'Job') {
-          const rows = (inMemoryDb.tables.Job || []).map(j => {
-            const jd = (inMemoryDb.tables.Job_Details || []).find(d => String(d.JOB_KEY) === String(j.JOB_KEY)) || {};
-            const jp = (inMemoryDb.tables.Job_Posting || []).find(p => p.JOB_TITLE === jd.JOB_TITLE) || {};
-            return { ...j, ...jd, ...jp };
-          });
-          return { rows, rowsAffected: 0, isOracle: false };
-        }
-        if (tbl === 'Candidate') {
-          const rows = (inMemoryDb.tables.Candidate || []).map(c => {
-            const ca = (inMemoryDb.tables.Candidate_Address || []).find(a => String(a.CAND_ID) === String(c.CAND_ID)) || {};
-            const ce = (inMemoryDb.tables.Candidate_Email || []).filter(e => String(e.CAND_ID) === String(c.CAND_ID)).map(e => e.EMAIL).join(', ');
-            const cp = (inMemoryDb.tables.Candidate_Phone || []).filter(p => String(p.CAND_ID) === String(c.CAND_ID)).map(p => p.PHONE).join(', ');
-            const edu = (inMemoryDb.tables.Education || []).find(e => e.EDU_ID === c.EDU_ID) || {};
-            const app = (inMemoryDb.tables.Application || []).find(a => a.APP_ID === c.APP_ID) || {};
-            return {
-              ...c,
-              ...ca,
-              EMAILS: ce,
-              PHONES: cp,
-              CGPA: edu.CGPA,
-              SPECIALIZATION: edu.SPECIALIZATION,
-              APP_STATUS: app.APP_STATUS,
-              FINAL_RESULT: app.FINAL_RESULT
-            };
-          });
-          return { rows, rowsAffected: 0, isOracle: false };
-        }
-        if (tbl === 'Interview') {
-          const rows = (inMemoryDb.tables.Interview || []).map(i => {
-            const id = (inMemoryDb.tables.Interview_Details || []).find(d => String(d.INT_ID) === String(i.INT_ID)) || {};
-            const cand = (inMemoryDb.tables.Candidate || []).find(c => String(c.INT_ID) === String(i.INT_ID));
-            return { ...i, ...id, CAND_ID: cand?.CAND_ID, CANDIDATE_NAME: cand ? `${cand.FNAME} ${cand.LNAME}` : null };
-          });
-          return { rows, rowsAffected: 0, isOracle: false };
-        }
-        if (tbl === 'Employer') {
-          const rows = (inMemoryDb.tables.Employer || []).map(e => {
-            const ed = (inMemoryDb.tables.Employer_Details || []).find(d => String(d.EMP_ID) === String(e.EMP_ID)) || {};
-            const phones = (inMemoryDb.tables.Employer_Phone || []).filter(p => String(p.EMP_ID) === String(e.EMP_ID)).map(p => p.PHONE_NO).join(', ');
-            const rl = (inMemoryDb.tables.Recruitment_License || []).find(l => String(l.EMP_ID) === String(e.EMP_ID));
-            return { ...e, ...ed, PHONES: phones, LIC_NO: rl?.LIC_NO };
-          });
-          return { rows, rowsAffected: 0, isOracle: false };
-        }
-        if (tbl === 'Skill') {
-          const rows = (inMemoryDb.tables.Skill || []).map(s => {
-            const sd = (inMemoryDb.tables.Skill_Details || []).find(d => d.SKILL_NAME === s.SKILL_NAME) || {};
-            const reqCount = (inMemoryDb.tables.Requires || []).filter(r => String(r.SKILL_ID) === String(s.SKILL_ID)).length;
-            const hasCount = (inMemoryDb.tables.Has || []).filter(h => String(h.SKILL_ID) === String(s.SKILL_ID)).length;
-            return { ...s, ...sd, DEMAND_COUNT: reqCount, CANDIDATE_COUNT: hasCount };
-          });
-          return { rows, rowsAffected: 0, isOracle: false };
-        }
-        if (tbl === 'Application') {
-          const rows = (inMemoryDb.tables.Application || []).map(a => {
-            const ai = (inMemoryDb.tables.Application_Info || []).find(i => String(i.APP_ID) === String(a.APP_ID));
-            const ad = (inMemoryDb.tables.Application_Date || []).find(d => d.FINAL_RESULT === a.FINAL_RESULT);
-            const cand = (inMemoryDb.tables.Candidate || []).find(c => String(c.APP_ID) === String(a.APP_ID));
-            const jd = (inMemoryDb.tables.Job_Details || []).find(j => String(j.APP_ID) === String(a.APP_ID));
-            const job = jd ? (inMemoryDb.tables.Job || []).find(j => String(j.JOB_KEY) === String(jd.JOB_KEY)) : null;
-            return {
-              ...a,
-              APP_DATE: ai?.APP_DATE,
-              OFFER_LETTER: ad?.OFFER_LETTER,
-              CAND_ID: cand?.CAND_ID,
-              CANDIDATE_NAME: cand ? `${cand.FNAME} ${cand.LNAME}` : null,
-              JOB_KEY: job?.JOB_KEY,
-              JOB_ID: job?.JOB_ID,
-              JOB_TITLE: jd?.JOB_TITLE
-            };
-          });
-          return { rows, rowsAffected: 0, isOracle: false };
+        const hasJoin = normalizedSql.includes('JOIN ');
+        const whereMatch = sql.match(/\bWHERE\b\s+([\s\S]+?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|$)/i);
+        const whereClause = whereMatch ? whereMatch[1] : null;
+
+        // If the query uses JOINs (controller entity queries), return enriched/joined view
+        if (hasJoin) {
+          if (tbl === 'Job') {
+            let rows = (inMemoryDb.tables.Job || []).map(j => {
+              const jd = (inMemoryDb.tables.Job_Details || []).find(d => String(d.JOB_KEY) === String(j.JOB_KEY)) || {};
+              const jp = (inMemoryDb.tables.Job_Posting || []).find(p => p.JOB_TITLE === jd.JOB_TITLE) || {};
+              const appCount = (inMemoryDb.tables.Applies || []).filter(a => String(a.JOB_KEY) === String(j.JOB_KEY)).length;
+              return { ...j, ...jd, ...jp, APPLICANT_COUNT: appCount };
+            });
+            const targetKey = binds.id ?? binds.jobKey ?? binds.JOBKEY;
+            if (targetKey !== undefined) {
+              rows = rows.filter(r => String(r.JOB_KEY) === String(targetKey));
+            }
+            if (binds.status) {
+              rows = rows.filter(r => (r.JOB_STATUS || '').toLowerCase() === String(binds.status).toLowerCase());
+            }
+            if (binds.title) {
+              const q = String(binds.title).replace(/%/g, '').toLowerCase();
+              rows = rows.filter(r =>
+                (r.JOB_TITLE || '').toLowerCase().includes(q) ||
+                (r.JOB_ID || '').toLowerCase().includes(q) ||
+                (r.DESCRIPTIVE || '').toLowerCase().includes(q)
+              );
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Candidate') {
+            let rows = (inMemoryDb.tables.Candidate || []).map(c => {
+              const ca = (inMemoryDb.tables.Candidate_Address || []).find(a => String(a.CAND_ID) === String(c.CAND_ID)) || {};
+              const ce = (inMemoryDb.tables.Candidate_Email || []).filter(e => String(e.CAND_ID) === String(c.CAND_ID)).map(e => e.EMAIL).join(', ');
+              const cp = (inMemoryDb.tables.Candidate_Phone || []).filter(p => String(p.CAND_ID) === String(c.CAND_ID)).map(p => p.PHONE).join(', ');
+              const edu = (inMemoryDb.tables.Education || []).find(e => e.EDU_ID === c.EDU_ID) || {};
+              const app = (inMemoryDb.tables.Application || []).find(a => a.APP_ID === c.APP_ID) || {};
+              return {
+                ...c,
+                ...ca,
+                EMAILS: ce,
+                PHONES: cp,
+                CGPA: edu.CGPA,
+                SPECIALIZATION: edu.SPECIALIZATION,
+                DEGREE_ID: edu.DEGREE_ID,
+                UNIVERSITY_ID: edu.UNIVERSITY_ID,
+                GRADUATION_YEAR: edu.GRADUATION_YEAR,
+                GRADE_SCALE: edu.GRADE_SCALE,
+                APP_STATUS: app.APP_STATUS,
+                FINAL_RESULT: app.FINAL_RESULT
+              };
+            });
+            const targetId = binds.id ?? binds.candId ?? binds.CANDID;
+            if (targetId !== undefined) {
+              rows = rows.filter(r => String(r.CAND_ID) === String(targetId));
+            }
+            if (binds.gender) {
+              rows = rows.filter(r => (r.GENDER || '').toLowerCase() === String(binds.gender).toLowerCase());
+            }
+            if (binds.search) {
+              const q = String(binds.search).replace(/%/g, '').toLowerCase();
+              rows = rows.filter(r =>
+                `${r.FNAME || ''} ${r.LNAME || ''}`.toLowerCase().includes(q) ||
+                (r.CITY || '').toLowerCase().includes(q) ||
+                String(r.CAND_ID || '').includes(q) ||
+                (r.SPECIALIZATION || '').toLowerCase().includes(q) ||
+                (r.EMAILS || '').toLowerCase().includes(q)
+              );
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Interview') {
+            let rows = (inMemoryDb.tables.Interview || []).map(i => {
+              const id = (inMemoryDb.tables.Interview_Details || []).find(d => String(d.INT_ID) === String(i.INT_ID)) || {};
+              const cand = (inMemoryDb.tables.Candidate || []).find(c => String(c.INT_ID) === String(i.INT_ID));
+              return { ...i, ...id, CAND_ID: cand?.CAND_ID, CANDIDATE_NAME: cand ? `${cand.FNAME} ${cand.LNAME}` : null };
+            });
+            const targetIntId = binds.intId ?? binds.INTID ?? binds.id;
+            const targetCandId = binds.candId ?? binds.CANDID;
+            if (targetCandId !== undefined || normalizedSql.includes('C.CAND_ID =')) {
+              const cid = targetCandId ?? targetIntId;
+              rows = rows.filter(r => String(r.CAND_ID) === String(cid));
+            } else if (targetIntId !== undefined) {
+              rows = rows.filter(r => String(r.INT_ID) === String(targetIntId));
+            }
+            if (binds.mode) {
+              rows = rows.filter(r => (r.INT_MODE || '').toLowerCase() === String(binds.mode).toLowerCase());
+            }
+            if (binds.search) {
+              const q = String(binds.search).replace(/%/g, '').toLowerCase();
+              rows = rows.filter(r =>
+                (r.INT_ID || '').toLowerCase().includes(q) ||
+                (r.CANDIDATE_NAME || '').toLowerCase().includes(q) ||
+                (r.LOCATION || '').toLowerCase().includes(q) ||
+                (r.FEEDBACK || '').toLowerCase().includes(q)
+              );
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Employer') {
+            let rows = (inMemoryDb.tables.Employer || []).map(e => {
+              const ed = (inMemoryDb.tables.Employer_Details || []).find(d => String(d.EMP_ID) === String(e.EMP_ID)) || {};
+              const phones = (inMemoryDb.tables.Employer_Phone || []).filter(p => String(p.EMP_ID) === String(e.EMP_ID)).map(p => p.PHONE_NO).join(', ');
+              const rl = (inMemoryDb.tables.Recruitment_License || []).find(l => String(l.EMP_ID) === String(e.EMP_ID));
+              return { ...e, ...ed, PHONES: phones, LIC_NO: rl?.LIC_NO };
+            });
+            const targetId = binds.id ?? binds.empId ?? binds.EMPID;
+            if (targetId !== undefined) {
+              rows = rows.filter(r => String(r.EMP_ID) === String(targetId));
+            }
+            if (binds.search) {
+              const q = String(binds.search).replace(/%/g, '').toLowerCase();
+              rows = rows.filter(r =>
+                (r.COMPANY_NAME || '').toLowerCase().includes(q) ||
+                (r.HEADQUARTER || '').toLowerCase().includes(q) ||
+                (r.COMPANY_MAIL || '').toLowerCase().includes(q)
+              );
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Skill') {
+            let rows = (inMemoryDb.tables.Skill || []).map(s => {
+              const sd = (inMemoryDb.tables.Skill_Details || []).find(d => d.SKILL_NAME === s.SKILL_NAME) || {};
+              const reqCount = (inMemoryDb.tables.Requires || []).filter(r => String(r.SKILL_ID) === String(s.SKILL_ID)).length;
+              const hasCount = (inMemoryDb.tables.Has || []).filter(h => String(h.SKILL_ID) === String(s.SKILL_ID)).length;
+              return { ...s, ...sd, DEMAND_COUNT: reqCount, CANDIDATE_COUNT: hasCount };
+            });
+            const targetId = binds.id ?? binds.skillId ?? binds.SKILLID;
+            if (targetId !== undefined) {
+              rows = rows.filter(r => String(r.SKILL_ID) === String(targetId));
+            }
+            if (binds.category) {
+              rows = rows.filter(r => (r.SKILL_CATEGORY || '').toLowerCase() === String(binds.category).toLowerCase());
+            }
+            if (binds.search) {
+              const q = String(binds.search).replace(/%/g, '').toLowerCase();
+              rows = rows.filter(r =>
+                (r.SKILL_NAME || '').toLowerCase().includes(q) ||
+                (r.SKILL_CATEGORY || '').toLowerCase().includes(q) ||
+                (r.DESCRIPTION || '').toLowerCase().includes(q)
+              );
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Application') {
+            let rows = (inMemoryDb.tables.Application || []).map(a => {
+              const ai = (inMemoryDb.tables.Application_Info || []).find(i => String(i.APP_ID) === String(a.APP_ID));
+              const ad = (inMemoryDb.tables.Application_Date || []).find(d => d.FINAL_RESULT === a.FINAL_RESULT);
+              const cand = (inMemoryDb.tables.Candidate || []).find(c => String(c.APP_ID) === String(a.APP_ID));
+              const jd = (inMemoryDb.tables.Job_Details || []).find(j => String(j.APP_ID) === String(a.APP_ID));
+              const job = jd ? (inMemoryDb.tables.Job || []).find(j => String(j.JOB_KEY) === String(jd.JOB_KEY)) : null;
+              return {
+                ...a,
+                APP_DATE: ai?.APP_DATE,
+                OFFER_LETTER: ad?.OFFER_LETTER,
+                CAND_ID: cand?.CAND_ID,
+                CANDIDATE_NAME: cand ? `${cand.FNAME} ${cand.LNAME}` : null,
+                JOB_KEY: job?.JOB_KEY || jd?.JOB_KEY,
+                JOB_ID: job?.JOB_ID,
+                JOB_TITLE: jd?.JOB_TITLE
+              };
+            });
+            const targetId = binds.id ?? binds.appId ?? binds.APPID;
+            if (targetId !== undefined) {
+              rows = rows.filter(r => String(r.APP_ID) === String(targetId));
+            }
+            if (binds.status) {
+              rows = rows.filter(r => (r.APP_STATUS || '').toLowerCase() === String(binds.status).toLowerCase());
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Has') {
+            let rows = (inMemoryDb.tables.Has || []).map(h => {
+              const s = (inMemoryDb.tables.Skill || []).find(sk => String(sk.SKILL_ID) === String(h.SKILL_ID)) || {};
+              const sd = (inMemoryDb.tables.Skill_Details || []).find(d => d.SKILL_NAME === s.SKILL_NAME) || {};
+              return { ...h, ...s, ...sd };
+            });
+            const targetId = binds.candId ?? binds.CANDID ?? binds.id;
+            if (targetId !== undefined) {
+              rows = rows.filter(r => String(r.CAND_ID) === String(targetId));
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Requires') {
+            let rows = (inMemoryDb.tables.Requires || []).map(r => {
+              const s = (inMemoryDb.tables.Skill || []).find(sk => String(sk.SKILL_ID) === String(r.SKILL_ID)) || {};
+              const sd = (inMemoryDb.tables.Skill_Details || []).find(d => d.SKILL_NAME === s.SKILL_NAME) || {};
+              return { ...r, ...s, ...sd };
+            });
+            const targetKey = binds.jobKey ?? binds.JOBKEY ?? binds.id;
+            if (targetKey !== undefined) {
+              rows = rows.filter(r => String(r.JOB_KEY) === String(targetKey));
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Experience_Candidate') {
+            let rows = (inMemoryDb.tables.Experience_Candidate || []).map(ec => {
+              const exp = (inMemoryDb.tables.Experience || []).find(e => String(e.EXP_ID) === String(ec.EXP_ID)) || {};
+              return { ...ec, ...exp };
+            });
+            const targetId = binds.candId ?? binds.CANDID ?? binds.id;
+            if (targetId !== undefined) {
+              rows = rows.filter(r => String(r.CAND_ID) === String(targetId));
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+
+          if (tbl === 'Applies') {
+            let rows = (inMemoryDb.tables.Applies || []).map(ap => {
+              const j = (inMemoryDb.tables.Job || []).find(jb => String(jb.JOB_KEY) === String(ap.JOB_KEY)) || {};
+              const jd = (inMemoryDb.tables.Job_Details || []).find(d => String(d.JOB_KEY) === String(ap.JOB_KEY)) || {};
+              const c = (inMemoryDb.tables.Candidate || []).find(cd => String(cd.CAND_ID) === String(ap.CAND_ID)) || {};
+              const app = (inMemoryDb.tables.Application || []).find(a => a.APP_ID === c.APP_ID) || {};
+              return {
+                ...ap,
+                ...j,
+                ...jd,
+                CAND_ID: c.CAND_ID ?? ap.CAND_ID,
+                FNAME: c.FNAME,
+                LNAME: c.LNAME,
+                GENDER: c.GENDER,
+                APP_STATUS: app.APP_STATUS,
+                FINAL_RESULT: app.FINAL_RESULT
+              };
+            });
+            const targetCandId = binds.candId ?? binds.CANDID;
+            const targetJobKey = binds.jobKey ?? binds.JOBKEY;
+            if (targetCandId !== undefined) {
+              rows = rows.filter(r => String(r.CAND_ID) === String(targetCandId));
+            } else if (targetJobKey !== undefined) {
+              rows = rows.filter(r => String(r.JOB_KEY) === String(targetJobKey));
+            } else if (binds.id !== undefined) {
+              if (normalizedSql.includes('CAND_ID')) {
+                rows = rows.filter(r => String(r.CAND_ID) === String(binds.id));
+              } else if (normalizedSql.includes('JOB_KEY')) {
+                rows = rows.filter(r => String(r.JOB_KEY) === String(binds.id));
+              }
+            }
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
         }
 
-        return { rows: inMemoryDb.tables[tbl] || [], rowsAffected: 0, isOracle: false };
+        // Raw table SELECT (no JOIN): filter by WHERE clause and ROWNUM limit
+        let rawRows = [...(inMemoryDb.tables[tbl] || [])];
+        if (whereClause) {
+          rawRows = rawRows.filter(r => rowMatchesWhere(r, whereClause, binds));
+        }
+        const rownumBind = binds.limit || binds.LIMIT;
+        const rownumLiteralMatch = whereClause ? whereClause.match(/ROWNUM\s*<=\s*(\d+)/i) : null;
+        const maxRows = rownumBind ? Number(rownumBind) : (rownumLiteralMatch ? Number(rownumLiteralMatch[1]) : null);
+        if (maxRows && !isNaN(maxRows)) {
+          rawRows = rawRows.slice(0, maxRows);
+        }
+        return { rows: rawRows, rowsAffected: 0, isOracle: false };
       }
     }
 
@@ -357,52 +674,27 @@ function handleInMemoryQuery(sql, binds = {}) {
     if (tbl && inMemoryDb.tables[tbl]) {
       const newRow = {};
 
-      // 1. Parse column names and value expressions from SQL
-      const insertMatch = sql.match(/INSERT\s+INTO\s+[\w"]+\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+?)\)/i);
+      // Parse column names and value expressions from SQL respecting nested parens (e.g. TO_DATE)
+      const insertMatch = sql.match(/INSERT\s+INTO\s+[\w"]+\s*\(([^)]+)\)\s*VALUES\s*\(([\s\S]+)\)\s*$/i);
       if (insertMatch) {
-        const cols = insertMatch[1].split(',').map(c => c.trim().toUpperCase());
-        const vals = insertMatch[2].split(',').map(v => v.trim());
+        const cols = splitTopLevelCommas(insertMatch[1]).map(c => c.replace(/["']/g, '').trim().toUpperCase());
+        const vals = splitTopLevelCommas(insertMatch[2]);
         cols.forEach((col, idx) => {
-          const valExpr = vals[idx] || '';
-          const bindMatch = valExpr.match(/:(\w+)/);
-          if (bindMatch) {
-            const bindKey = bindMatch[1];
-            const foundKey = Object.keys(binds).find(k => k.toLowerCase() === bindKey.toLowerCase());
-            newRow[col] = foundKey ? binds[foundKey] : binds[bindKey];
-          } else if (/^SYSDATE$/i.test(valExpr)) {
-            newRow[col] = new Date().toISOString().split('T')[0];
-          } else if (/^NULL$/i.test(valExpr)) {
-            newRow[col] = null;
-          } else if (/^'([^']*)'$/.test(valExpr)) {
-            newRow[col] = valExpr.slice(1, -1);
-          } else if (!isNaN(Number(valExpr)) && valExpr !== '') {
-            newRow[col] = Number(valExpr);
-          }
+          const valExpr = vals[idx] !== undefined ? vals[idx] : '';
+          newRow[col] = evalSqlExpr(valExpr, binds);
         });
-      }
-
-      // 2. Fallback: also copy all uppercase bind keys
-      for (const [k, v] of Object.entries(binds)) {
-        if (newRow[k.toUpperCase()] === undefined) {
+      } else {
+        // Fallback if no explicit column list
+        for (const [k, v] of Object.entries(binds)) {
           newRow[k.toUpperCase()] = v;
         }
       }
 
       inMemoryDb.tables[tbl].push(newRow);
       console.log(`[InMemoryDB] INSERT into ${tbl}: row added (total ${inMemoryDb.tables[tbl].length})`);
+      return { rows: [], rowsAffected: 1, isOracle: false };
     }
-    return { rows: [], rowsAffected: 1, isOracle: false };
-  }
-
-  // ─── Multi-statement INSERT handling (e.g., Candidate + Candidate_Address) ──────────
-  if (normalizedSql.startsWith('INSERT INTO') && sql.includes(';')) {
-    const statements = sql.split(';').filter(s => s.trim().toUpperCase().startsWith('INSERT INTO'));
-    let totalAffected = 0;
-    for (const stmt of statements) {
-      const result = handleInMemoryQuery(stmt.trim(), binds);
-      totalAffected += result.rowsAffected || 0;
-    }
-    return { rows: [], rowsAffected: totalAffected, isOracle: false };
+    return { rows: [], rowsAffected: 0, isOracle: false };
   }
 
   // ─── UPDATE <table> ────────────────────────────────────────────────────────────────
@@ -410,29 +702,25 @@ function handleInMemoryQuery(sql, binds = {}) {
     const tblName = extractTableFromDML(sql);
     const tbl = tblName ? resolveTableName(tblName) : null;
     if (tbl && inMemoryDb.tables[tbl]) {
-      // Parse WHERE condition from binds to find matching rows
-      // Strategy: match each bind value against any column value in the row
+      const updateMatch = sql.match(/UPDATE\s+[\w"]+\s+SET\s+([\s\S]+?)(?:\s+WHERE\s+([\s\S]+))?$/i);
+      if (!updateMatch) {
+        return { rows: [], rowsAffected: 0, isOracle: false };
+      }
+      const setClause = updateMatch[1].trim();
+      const whereClause = updateMatch[2] ? updateMatch[2].trim() : null;
+      const assignments = splitTopLevelCommas(setClause);
+
       let affectedCount = 0;
       inMemoryDb.tables[tbl] = inMemoryDb.tables[tbl].map(row => {
-        // Find primary-key-style bind (id, candId, jobKey, etc.)
-        const pkBind = Object.entries(binds).find(([k]) =>
-          k.toLowerCase().includes('id') || k.toLowerCase().includes('key') || k.toLowerCase().includes('num')
-        );
-        let rowMatch = false;
-        if (pkBind) {
-          const pkVal = String(pkBind[1]);
-          rowMatch = Object.values(row).some(v => String(v) === pkVal);
-        } else {
-          // Fallback: try to match any bind value against row values
-          const bindValues = Object.values(binds).map(v => String(v));
-          rowMatch = Object.values(row).some(v => bindValues.includes(String(v)));
-        }
-        if (rowMatch) {
+        if (rowMatchesWhere(row, whereClause, binds)) {
           affectedCount++;
           const updated = { ...row };
-          for (const [k, v] of Object.entries(binds)) {
-            if (!k.toLowerCase().includes('id') && !k.toLowerCase().includes('key') && !k.toLowerCase().includes('num')) {
-              updated[k.toUpperCase()] = v;
+          for (const assign of assignments) {
+            const eqIdx = assign.indexOf('=');
+            if (eqIdx !== -1) {
+              const colName = assign.slice(0, eqIdx).replace(/["']/g, '').trim().toUpperCase();
+              const valExpr = assign.slice(eqIdx + 1).trim();
+              updated[colName] = evalSqlExpr(valExpr, binds);
             }
           }
           return updated;
@@ -450,32 +738,20 @@ function handleInMemoryQuery(sql, binds = {}) {
     const tblName = extractTableFromDML(sql);
     const tbl = tblName ? resolveTableName(tblName) : null;
     if (tbl && inMemoryDb.tables[tbl]) {
+      const whereMatch = sql.match(/\bWHERE\b\s+([\s\S]+)$/i);
+      const whereClause = whereMatch ? whereMatch[1].trim() : null;
       const beforeLen = inMemoryDb.tables[tbl].length;
-      const bindValues = Object.values(binds).map(v => String(v));
-      inMemoryDb.tables[tbl] = inMemoryDb.tables[tbl].filter(row =>
-        !Object.values(row).some(v => bindValues.includes(String(v)))
-      );
-      const affected = beforeLen - inMemoryDb.tables[tbl].length;
 
-      // Clean up child tables to maintain referential integrity in-memory
-      const childMap = {
-        Job: ['Job_Details', 'Requires', 'Applies', 'Assessed_For'],
-        Candidate: ['Candidate_Address', 'Candidate_Email', 'Candidate_Phone', 'Applies', 'Has', 'Refers', 'Assessed_For'],
-        Interview: ['Interview_Details'],
-        Employer: ['Employer_Details', 'Employer_Phone', 'Company_Employer'],
-        Skill: ['Skill_Details', 'Requires', 'Has', 'Assessed_For'],
-        Application: ['Application_Info', 'Application_Date']
-      };
-      if (childMap[tbl]) {
-        for (const childTbl of childMap[tbl]) {
-          if (inMemoryDb.tables[childTbl]) {
-            inMemoryDb.tables[childTbl] = inMemoryDb.tables[childTbl].filter(row =>
-              !Object.values(row).some(v => bindValues.includes(String(v)))
-            );
-          }
-        }
+      if (whereClause) {
+        inMemoryDb.tables[tbl] = inMemoryDb.tables[tbl].filter(row => !rowMatchesWhere(row, whereClause, binds));
+      } else {
+        const bindValues = Object.values(binds).map(v => String(v));
+        inMemoryDb.tables[tbl] = inMemoryDb.tables[tbl].filter(row =>
+          !Object.values(row).some(v => bindValues.includes(String(v)))
+        );
       }
 
+      const affected = beforeLen - inMemoryDb.tables[tbl].length;
       console.log(`[InMemoryDB] DELETE from ${tbl}: ${affected} row(s) removed`);
       return { rows: [], rowsAffected: affected, isOracle: false };
     }
