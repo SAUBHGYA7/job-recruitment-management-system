@@ -51,7 +51,7 @@ export default function DbaTablesPage() {
   };
 
   const filteredTables = tables.filter(t =>
-    t.tableName.toLowerCase().includes(search.toLowerCase())
+    (t.tableName || t.TABLE_NAME || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (

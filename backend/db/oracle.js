@@ -240,19 +240,54 @@ function rowMatchesWhere(row, whereClause, binds) {
       continue;
     }
 
-    // Handle col = expr
-    const eqMatch = cond.match(/^(?:[\w]+\.)?["']?(\w+)["']?\s*=\s*(.+)$/i);
+    // Handle col = expr (including LOWER(col) = LOWER(:bind) or UPPER(col) = UPPER(:bind))
+    const eqMatch = cond.match(/^(?:(?:LOWER|UPPER)\s*\(\s*)?(?:[\w]+\.)?["']?(\w+)["']?\s*\)?\s*=\s*(.+)$/i);
     if (eqMatch) {
       const col = eqMatch[1].toUpperCase();
       const targetVal = evalSqlExpr(eqMatch[2], binds);
       const rowKey = Object.keys(row).find(k => k.toUpperCase() === col);
       const actualVal = rowKey ? row[rowKey] : undefined;
-      if (actualVal === undefined || String(actualVal) !== String(targetVal)) {
+      if (actualVal === undefined) return false;
+      const isCaseInsensitive = /\b(?:LOWER|UPPER)\s*\(/i.test(cond);
+      if (isCaseInsensitive) {
+        if (String(actualVal).toLowerCase() !== String(targetVal).toLowerCase()) return false;
+      } else if (String(actualVal) !== String(targetVal)) {
         return false;
       }
     }
   }
   return true;
+}
+
+// ─── Helper: strip parenthesized (SELECT ...) subqueries so top-level FROM/WHERE match outer query
+function stripSubqueries(sqlStr) {
+  let result = '';
+  let depth = 0;
+  let inQuotes = false;
+  for (let i = 0; i < sqlStr.length; i++) {
+    const ch = sqlStr[i];
+    if (ch === "'" && sqlStr[i - 1] !== '\\') {
+      inQuotes = !inQuotes;
+      if (depth === 0) result += ch;
+    } else if (!inQuotes && ch === '(') {
+      const rest = sqlStr.slice(i + 1).trimStart();
+      if (depth > 0 || /^SELECT\b/i.test(rest)) {
+        if (depth === 0) result += '(__SUBQUERY__)';
+        depth++;
+      } else {
+        result += ch;
+      }
+    } else if (!inQuotes && ch === ')') {
+      if (depth > 0) {
+        depth--;
+      } else {
+        result += ch;
+      }
+    } else if (depth === 0) {
+      result += ch;
+    }
+  }
+  return result;
 }
 
 // ─── Fallback In-Memory Query Router simulating Oracle views and tables ───────────────
@@ -272,9 +307,18 @@ function handleInMemoryQuery(sql, binds = {}) {
     }
   }
 
+  // ─── SUM(num_rows) across tables (DBA Dashboard) ───────────────────────────────────
+  if (normalizedSql.includes('SUM(NUM_ROWS)')) {
+    const total = Object.values(inMemoryDb.tables).reduce((acc, arr) => acc + (arr?.length || 0), 0);
+    return { rows: [{ TOTAL_ROWS: total }], rowsAffected: 0, isOracle: false };
+  }
+
+  const topLevelSql = stripSubqueries(sql);
+  const topLevelUpper = topLevelSql.trim().toUpperCase();
+
   // ─── MAX / NVL helpers for ID generation ───────────────────────────────────────────
-  if (normalizedSql.includes('NVL(MAX(') || normalizedSql.includes('NVL( MAX(')) {
-    const fromMatch = normalizedSql.match(/FROM\s+"?(\w+)"?/);
+  if (topLevelUpper.includes('NVL(MAX(') || topLevelUpper.includes('NVL( MAX(')) {
+    const fromMatch = topLevelUpper.match(/FROM\s+"?(\w+)"?/);
     const tableName = fromMatch ? fromMatch[1] : null;
     const tbl = tableName ? resolveTableName(tableName) : null;
 
@@ -284,28 +328,29 @@ function handleInMemoryQuery(sql, binds = {}) {
         return { rows: [{ NEXT_ID: 1, NEXT_NUM: 1, NEXT_KEY: 1, CNT: 0 }], rowsAffected: 0, isOracle: false };
       }
       const sampleRow = rows[0] || {};
-      const numKeys = Object.keys(sampleRow).filter(k => typeof sampleRow[k] === 'number');
-      if (numKeys.length > 0) {
-        const maxVal = rows.reduce((mx, r) => Math.max(mx, Number(r[numKeys[0]]) || 0), 0);
+      const pkKey = Object.keys(sampleRow)[0];
+      if (pkKey && typeof sampleRow[pkKey] === 'number') {
+        const maxVal = rows.reduce((mx, r) => Math.max(mx, Number(r[pkKey]) || 0), 0);
         return { rows: [{ NEXT_ID: maxVal + 1, NEXT_NUM: maxVal + 1, NEXT_KEY: maxVal + 1, CNT: rows.length }], rowsAffected: 0, isOracle: false };
       }
-      const strKeys = Object.keys(sampleRow).filter(k => typeof sampleRow[k] === 'string');
-      const maxNum = rows.reduce((mx, r) => {
-        const v = parseInt(String(r[strKeys[0]] || '').replace(/\D/g, ''), 10);
-        return isNaN(v) ? mx : Math.max(mx, v);
-      }, 0);
-      return { rows: [{ NEXT_ID: maxNum + 1, NEXT_NUM: maxNum + 1, NEXT_KEY: maxNum + 1, CNT: rows.length }], rowsAffected: 0, isOracle: false };
+      if (pkKey) {
+        const maxNum = rows.reduce((mx, r) => {
+          const v = parseInt(String(r[pkKey] || '').replace(/\D/g, ''), 10);
+          return isNaN(v) ? mx : Math.max(mx, v);
+        }, 0);
+        return { rows: [{ NEXT_ID: maxNum + 1, NEXT_NUM: maxNum + 1, NEXT_KEY: maxNum + 1, CNT: rows.length }], rowsAffected: 0, isOracle: false };
+      }
     }
     return { rows: [{ NEXT_ID: 1, NEXT_NUM: 1, NEXT_KEY: 1, CNT: 0 }], rowsAffected: 0, isOracle: false };
   }
 
   // ─── COUNT(*) on any regular table ─────────────────────────────────────────────────
-  if (normalizedSql.startsWith('SELECT COUNT(*)') && normalizedSql.includes('FROM ') && !normalizedSql.includes('USER_')) {
-    const fromMatch = normalizedSql.match(/FROM\s+"?(\w+)"?/);
+  if (topLevelUpper.startsWith('SELECT COUNT(*)') && topLevelUpper.includes('FROM ') && !topLevelUpper.includes('USER_')) {
+    const fromMatch = topLevelUpper.match(/FROM\s+"?(\w+)"?/);
     if (fromMatch) {
       const tbl = resolveTableName(fromMatch[1]);
       let rows = tbl ? (inMemoryDb.tables[tbl] || []) : [];
-      const whereMatch = sql.match(/\bWHERE\b\s+([\s\S]+?)(?:\bORDER\s+BY\b|\bGROUP\s+BY\b|$)/i);
+      const whereMatch = topLevelSql.match(/\bWHERE\b\s+([\s\S]+?)(?:\bORDER\s+BY\b|\bGROUP\s+BY\b|$)/i);
       if (whereMatch) {
         rows = rows.filter(r => rowMatchesWhere(r, whereMatch[1], binds));
       }
@@ -315,32 +360,65 @@ function handleInMemoryQuery(sql, binds = {}) {
   }
 
   // ─── SELECT * / SELECT ... FROM <table> ────────────────────────────────────────────
-  if (normalizedSql.startsWith('SELECT') && normalizedSql.includes('FROM ')) {
-    if (normalizedSql.includes('FROM USER_TABLES')) {
-      const tables = Object.keys(inMemoryDb.tables).map(t => ({
-        TABLE_NAME: t.toUpperCase(),
-        TABLESPACE_NAME: 'USERS',
-        STATUS: 'VALID',
-        NUM_ROWS: inMemoryDb.tables[t].length,
-        LAST_ANALYZED: new Date().toISOString().replace('T', ' ').substring(0, 19)
-      }));
+  if (topLevelUpper.startsWith('SELECT') && topLevelUpper.includes('FROM ')) {
+    if (topLevelUpper.includes('FROM USER_TABLES')) {
+      let tables = Object.keys(inMemoryDb.tables).map(t => {
+        const upper = t.toUpperCase();
+        const colCount = inMemoryDb.schemaMetadata.USER_TAB_COLUMNS.filter(c => c.TABLE_NAME === upper).length;
+        const pkObj = inMemoryDb.schemaMetadata.USER_CONSTRAINTS.find(c => c.TABLE_NAME === upper && c.CONSTRAINT_TYPE === 'P');
+        const fkCount = inMemoryDb.schemaMetadata.USER_CONSTRAINTS.filter(c => c.TABLE_NAME === upper && c.CONSTRAINT_TYPE === 'R').length;
+        return {
+          TABLE_NAME: upper,
+          TABLESPACE_NAME: 'USERS',
+          STATUS: 'VALID',
+          NUM_ROWS: inMemoryDb.tables[t].length,
+          COL_COUNT: colCount,
+          PK_NAME: pkObj ? pkObj.CONSTRAINT_NAME : 'NONE',
+          FK_COUNT: fkCount,
+          EST_ROW_LEN: colCount * 45,
+          LAST_ANALYZED: new Date().toISOString().replace('T', ' ').substring(0, 19)
+        };
+      });
+      if (binds.tableName || binds.TABLE_NAME) {
+        const target = String(binds.tableName || binds.TABLE_NAME).toUpperCase();
+        tables = tables.filter(t => t.TABLE_NAME === target);
+      }
+      if (topLevelUpper.startsWith('SELECT COUNT(*)')) {
+        return { rows: [{ COUNT: tables.length, CNT: tables.length }], rowsAffected: 0, isOracle: false };
+      }
+      tables.sort((a, b) => a.TABLE_NAME.localeCompare(b.TABLE_NAME));
       return { rows: tables, rowsAffected: 0, isOracle: false };
     }
 
-    if (normalizedSql.includes('FROM USER_TAB_COLUMNS')) {
-      let cols = inMemoryDb.schemaMetadata.USER_TAB_COLUMNS;
+    if (topLevelUpper.includes('FROM USER_TAB_COLUMNS')) {
+      let cols = [...inMemoryDb.schemaMetadata.USER_TAB_COLUMNS];
       if (binds.tableName || binds.TABLE_NAME) {
-        const target = (binds.tableName || binds.TABLE_NAME).toUpperCase();
+        const target = String(binds.tableName || binds.TABLE_NAME).toUpperCase();
         cols = cols.filter(c => c.TABLE_NAME === target);
       }
       if (binds.tName || binds.TNAME) {
-        const target = (binds.tName || binds.TNAME).toUpperCase();
+        const target = String(binds.tName || binds.TNAME).toUpperCase();
         cols = cols.filter(c => c.TABLE_NAME === target);
+      }
+      const litTableMatch = topLevelSql.match(/table_name\s*=\s*'([^']+)'/i);
+      if (litTableMatch) {
+        const target = litTableMatch[1].toUpperCase();
+        cols = cols.filter(c => c.TABLE_NAME === target);
+      }
+      if (binds.search) {
+        const q = String(binds.search).replace(/%/g, '').toLowerCase();
+        cols = cols.filter(c =>
+          (c.COLUMN_NAME || '').toLowerCase().includes(q) ||
+          (c.TABLE_NAME || '').toLowerCase().includes(q)
+        );
+      }
+      if (topLevelUpper.startsWith('SELECT COUNT(*)')) {
+        return { rows: [{ COUNT: cols.length, CNT: cols.length }], rowsAffected: 0, isOracle: false };
       }
       return { rows: cols, rowsAffected: 0, isOracle: false };
     }
 
-    if (normalizedSql.includes('FROM USER_CONSTRAINTS')) {
+    if (topLevelUpper.includes('FROM USER_CONSTRAINTS')) {
       let cons = inMemoryDb.schemaMetadata.USER_CONSTRAINTS.map(c => {
         const cols = inMemoryDb.schemaMetadata.USER_CONS_COLUMNS
           .filter(cc => cc.CONSTRAINT_NAME === c.CONSTRAINT_NAME)
@@ -351,57 +429,148 @@ function handleInMemoryQuery(sql, binds = {}) {
           ? inMemoryDb.schemaMetadata.USER_CONSTRAINTS.find(p => p.CONSTRAINT_NAME === c.R_CONSTRAINT_NAME)?.TABLE_NAME || null
           : null;
 
-        return { ...c, COLUMNS: cols.join(', '), REF_TABLE: refTable };
+        return {
+          ...c,
+          COLUMNS: cols.join(', '),
+          COLUMN_NAME: cols[0] || '',
+          ALL_COLUMNS: cols,
+          REF_TABLE: refTable
+        };
       });
 
+      if (binds.rName || binds.RNAME) {
+        const targetR = String(binds.rName || binds.RNAME).toUpperCase();
+        cons = cons.filter(c => c.CONSTRAINT_NAME === targetR);
+      }
+
       if (binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME) {
-        const target = (binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME).toUpperCase();
+        const target = String(binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME).toUpperCase();
         cons = cons.filter(c => c.TABLE_NAME === target);
       }
 
       if (binds.type || binds.TYPE) {
-        const t = (binds.type || binds.TYPE).toUpperCase();
+        const t = String(binds.type || binds.TYPE).toUpperCase();
         if (t !== 'ALL') cons = cons.filter(c => c.CONSTRAINT_TYPE === t);
-      } else if (normalizedSql.includes("CONSTRAINT_TYPE = 'P'") || normalizedSql.includes("C.CONSTRAINT_TYPE = 'P'")) {
+      } else if (topLevelUpper.includes("CONSTRAINT_TYPE = 'P'") || topLevelUpper.includes("C.CONSTRAINT_TYPE = 'P'")) {
         cons = cons.filter(c => c.CONSTRAINT_TYPE === 'P');
-      } else if (normalizedSql.includes("CONSTRAINT_TYPE = 'R'") || normalizedSql.includes("C.CONSTRAINT_TYPE = 'R'")) {
+      } else if (topLevelUpper.includes("CONSTRAINT_TYPE = 'R'") || topLevelUpper.includes("C.CONSTRAINT_TYPE = 'R'")) {
         cons = cons.filter(c => c.CONSTRAINT_TYPE === 'R');
-      } else if (normalizedSql.includes("CONSTRAINT_TYPE = 'C'") || normalizedSql.includes("C.CONSTRAINT_TYPE = 'C'")) {
+      } else if (topLevelUpper.includes("CONSTRAINT_TYPE = 'C'") || topLevelUpper.includes("C.CONSTRAINT_TYPE = 'C'")) {
         cons = cons.filter(c => c.CONSTRAINT_TYPE === 'C');
-      } else if (normalizedSql.includes("CONSTRAINT_TYPE = 'U'") || normalizedSql.includes("C.CONSTRAINT_TYPE = 'U'")) {
+      } else if (topLevelUpper.includes("CONSTRAINT_TYPE = 'U'") || topLevelUpper.includes("C.CONSTRAINT_TYPE = 'U'")) {
         cons = cons.filter(c => c.CONSTRAINT_TYPE === 'U');
       }
 
-      if (normalizedSql.includes('COUNT(*)')) {
-        return { rows: [{ COUNT: cons.length }], rowsAffected: 0, isOracle: false };
+      if (topLevelUpper.startsWith('SELECT COUNT(*)')) {
+        return { rows: [{ COUNT: cons.length, CNT: cons.length }], rowsAffected: 0, isOracle: false };
       }
+
+      // If joining user_cons_columns to get individual COLUMN_NAME rows (e.g. getTableDetails)
+      if (topLevelUpper.includes('JOIN USER_CONS_COLUMNS')) {
+        const expanded = [];
+        cons.forEach(c => {
+          (c.ALL_COLUMNS || []).forEach(colName => {
+            expanded.push({ ...c, COLUMN_NAME: colName });
+          });
+        });
+        return { rows: expanded, rowsAffected: 0, isOracle: false };
+      }
+
       return { rows: cons, rowsAffected: 0, isOracle: false };
     }
 
-    if (normalizedSql.includes('FROM USER_CONS_COLUMNS')) {
-      let consCols = inMemoryDb.schemaMetadata.USER_CONS_COLUMNS;
+    if (topLevelUpper.includes('FROM USER_CONS_COLUMNS')) {
+      let consCols = [...inMemoryDb.schemaMetadata.USER_CONS_COLUMNS];
       if (binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME) {
-        const target = (binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME).toUpperCase();
+        const target = String(binds.tableName || binds.TABLE_NAME || binds.tName || binds.TNAME).toUpperCase();
         consCols = consCols.filter(c => c.TABLE_NAME === target);
       }
       return { rows: consCols, rowsAffected: 0, isOracle: false };
     }
 
-    if (normalizedSql.includes('FROM USER_INDEXES')) {
-      return { rows: inMemoryDb.schemaMetadata.USER_INDEXES, rowsAffected: 0, isOracle: false };
+    if (topLevelUpper.includes('FROM USER_INDEXES')) {
+      const idxs = inMemoryDb.schemaMetadata.USER_INDEXES || [];
+      if (topLevelUpper.startsWith('SELECT COUNT(*)')) {
+        return { rows: [{ COUNT: idxs.length, CNT: idxs.length }], rowsAffected: 0, isOracle: false };
+      }
+      return { rows: idxs, rowsAffected: 0, isOracle: false };
     }
 
-    if (normalizedSql.includes('FROM USER_OBJECTS')) {
-      return { rows: inMemoryDb.schemaMetadata.USER_OBJECTS, rowsAffected: 0, isOracle: false };
+    if (topLevelUpper.includes('FROM USER_OBJECTS')) {
+      let objs = [...(inMemoryDb.schemaMetadata.USER_OBJECTS || [])];
+      if (binds.type || binds.TYPE) {
+        const t = String(binds.type || binds.TYPE).toUpperCase();
+        if (t !== 'ALL') objs = objs.filter(o => o.OBJECT_TYPE === t);
+      }
+      if (topLevelUpper.includes('GROUP BY OBJECT_TYPE')) {
+        const counts = {};
+        objs.forEach(o => {
+          counts[o.OBJECT_TYPE] = (counts[o.OBJECT_TYPE] || 0) + 1;
+        });
+        const grouped = Object.entries(counts)
+          .map(([OBJECT_TYPE, COUNT]) => ({ OBJECT_TYPE, COUNT }))
+          .sort((a, b) => b.COUNT - a.COUNT);
+        return { rows: grouped, rowsAffected: 0, isOracle: false };
+      }
+      return { rows: objs, rowsAffected: 0, isOracle: false };
     }
 
-    const fromMatch = normalizedSql.match(/FROM\s+"?(\w+)"?/);
+    const fromMatch = topLevelUpper.match(/FROM\s+"?(\w+)"?/);
     if (fromMatch) {
       const tbl = resolveTableName(fromMatch[1]);
       if (tbl) {
-        const hasJoin = normalizedSql.includes('JOIN ');
-        const whereMatch = sql.match(/\bWHERE\b\s+([\s\S]+?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|$)/i);
+        const hasJoin = topLevelUpper.includes('JOIN ');
+        const whereMatch = topLevelSql.match(/\bWHERE\b\s+([\s\S]+?)(?:\bGROUP\s+BY\b|\bORDER\s+BY\b|\bFETCH\s+FIRST\b|$)/i);
         const whereClause = whereMatch ? whereMatch[1] : null;
+
+        // Handle GROUP BY aggregations (UserDashboard & SQL Console)
+        if (topLevelUpper.includes('GROUP BY')) {
+          if (tbl === 'Application' && topLevelUpper.includes('APP_STATUS')) {
+            const counts = {};
+            (inMemoryDb.tables.Application || []).forEach(a => {
+              const st = a.APP_STATUS || 'Pending';
+              counts[st] = (counts[st] || 0) + 1;
+            });
+            const rows = Object.entries(counts)
+              .map(([STATUS, COUNT]) => ({ STATUS, APP_STATUS: STATUS, COUNT }))
+              .sort((a, b) => b.COUNT - a.COUNT);
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+          if (tbl === 'Job' && topLevelUpper.includes('JOB_STATUS')) {
+            const counts = {};
+            (inMemoryDb.tables.Job || []).forEach(j => {
+              const st = j.JOB_STATUS || 'Open';
+              counts[st] = (counts[st] || 0) + 1;
+            });
+            const rows = Object.entries(counts)
+              .map(([STATUS, COUNT]) => ({ STATUS, JOB_STATUS: STATUS, COUNT }))
+              .sort((a, b) => b.COUNT - a.COUNT);
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+          if (tbl === 'Interview_Details' && topLevelUpper.includes('INT_STATUS')) {
+            const counts = {};
+            (inMemoryDb.tables.Interview_Details || []).forEach(i => {
+              const st = i.INT_STATUS || 'Scheduled';
+              counts[st] = (counts[st] || 0) + 1;
+            });
+            const rows = Object.entries(counts)
+              .map(([STATUS, COUNT]) => ({ STATUS, INT_STATUS: STATUS, COUNT }))
+              .sort((a, b) => b.COUNT - a.COUNT);
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+          if (tbl === 'Requires' && topLevelUpper.includes('SKILL_NAME')) {
+            const counts = {};
+            (inMemoryDb.tables.Requires || []).forEach(r => {
+              const s = (inMemoryDb.tables.Skill || []).find(sk => String(sk.SKILL_ID) === String(r.SKILL_ID));
+              const name = s ? s.SKILL_NAME : r.SKILL_ID;
+              counts[name] = (counts[name] || 0) + 1;
+            });
+            const rows = Object.entries(counts)
+              .map(([SKILL, DEMAND]) => ({ SKILL, SKILL_NAME: SKILL, DEMAND, COUNT: DEMAND }))
+              .sort((a, b) => b.DEMAND - a.DEMAND);
+            return { rows, rowsAffected: 0, isOracle: false };
+          }
+        }
 
         // If the query uses JOINs (controller entity queries), return enriched/joined view
         if (hasJoin) {
@@ -437,9 +606,15 @@ function handleInMemoryQuery(sql, binds = {}) {
               const cp = (inMemoryDb.tables.Candidate_Phone || []).filter(p => String(p.CAND_ID) === String(c.CAND_ID)).map(p => p.PHONE).join(', ');
               const edu = (inMemoryDb.tables.Education || []).find(e => e.EDU_ID === c.EDU_ID) || {};
               const app = (inMemoryDb.tables.Application || []).find(a => a.APP_ID === c.APP_ID) || {};
+              const ap = (inMemoryDb.tables.Applies || []).find(x => String(x.CAND_ID) === String(c.CAND_ID));
+              const jdByApp = (inMemoryDb.tables.Job_Details || []).find(d => String(d.APP_ID) === String(c.APP_ID));
+              const targetJobKey = ap?.JOB_KEY ?? jdByApp?.JOB_KEY ?? 1;
+              const job = (inMemoryDb.tables.Job || []).find(j => String(j.JOB_KEY) === String(targetJobKey)) || {};
+              const jd = (inMemoryDb.tables.Job_Details || []).find(d => String(d.JOB_KEY) === String(targetJobKey)) || jdByApp || {};
               return {
                 ...c,
                 ...ca,
+                CANDIDATE_NAME: `${c.FNAME || ''} ${c.LNAME || ''}`.trim(),
                 EMAILS: ce,
                 PHONES: cp,
                 CGPA: edu.CGPA,
@@ -449,7 +624,9 @@ function handleInMemoryQuery(sql, binds = {}) {
                 GRADUATION_YEAR: edu.GRADUATION_YEAR,
                 GRADE_SCALE: edu.GRADE_SCALE,
                 APP_STATUS: app.APP_STATUS,
-                FINAL_RESULT: app.FINAL_RESULT
+                FINAL_RESULT: app.FINAL_RESULT,
+                JOB_ID: job.JOB_ID || 'J001',
+                JOB_TITLE: jd.JOB_TITLE || 'Software Engineer'
               };
             });
             const targetId = binds.id ?? binds.candId ?? binds.CANDID;
@@ -469,6 +646,10 @@ function handleInMemoryQuery(sql, binds = {}) {
                 (r.EMAILS || '').toLowerCase().includes(q)
               );
             }
+            const fetchMatch = topLevelUpper.match(/FETCH\s+FIRST\s+(\d+)\s+ROWS/i);
+            if (fetchMatch) {
+              rows = rows.slice(0, Number(fetchMatch[1]));
+            }
             return { rows, rowsAffected: 0, isOracle: false };
           }
 
@@ -480,7 +661,7 @@ function handleInMemoryQuery(sql, binds = {}) {
             });
             const targetIntId = binds.intId ?? binds.INTID ?? binds.id;
             const targetCandId = binds.candId ?? binds.CANDID;
-            if (targetCandId !== undefined || normalizedSql.includes('C.CAND_ID =')) {
+            if (targetCandId !== undefined || topLevelUpper.includes('C.CAND_ID =')) {
               const cid = targetCandId ?? targetIntId;
               rows = rows.filter(r => String(r.CAND_ID) === String(cid));
             } else if (targetIntId !== undefined) {
@@ -506,7 +687,18 @@ function handleInMemoryQuery(sql, binds = {}) {
               const ed = (inMemoryDb.tables.Employer_Details || []).find(d => String(d.EMP_ID) === String(e.EMP_ID)) || {};
               const phones = (inMemoryDb.tables.Employer_Phone || []).filter(p => String(p.EMP_ID) === String(e.EMP_ID)).map(p => p.PHONE_NO).join(', ');
               const rl = (inMemoryDb.tables.Recruitment_License || []).find(l => String(l.EMP_ID) === String(e.EMP_ID));
-              return { ...e, ...ed, PHONES: phones, LIC_NO: rl?.LIC_NO };
+              const rec = (inMemoryDb.tables.Recruitment || []).find(r => String(r.EMP_ID) === String(e.EMP_ID));
+              const ra = rec ? (inMemoryDb.tables.Recruitment_Agency || []).find(a => String(a.AGENCY_NO) === String(rec.AGENCY_NO)) : null;
+              const ce = (inMemoryDb.tables.Company_Employer || []).find(c => String(c.EMP_ID) === String(e.EMP_ID));
+              const co = ce ? (inMemoryDb.tables.Company || []).find(c => String(c.COMP_ID) === String(ce.COMP_ID)) : null;
+              return {
+                ...e,
+                ...ed,
+                PHONES: phones,
+                LIC_NO: rl?.LIC_NO || 'LIC-2026',
+                AGENCY_NAME: ra?.AGENCY_NAME || 'Direct',
+                COMP_TYPE: co?.COMP_TYPE || 'Private Enterprise'
+              };
             });
             const targetId = binds.id ?? binds.empId ?? binds.EMPID;
             if (targetId !== undefined) {
@@ -639,9 +831,9 @@ function handleInMemoryQuery(sql, binds = {}) {
             } else if (targetJobKey !== undefined) {
               rows = rows.filter(r => String(r.JOB_KEY) === String(targetJobKey));
             } else if (binds.id !== undefined) {
-              if (normalizedSql.includes('CAND_ID')) {
+              if (topLevelUpper.includes('CAND_ID')) {
                 rows = rows.filter(r => String(r.CAND_ID) === String(binds.id));
-              } else if (normalizedSql.includes('JOB_KEY')) {
+              } else if (topLevelUpper.includes('JOB_KEY')) {
                 rows = rows.filter(r => String(r.JOB_KEY) === String(binds.id));
               }
             }
@@ -649,14 +841,24 @@ function handleInMemoryQuery(sql, binds = {}) {
           }
         }
 
-        // Raw table SELECT (no JOIN): filter by WHERE clause and ROWNUM limit
+        // Raw table SELECT (no JOIN): filter by WHERE clause and ROWNUM / FETCH FIRST limit
         let rawRows = [...(inMemoryDb.tables[tbl] || [])];
         if (whereClause) {
           rawRows = rawRows.filter(r => rowMatchesWhere(r, whereClause, binds));
         }
+        if (tbl === 'APP_AUDIT_LOG' && topLevelUpper.includes('ORDER BY LOG_ID DESC')) {
+          rawRows.sort((a, b) => (Number(b.LOG_ID) || 0) - (Number(a.LOG_ID) || 0));
+        }
         const rownumBind = binds.limit || binds.LIMIT;
         const rownumLiteralMatch = whereClause ? whereClause.match(/ROWNUM\s*<=\s*(\d+)/i) : null;
-        const maxRows = rownumBind ? Number(rownumBind) : (rownumLiteralMatch ? Number(rownumLiteralMatch[1]) : null);
+        const fetchFirstMatch = topLevelUpper.match(/FETCH\s+FIRST\s+(\d+)\s+ROWS/i);
+        const maxRows = rownumBind
+          ? Number(rownumBind)
+          : rownumLiteralMatch
+          ? Number(rownumLiteralMatch[1])
+          : fetchFirstMatch
+          ? Number(fetchFirstMatch[1])
+          : null;
         if (maxRows && !isNaN(maxRows)) {
           rawRows = rawRows.slice(0, maxRows);
         }

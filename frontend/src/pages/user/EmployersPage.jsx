@@ -173,7 +173,7 @@ export default function EmployersPage() {
 
   const filtered = employers.filter(
     (e) =>
-      e.company_name.toLowerCase().includes(search.toLowerCase()) ||
+      (e.company_name || '').toLowerCase().includes(search.toLowerCase()) ||
       (e.headquarter || '').toLowerCase().includes(search.toLowerCase())
   );
 

@@ -30,8 +30,8 @@ export default function IndexesPage() {
 
   const filtered = indexes.filter(
     (idx) =>
-      idx.INDEX_NAME.toLowerCase().includes(search.toLowerCase()) ||
-      idx.TABLE_NAME.toLowerCase().includes(search.toLowerCase())
+      (idx.INDEX_NAME || idx.index_name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (idx.TABLE_NAME || idx.table_name || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (

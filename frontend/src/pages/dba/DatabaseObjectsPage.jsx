@@ -29,7 +29,7 @@ export default function DatabaseObjectsPage() {
     fetchObjects();
   }, [typeFilter]);
 
-  const filtered = objects.filter(o => o.OBJECT_NAME.toLowerCase().includes(search.toLowerCase()));
+  const filtered = objects.filter(o => (o.OBJECT_NAME || o.object_name || '').toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
