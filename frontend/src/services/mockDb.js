@@ -1,5 +1,24 @@
+import extendedData from './mockDataExtended.json';
+
 // Complete Academic Dataset for Hosted/Cloud Environment (Matching DA1/DA2 Seed Data)
 export const mockData = {
+  education: extendedData.education || [],
+  experience: extendedData.experience || [],
+  dependents: extendedData.dependents || [],
+  freshers: extendedData.freshers || [],
+  experienced: extendedData.experienced || [],
+  freelancers: extendedData.freelancers || [],
+  locations: extendedData.locations || [],
+  companies: extendedData.companies || [],
+  agencies: extendedData.agencies || [],
+  candidateSkills: extendedData.candidateSkills || [],
+  jobSkills: extendedData.jobSkills || [],
+  assessments: extendedData.assessments || [],
+  matches: extendedData.matches || [],
+  preferences: extendedData.preferences || [],
+  applies: extendedData.applies || [],
+  follows: extendedData.follows || [],
+  referrals: extendedData.referrals || [],
   candidates: [
     { cand_id: 101, fullName: 'Ram Kumar Mishra', gender: 'Male', dob: '2004-04-19', address: { house_no: '83', city: 'Jaipur', street: 'Malroad' }, phones: ['9412515249'], emails: ['ram.mishra@example.com'], education: { specialization: 'CS', cgpa: 8.4, degree: 'BTech', university: 'Anna University' }, application: { app_id: 'APP001', app_status: 'Shortlisted', final_result: 'Selected' }, skills: [{ skill_name: 'Java', pgd_level: 'Advanced', years_of_exp: 5 }, { skill_name: 'SQL', pgd_level: 'Advanced', years_of_exp: 4 }] },
     { cand_id: 102, fullName: 'Om Kumar Pandey', gender: 'Male', dob: '2001-01-20', address: { house_no: '122', city: 'Kochi', street: 'GandhiGT' }, phones: ['7084708400'], emails: ['om.pandey@example.com'], education: { specialization: 'IT', cgpa: 9.0, degree: 'BTech', university: 'Delhi University' }, application: { app_id: 'APP002', app_status: 'Shortlisted', final_result: 'Pending' }, skills: [{ skill_name: 'SQL', pgd_level: 'Intermediate', years_of_exp: 3 }] },
@@ -833,6 +852,11 @@ if (typeof window !== 'undefined' && window.localStorage) {
           mockData.skills = Array.from(savedSkillMap.values()).filter(s => !deletedMockIds.skills.has(String(s.skill_id).toUpperCase()) && !deletedMockIds.skills.has(String(s.skill_name).toUpperCase()));
         }
 
+        const extKeys = ['education', 'experience', 'dependents', 'freshers', 'experienced', 'freelancers', 'locations', 'companies', 'agencies', 'candidateSkills', 'jobSkills', 'assessments', 'matches', 'preferences', 'applies', 'follows', 'referrals'];
+        extKeys.forEach(k => {
+          if (Array.isArray(parsed[k])) mockData[k] = parsed[k];
+        });
+
         if (Array.isArray(parsed.users)) mockData.users = parsed.users;
         if (Array.isArray(parsed.auditLogs)) mockData.auditLogs = parsed.auditLogs;
         normalizeMockCandidates();
@@ -853,6 +877,23 @@ export function saveMockData() {
         interviews: mockData.interviews,
         employers: mockData.employers,
         skills: mockData.skills,
+        education: mockData.education,
+        experience: mockData.experience,
+        dependents: mockData.dependents,
+        freshers: mockData.freshers,
+        experienced: mockData.experienced,
+        freelancers: mockData.freelancers,
+        locations: mockData.locations,
+        companies: mockData.companies,
+        agencies: mockData.agencies,
+        candidateSkills: mockData.candidateSkills,
+        jobSkills: mockData.jobSkills,
+        assessments: mockData.assessments,
+        matches: mockData.matches,
+        preferences: mockData.preferences,
+        applies: mockData.applies,
+        follows: mockData.follows,
+        referrals: mockData.referrals,
         users: mockData.users,
         auditLogs: mockData.auditLogs,
         deletedIds: {
@@ -883,6 +924,10 @@ export function resetMockData() {
   mockData.interviews = JSON.parse(JSON.stringify(initialSeedSnapshot.interviews));
   mockData.employers = JSON.parse(JSON.stringify(initialSeedSnapshot.employers));
   mockData.skills = JSON.parse(JSON.stringify(initialSeedSnapshot.skills));
+  const extKeys = ['education', 'experience', 'dependents', 'freshers', 'experienced', 'freelancers', 'locations', 'companies', 'agencies', 'candidateSkills', 'jobSkills', 'assessments', 'matches', 'preferences', 'applies', 'follows', 'referrals'];
+  extKeys.forEach(k => {
+    if (initialSeedSnapshot[k]) mockData[k] = JSON.parse(JSON.stringify(initialSeedSnapshot[k]));
+  });
   mockData.users = JSON.parse(JSON.stringify(initialSeedSnapshot.users));
   mockData.auditLogs = JSON.parse(JSON.stringify(initialSeedSnapshot.auditLogs));
   saveMockData();

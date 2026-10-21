@@ -103,6 +103,131 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
       saveMockData();
       return { success: true, message: `Skill #${id} deleted from database` };
     }
+    // Extended modules DELETE handlers
+    if (cleanUrl.startsWith('/education/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.education = (mockData.education || []).filter(e => e.edu_id !== id);
+      logMockAudit('DELETE_EDUCATION', `Deleted Education #${id}`);
+      saveMockData();
+      return { success: true, message: `Education #${id} deleted from database` };
+    }
+    if (cleanUrl.startsWith('/experience/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.experience = (mockData.experience || []).filter(e => e.exp_id !== id);
+      logMockAudit('DELETE_EXPERIENCE', `Deleted Experience #${id}`);
+      saveMockData();
+      return { success: true, message: `Experience #${id} deleted from database` };
+    }
+    if (cleanUrl.startsWith('/dependents/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.dependents = (mockData.dependents || []).filter(d => d.dep_id !== id);
+      logMockAudit('DELETE_DEPENDENT', `Deleted Dependent #${id}`);
+      saveMockData();
+      return { success: true, message: `Dependent #${id} deleted from database` };
+    }
+    if (cleanUrl.startsWith('/subtypes/')) {
+      const parts = cleanUrl.split('/');
+      const type = parts[2];
+      const cid = parseInt(parts[3], 10);
+      if (type === 'fresher') mockData.freshers = (mockData.freshers || []).filter(f => f.cand_id !== cid);
+      if (type === 'experienced') mockData.experienced = (mockData.experienced || []).filter(e => e.cand_id !== cid);
+      if (type === 'freelancer') mockData.freelancers = (mockData.freelancers || []).filter(fl => fl.cand_id !== cid);
+      logMockAudit(`DELETE_${(type || '').toUpperCase()}`, `Removed candidate #${cid} from ${type}`);
+      saveMockData();
+      return { success: true, message: `${type} profile removed` };
+    }
+    if (cleanUrl.startsWith('/locations/')) {
+      const pin = parseInt(cleanUrl.split('/')[2], 10);
+      mockData.locations = (mockData.locations || []).filter(l => l.pincode !== pin);
+      logMockAudit('DELETE_LOCATION', `Deleted Location #${pin}`);
+      saveMockData();
+      return { success: true, message: `Location #${pin} deleted` };
+    }
+    if (cleanUrl.startsWith('/companies/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.companies = (mockData.companies || []).filter(c => c.comp_id !== id);
+      logMockAudit('DELETE_COMPANY', `Deleted Company #${id}`);
+      saveMockData();
+      return { success: true, message: `Company #${id} deleted` };
+    }
+    if (cleanUrl.startsWith('/agencies/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.agencies = (mockData.agencies || []).filter(a => a.agency_no !== id);
+      logMockAudit('DELETE_AGENCY', `Deleted Agency #${id}`);
+      saveMockData();
+      return { success: true, message: `Agency #${id} deleted` };
+    }
+    if (cleanUrl.startsWith('/candidate-skills/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const sid = parts[3];
+      mockData.candidateSkills = (mockData.candidateSkills || []).filter(cs => !(cs.cand_id === cid && cs.skill_id === sid));
+      logMockAudit('DELETE_CANDIDATE_SKILL', `Removed Skill #${sid} from Candidate #${cid}`);
+      saveMockData();
+      return { success: true, message: 'Candidate skill removed' };
+    }
+    if (cleanUrl.startsWith('/job-skills/')) {
+      const parts = cleanUrl.split('/');
+      const jkey = parseInt(parts[2], 10);
+      const sid = parts[3];
+      mockData.jobSkills = (mockData.jobSkills || []).filter(js => !(js.job_key === jkey && js.skill_id === sid));
+      logMockAudit('DELETE_JOB_SKILL', `Removed Skill #${sid} requirement from Job #${jkey}`);
+      saveMockData();
+      return { success: true, message: 'Job skill requirement removed' };
+    }
+    if (cleanUrl.startsWith('/assessments/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const jkey = parseInt(parts[3], 10);
+      const sid = parts[4];
+      mockData.assessments = (mockData.assessments || []).filter(a => !(a.cand_id === cid && a.job_key === jkey && a.skill_id === sid));
+      logMockAudit('DELETE_ASSESSMENT', `Removed assessment for Candidate #${cid} Job #${jkey}`);
+      saveMockData();
+      return { success: true, message: 'Assessment removed' };
+    }
+    if (cleanUrl.startsWith('/matches/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.matches = (mockData.matches || []).filter(m => m.match_id !== id);
+      logMockAudit('DELETE_MATCH', `Removed Match #${id}`);
+      saveMockData();
+      return { success: true, message: `Match #${id} removed` };
+    }
+    if (cleanUrl.startsWith('/preferences/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const pin = parseInt(parts[3], 10);
+      mockData.preferences = (mockData.preferences || []).filter(p => !(p.cand_id === cid && p.pincode === pin));
+      logMockAudit('DELETE_PREFERENCE', `Removed preference for Candidate #${cid}`);
+      saveMockData();
+      return { success: true, message: 'Preference removed' };
+    }
+    if (cleanUrl.startsWith('/applies/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const jkey = parseInt(parts[3], 10);
+      mockData.applies = (mockData.applies || []).filter(a => !(a.cand_id === cid && a.job_key === jkey));
+      logMockAudit('DELETE_APPLIES', `Removed Applies relation for Candidate #${cid} Job #${jkey}`);
+      saveMockData();
+      return { success: true, message: 'Applies relation removed' };
+    }
+    if (cleanUrl.startsWith('/follows/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const eid = parts[3];
+      mockData.follows = (mockData.follows || []).filter(f => !(f.cand_id === cid && f.emp_id === eid));
+      logMockAudit('DELETE_FOLLOWS', `Candidate #${cid} unfollowed Employer #${eid}`);
+      saveMockData();
+      return { success: true, message: 'Follow relation removed' };
+    }
+    if (cleanUrl.startsWith('/referrals/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const dt = parts[3];
+      mockData.referrals = (mockData.referrals || []).filter(r => !(r.cand_id === cid && r.referral_date === dt));
+      logMockAudit('DELETE_REFERRAL', `Deleted referral for Candidate #${cid}`);
+      saveMockData();
+      return { success: true, message: 'Referral removed' };
+    }
     return { success: true, message: 'Record deleted successfully' };
   }
 
@@ -291,6 +416,145 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
       logMockAudit('TOGGLE_USER_STATUS', `Set user #${id} active status to ${newStatus}`, 'DBA', 'dba_admin');
       saveMockData();
       return { success: true, message: `User account ${newStatus === 1 ? 'activated' : 'deactivated'}.` };
+    }
+
+    // Extended modules PUT handlers
+    if (cleanUrl.startsWith('/education/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.education = (mockData.education || []).map(e => {
+        if (e.edu_id === id) {
+          return {
+            ...e,
+            degree: body.degree !== undefined ? body.degree : e.degree,
+            cgpa: body.cgpa !== undefined ? Number(body.cgpa) : e.cgpa,
+            specialization: body.specialization !== undefined ? body.specialization : e.specialization,
+            university: body.university !== undefined ? body.university : e.university,
+            start_year: body.start_year !== undefined ? Number(body.start_year) : e.start_year,
+            end_year: body.end_year !== undefined ? Number(body.end_year) : e.end_year,
+            cand_id: body.cand_id !== undefined ? Number(body.cand_id) : e.cand_id
+          };
+        }
+        return e;
+      });
+      logMockAudit('UPDATE_EDUCATION', `Updated Education #${id}`);
+      saveMockData();
+      return { success: true, message: `Education #${id} updated successfully` };
+    }
+    if (cleanUrl.startsWith('/experience/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.experience = (mockData.experience || []).map(e => {
+        if (e.exp_id === id) {
+          return {
+            ...e,
+            comp_name: body.comp_name !== undefined ? body.comp_name : e.comp_name,
+            job_title: body.job_title !== undefined ? body.job_title : e.job_title,
+            start_date: body.start_date !== undefined ? body.start_date : e.start_date,
+            end_date: body.end_date !== undefined ? body.end_date : e.end_date,
+            cand_id: body.cand_id !== undefined ? Number(body.cand_id) : e.cand_id
+          };
+        }
+        return e;
+      });
+      logMockAudit('UPDATE_EXPERIENCE', `Updated Experience #${id}`);
+      saveMockData();
+      return { success: true, message: `Experience #${id} updated successfully` };
+    }
+    if (cleanUrl.startsWith('/dependents/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.dependents = (mockData.dependents || []).map(d => {
+        if (d.dep_id === id) {
+          return {
+            ...d,
+            dob: body.dob !== undefined ? body.dob : d.dob,
+            relationship: body.relationship !== undefined ? body.relationship : d.relationship,
+            cand_id: body.cand_id !== undefined ? Number(body.cand_id) : d.cand_id
+          };
+        }
+        return d;
+      });
+      logMockAudit('UPDATE_DEPENDENT', `Updated Dependent #${id}`);
+      saveMockData();
+      return { success: true, message: `Dependent #${id} updated successfully` };
+    }
+    if (cleanUrl.startsWith('/subtypes/')) {
+      const parts = cleanUrl.split('/');
+      const type = parts[2];
+      const cid = parseInt(parts[3], 10);
+      if (type === 'fresher') {
+        mockData.freshers = (mockData.freshers || []).map(f => f.cand_id === cid ? { ...f, grad_year: Number(body.grad_year || f.grad_year), internship_count: Number(body.internship_count || f.internship_count) } : f);
+      } else if (type === 'experienced') {
+        mockData.experienced = (mockData.experienced || []).map(e => e.cand_id === cid ? { ...e, total_exp: Number(body.total_exp || e.total_exp), current_company: body.current_company || e.current_company } : e);
+      } else if (type === 'freelancer') {
+        mockData.freelancers = (mockData.freelancers || []).map(fl => fl.cand_id === cid ? { ...fl, hourly_rate: Number(body.hourly_rate || fl.hourly_rate), portfolio_url: body.portfolio_url || fl.portfolio_url } : fl);
+      }
+      logMockAudit(`UPDATE_${(type || '').toUpperCase()}`, `Updated candidate #${cid} in ${type}`);
+      saveMockData();
+      return { success: true, message: `${type} profile updated` };
+    }
+    if (cleanUrl.startsWith('/locations/')) {
+      const pin = parseInt(cleanUrl.split('/')[2], 10);
+      mockData.locations = (mockData.locations || []).map(l => l.pincode === pin ? { ...l, city: body.city || l.city, state: body.state || l.state, country: body.country || l.country } : l);
+      logMockAudit('UPDATE_LOCATION', `Updated Location #${pin}`);
+      saveMockData();
+      return { success: true, message: `Location #${pin} updated` };
+    }
+    if (cleanUrl.startsWith('/companies/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.companies = (mockData.companies || []).map(c => c.comp_id === id ? { ...c, comp_type: body.comp_type || c.comp_type, emp_count: Number(body.emp_count || c.emp_count), emp_id: body.emp_id || c.emp_id } : c);
+      logMockAudit('UPDATE_COMPANY', `Updated Company #${id}`);
+      saveMockData();
+      return { success: true, message: `Company #${id} updated` };
+    }
+    if (cleanUrl.startsWith('/agencies/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.agencies = (mockData.agencies || []).map(a => a.agency_no === id ? { ...a, agency_name: body.agency_name || a.agency_name, emp_id: body.emp_id || a.emp_id, lic_no: body.lic_no || a.lic_no } : a);
+      logMockAudit('UPDATE_AGENCY', `Updated Agency #${id}`);
+      saveMockData();
+      return { success: true, message: `Agency #${id} updated` };
+    }
+    if (cleanUrl.startsWith('/candidate-skills/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const sid = parts[3];
+      mockData.candidateSkills = (mockData.candidateSkills || []).map(cs => (cs.cand_id === cid && cs.skill_id === sid) ? { ...cs, pgd_level: body.pgd_level || cs.pgd_level, years_of_exp: Number(body.years_of_exp || cs.years_of_exp) } : cs);
+      logMockAudit('UPDATE_CANDIDATE_SKILL', `Updated Skill #${sid} for Candidate #${cid}`);
+      saveMockData();
+      return { success: true, message: 'Candidate skill updated' };
+    }
+    if (cleanUrl.startsWith('/job-skills/')) {
+      const parts = cleanUrl.split('/');
+      const jkey = parseInt(parts[2], 10);
+      const sid = parts[3];
+      mockData.jobSkills = (mockData.jobSkills || []).map(js => (js.job_key === jkey && js.skill_id === sid) ? { ...js, is_mandatory: body.is_mandatory || js.is_mandatory, min_years: Number(body.min_years || js.min_years) } : js);
+      logMockAudit('UPDATE_JOB_SKILL', `Updated Skill requirement #${sid} for Job #${jkey}`);
+      saveMockData();
+      return { success: true, message: 'Job skill requirement updated' };
+    }
+    if (cleanUrl.startsWith('/assessments/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const jkey = parseInt(parts[3], 10);
+      const sid = parts[4];
+      mockData.assessments = (mockData.assessments || []).map(a => (a.cand_id === cid && a.job_key === jkey && a.skill_id === sid) ? { ...a, match_pct: Number(body.match_pct || a.match_pct), assessment_score: Number(body.assessment_score || a.assessment_score), assessment_date: body.assessment_date || a.assessment_date } : a);
+      logMockAudit('UPDATE_ASSESSMENT', `Updated assessment for Candidate #${cid} Job #${jkey}`);
+      saveMockData();
+      return { success: true, message: 'Assessment updated' };
+    }
+    if (cleanUrl.startsWith('/matches/')) {
+      const id = cleanUrl.split('/')[2];
+      mockData.matches = (mockData.matches || []).map(m => m.match_id === id ? { ...m, cand_id: Number(body.cand_id || m.cand_id), job_key: Number(body.job_key || m.job_key), match_date: body.match_date || m.match_date } : m);
+      logMockAudit('UPDATE_MATCH', `Updated Match #${id}`);
+      saveMockData();
+      return { success: true, message: `Match #${id} updated` };
+    }
+    if (cleanUrl.startsWith('/referrals/')) {
+      const parts = cleanUrl.split('/');
+      const cid = parseInt(parts[2], 10);
+      const dt = parts[3];
+      mockData.referrals = (mockData.referrals || []).map(r => (r.cand_id === cid && r.referral_date === dt) ? { ...r, referral_status: body.referral_status || r.referral_status } : r);
+      logMockAudit('UPDATE_REFERRAL', `Updated referral status for Candidate #${cid}`);
+      saveMockData();
+      return { success: true, message: 'Referral updated' };
     }
 
     return { success: true, message: 'Updated successfully' };
@@ -484,10 +748,504 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
     if (cleanUrl === '/dba/execute-sql') {
       return { success: true, data: executeMockSql(body.query) };
     }
+
+    // Extended modules POST handlers
+    if (cleanUrl === '/education') {
+      const nextNum = (mockData.education || []).reduce((mx, e) => {
+        const v = parseInt((e.edu_id || '').replace(/\D/g, ''), 10);
+        return isNaN(v) ? mx : Math.max(mx, v);
+      }, 0) + 1;
+      const nextEduId = `ED${String(nextNum).padStart(3, '0')}`;
+      const cand = mockData.candidates.find(c => String(c.cand_id) === String(body.cand_id));
+      const newEdu = {
+        edu_id: nextEduId,
+        cgpa: body.cgpa ? Number(body.cgpa) : 8.5,
+        specialization: body.specialization || 'Computer Science',
+        degree: body.degree || 'BTech',
+        end_year: body.end_year ? Number(body.end_year) : 2024,
+        university: body.university || 'Anna University',
+        start_year: body.start_year ? Number(body.start_year) : 2020,
+        cand_id: body.cand_id ? Number(body.cand_id) : 101,
+        candidate_name: cand ? cand.fullName : `Candidate #${body.cand_id || 101}`
+      };
+      mockData.education.push(newEdu);
+      logMockAudit('CREATE_EDUCATION', `Created Education #${nextEduId}`);
+      saveMockData();
+      return { success: true, message: `Education #${nextEduId} created`, data: newEdu };
+    }
+
+    if (cleanUrl === '/experience') {
+      const nextNum = (mockData.experience || []).reduce((mx, e) => {
+        const v = parseInt((e.exp_id || '').replace(/\D/g, ''), 10);
+        return isNaN(v) ? mx : Math.max(mx, v);
+      }, 0) + 1;
+      const nextExpId = `EXP${String(nextNum).padStart(3, '0')}`;
+      const cand = mockData.candidates.find(c => String(c.cand_id) === String(body.cand_id));
+      const newExp = {
+        exp_id: nextExpId,
+        job_title: body.job_title || 'Software Engineer',
+        start_date: body.start_date || '2021-01-01',
+        end_date: body.end_date || '2023-01-01',
+        comp_name: body.comp_name || 'Tech Corp',
+        cand_id: body.cand_id ? Number(body.cand_id) : 101,
+        candidate_name: cand ? cand.fullName : `Candidate #${body.cand_id || 101}`
+      };
+      mockData.experience.push(newExp);
+      logMockAudit('CREATE_EXPERIENCE', `Created Experience #${nextExpId}`);
+      saveMockData();
+      return { success: true, message: `Experience #${nextExpId} created`, data: newExp };
+    }
+
+    if (cleanUrl === '/dependents') {
+      const nextNum = (mockData.dependents || []).reduce((mx, d) => {
+        const v = parseInt((d.dep_id || '').replace(/\D/g, ''), 10);
+        return isNaN(v) ? mx : Math.max(mx, v);
+      }, 0) + 1;
+      const nextDepId = `D${String(nextNum).padStart(3, '0')}`;
+      const cand = mockData.candidates.find(c => String(c.cand_id) === String(body.cand_id));
+      const newDep = {
+        dep_id: nextDepId,
+        dob: body.dob || '2005-01-01',
+        relationship: body.relationship || 'Child',
+        cand_id: body.cand_id ? Number(body.cand_id) : 101,
+        candidate_name: cand ? cand.fullName : `Candidate #${body.cand_id || 101}`
+      };
+      mockData.dependents.push(newDep);
+      logMockAudit('CREATE_DEPENDENT', `Created Dependent #${nextDepId}`);
+      saveMockData();
+      return { success: true, message: `Dependent #${nextDepId} created`, data: newDep };
+    }
+
+    if (cleanUrl.startsWith('/subtypes/')) {
+      const type = cleanUrl.split('/')[2];
+      const cid = parseInt(body.cand_id, 10);
+      const cand = mockData.candidates.find(c => c.cand_id === cid);
+      const name = cand ? cand.fullName : `Candidate #${cid}`;
+      if (type === 'fresher') {
+        const item = { cand_id: cid, grad_year: Number(body.grad_year || 2024), internship_count: Number(body.internship_count || 1), candidate_name: name };
+        mockData.freshers.push(item);
+      } else if (type === 'experienced') {
+        const item = { cand_id: cid, total_exp: Number(body.total_exp || 3), current_company: body.current_company || 'Enterprise', candidate_name: name };
+        mockData.experienced.push(item);
+      } else if (type === 'freelancer') {
+        const item = { cand_id: cid, hourly_rate: Number(body.hourly_rate || 750), portfolio_url: body.portfolio_url || 'https://freelance.dev', candidate_name: name };
+        mockData.freelancers.push(item);
+      }
+      logMockAudit(`CREATE_${(type || '').toUpperCase()}`, `Added Candidate #${cid} as ${type}`);
+      saveMockData();
+      return { success: true, message: `${type} profile created` };
+    }
+
+    if (cleanUrl === '/locations') {
+      const pin = parseInt(body.pincode, 10);
+      const newLoc = {
+        pincode: pin,
+        city: body.city || 'Bengaluru',
+        state: body.state || 'Karnataka',
+        country: body.country || 'India'
+      };
+      mockData.locations.push(newLoc);
+      logMockAudit('CREATE_LOCATION', `Created Location #${pin}`);
+      saveMockData();
+      return { success: true, message: `Location #${pin} added`, data: newLoc };
+    }
+
+    if (cleanUrl === '/companies') {
+      const nextNum = (mockData.companies || []).reduce((mx, c) => {
+        const v = parseInt((c.comp_id || '').replace(/\D/g, ''), 10);
+        return isNaN(v) ? mx : Math.max(mx, v);
+      }, 0) + 1;
+      const nextCompId = `COMP${String(nextNum).padStart(3, '0')}`;
+      const emp = mockData.employers.find(e => e.emp_id === body.emp_id);
+      const newComp = {
+        comp_id: nextCompId,
+        comp_type: body.comp_type || 'Software Enterprise',
+        emp_count: body.emp_count ? Number(body.emp_count) : 250,
+        emp_id: body.emp_id || 'E001',
+        company_name: emp ? emp.company_name : 'Enterprise Partner'
+      };
+      mockData.companies.push(newComp);
+      logMockAudit('CREATE_COMPANY', `Created Company #${nextCompId}`);
+      saveMockData();
+      return { success: true, message: `Company #${nextCompId} created`, data: newComp };
+    }
+
+    if (cleanUrl === '/agencies') {
+      const nextNum = (mockData.agencies || []).reduce((mx, a) => {
+        const v = parseInt((a.agency_no || '').replace(/\D/g, ''), 10);
+        return isNaN(v) ? mx : Math.max(mx, v);
+      }, 0) + 1;
+      const nextAgencyNo = `AG${String(nextNum).padStart(3, '0')}`;
+      const emp = mockData.employers.find(e => e.emp_id === body.emp_id);
+      const newAgency = {
+        agency_no: nextAgencyNo,
+        agency_name: body.agency_name || 'Global Talent Search',
+        emp_id: body.emp_id || 'E001',
+        company_name: emp ? emp.company_name : 'Enterprise Partner',
+        lic_no: body.lic_no || `LIC-${nextNum}-GEN`
+      };
+      mockData.agencies.push(newAgency);
+      logMockAudit('CREATE_AGENCY', `Created Agency #${nextAgencyNo}`);
+      saveMockData();
+      return { success: true, message: `Agency #${nextAgencyNo} created`, data: newAgency };
+    }
+
+    if (cleanUrl === '/candidate-skills') {
+      const cid = parseInt(body.cand_id, 10);
+      const cand = mockData.candidates.find(c => c.cand_id === cid);
+      const sk = mockData.skills.find(s => s.skill_id === body.skill_id);
+      const newCS = {
+        cand_id: cid,
+        skill_id: body.skill_id,
+        pgd_level: body.pgd_level || 'Intermediate',
+        years_of_exp: body.years_of_exp ? Number(body.years_of_exp) : 2,
+        candidate_name: cand ? cand.fullName : `Candidate #${cid}`,
+        skill_name: sk ? sk.skill_name : body.skill_id,
+        skill_category: sk ? sk.skill_category : 'Technology'
+      };
+      mockData.candidateSkills.push(newCS);
+      logMockAudit('ADD_CANDIDATE_SKILL', `Associated Candidate #${cid} with Skill #${body.skill_id}`);
+      saveMockData();
+      return { success: true, message: 'Candidate skill added', data: newCS };
+    }
+
+    if (cleanUrl === '/job-skills') {
+      const jkey = parseInt(body.job_key, 10);
+      const jb = mockData.jobs.find(j => j.job_key === jkey);
+      const sk = mockData.skills.find(s => s.skill_id === body.skill_id);
+      const newJS = {
+        job_key: jkey,
+        skill_id: body.skill_id,
+        is_mandatory: body.is_mandatory || 'Y',
+        min_years: body.min_years ? Number(body.min_years) : 2,
+        job_id: jb ? jb.job_id : `J${String(jkey).padStart(3, '0')}`,
+        job_title: jb ? jb.job_title : `Job #${jkey}`,
+        skill_name: sk ? sk.skill_name : body.skill_id,
+        skill_category: sk ? sk.skill_category : 'Required'
+      };
+      mockData.jobSkills.push(newJS);
+      logMockAudit('ADD_JOB_SKILL', `Added Skill #${body.skill_id} requirement to Job #${jkey}`);
+      saveMockData();
+      return { success: true, message: 'Job skill requirement added', data: newJS };
+    }
+
+    if (cleanUrl === '/assessments') {
+      const cid = parseInt(body.cand_id, 10);
+      const jkey = parseInt(body.job_key, 10);
+      const cand = mockData.candidates.find(c => c.cand_id === cid);
+      const jb = mockData.jobs.find(j => j.job_key === jkey);
+      const sk = mockData.skills.find(s => s.skill_id === body.skill_id);
+      const newAss = {
+        cand_id: cid,
+        job_key: jkey,
+        skill_id: body.skill_id,
+        match_pct: body.match_pct ? Number(body.match_pct) : 85,
+        assessment_score: body.assessment_score ? Number(body.assessment_score) : 80,
+        assessment_date: body.assessment_date || new Date().toISOString().split('T')[0],
+        candidate_name: cand ? cand.fullName : `Candidate #${cid}`,
+        job_title: jb ? jb.job_title : `Job #${jkey}`,
+        skill_name: sk ? sk.skill_name : body.skill_id
+      };
+      mockData.assessments.push(newAss);
+      logMockAudit('CREATE_ASSESSMENT', `Assessment recorded for Candidate #${cid} Job #${jkey}`);
+      saveMockData();
+      return { success: true, message: 'Assessment recorded', data: newAss };
+    }
+
+    if (cleanUrl === '/matches') {
+      const nextNum = (mockData.matches || []).reduce((mx, m) => {
+        const v = parseInt((m.match_id || '').replace(/\D/g, ''), 10);
+        return isNaN(v) ? mx : Math.max(mx, v);
+      }, 0) + 1;
+      const nextMatchId = `M${String(nextNum).padStart(3, '0')}`;
+      const cid = parseInt(body.cand_id, 10);
+      const jkey = parseInt(body.job_key, 10);
+      const cand = mockData.candidates.find(c => c.cand_id === cid);
+      const jb = mockData.jobs.find(j => j.job_key === jkey);
+      const newMatch = {
+        match_id: nextMatchId,
+        cand_id: cid,
+        job_key: jkey,
+        match_date: body.match_date || new Date().toISOString().split('T')[0],
+        candidate_name: cand ? cand.fullName : `Candidate #${cid}`,
+        job_title: jb ? jb.job_title : `Job #${jkey}`,
+        salary: jb ? jb.salary : 75000
+      };
+      mockData.matches.push(newMatch);
+      logMockAudit('CREATE_MATCH', `Created Match #${nextMatchId}`);
+      saveMockData();
+      return { success: true, message: `Match #${nextMatchId} generated`, data: newMatch };
+    }
+
+    if (cleanUrl === '/preferences') {
+      const cid = parseInt(body.cand_id, 10);
+      const pin = parseInt(body.pincode, 10);
+      const cand = mockData.candidates.find(c => c.cand_id === cid);
+      const loc = (mockData.locations || []).find(l => l.pincode === pin);
+      const newPref = {
+        cand_id: cid,
+        pincode: pin,
+        candidate_name: cand ? cand.fullName : `Candidate #${cid}`,
+        city: loc ? loc.city : 'Bengaluru',
+        state: loc ? loc.state : 'Karnataka',
+        country: loc ? loc.country : 'India'
+      };
+      mockData.preferences.push(newPref);
+      logMockAudit('ADD_PREFERENCE', `Saved location preference Pincode #${pin} for Candidate #${cid}`);
+      saveMockData();
+      return { success: true, message: 'Location preference saved', data: newPref };
+    }
+
+    if (cleanUrl === '/applies') {
+      const cid = parseInt(body.cand_id, 10);
+      const jkey = parseInt(body.job_key, 10);
+      const cand = mockData.candidates.find(c => c.cand_id === cid);
+      const jb = mockData.jobs.find(j => j.job_key === jkey);
+      const newApplies = {
+        cand_id: cid,
+        job_key: jkey,
+        candidate_name: cand ? cand.fullName : `Candidate #${cid}`,
+        job_title: jb ? jb.job_title : `Job #${jkey}`,
+        salary: jb ? jb.salary : 65000
+      };
+      mockData.applies.push(newApplies);
+      logMockAudit('ADD_APPLIES', `Candidate #${cid} applied to Job #${jkey}`);
+      saveMockData();
+      return { success: true, message: 'Application relationship added', data: newApplies };
+    }
+
+    if (cleanUrl === '/follows') {
+      const cid = parseInt(body.cand_id, 10);
+      const cand = mockData.candidates.find(c => c.cand_id === cid);
+      const emp = mockData.employers.find(e => e.emp_id === body.emp_id);
+      const newFollows = {
+        cand_id: cid,
+        emp_id: body.emp_id,
+        follow_date: body.follow_date || new Date().toISOString().split('T')[0],
+        candidate_name: cand ? cand.fullName : `Candidate #${cid}`,
+        company_name: emp ? emp.company_name : body.emp_id
+      };
+      mockData.follows.push(newFollows);
+      logMockAudit('ADD_FOLLOWS', `Candidate #${cid} followed Employer #${body.emp_id}`);
+      saveMockData();
+      return { success: true, message: 'Follows relationship added', data: newFollows };
+    }
+
+    if (cleanUrl === '/referrals') {
+      const cid = parseInt(body.cand_id, 10);
+      const cand = mockData.candidates.find(c => c.cand_id === cid);
+      const newRef = {
+        cand_id: cid,
+        referral_date: body.referral_date || new Date().toISOString().split('T')[0],
+        referral_status: body.referral_status || 'Pending',
+        candidate_name: cand ? cand.fullName : `Candidate #${cid}`
+      };
+      mockData.referrals.push(newRef);
+      logMockAudit('ADD_REFERRAL', `Referral recorded for Candidate #${cid}`);
+      saveMockData();
+      return { success: true, message: 'Referral recorded', data: newRef };
+    }
+
     return { success: true, message: 'Saved successfully' };
   }
 
   // ─── 4. GET Operations ────────────────────────────────────────────
+  // Extended Modules GET Handlers
+  if (cleanUrl === '/education') {
+    let list = [...(mockData.education || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(e =>
+        (e.edu_id || '').toLowerCase().includes(search) ||
+        (e.specialization || '').toLowerCase().includes(search) ||
+        (e.degree || '').toLowerCase().includes(search) ||
+        (e.university || '').toLowerCase().includes(search) ||
+        (e.candidate_name || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/experience') {
+    let list = [...(mockData.experience || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(e =>
+        (e.exp_id || '').toLowerCase().includes(search) ||
+        (e.job_title || '').toLowerCase().includes(search) ||
+        (e.comp_name || '').toLowerCase().includes(search) ||
+        (e.candidate_name || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/dependents') {
+    let list = [...(mockData.dependents || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(d =>
+        (d.dep_id || '').toLowerCase().includes(search) ||
+        (d.relationship || '').toLowerCase().includes(search) ||
+        (d.candidate_name || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/subtypes') {
+    return {
+      success: true,
+      data: {
+        freshers: [...(mockData.freshers || [])],
+        experienced: [...(mockData.experienced || [])],
+        freelancers: [...(mockData.freelancers || [])],
+        candidates: (mockData.candidates || []).map(c => ({
+          cand_id: c.cand_id,
+          candidate_name: c.fullName
+        }))
+      }
+    };
+  }
+
+  if (cleanUrl === '/locations') {
+    let list = [...(mockData.locations || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(l =>
+        String(l.pincode).includes(search) ||
+        (l.city || '').toLowerCase().includes(search) ||
+        (l.state || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/companies') {
+    let list = [...(mockData.companies || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(c =>
+        (c.comp_id || '').toLowerCase().includes(search) ||
+        (c.comp_type || '').toLowerCase().includes(search) ||
+        (c.company_name || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/agencies') {
+    let list = [...(mockData.agencies || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(a =>
+        (a.agency_no || '').toLowerCase().includes(search) ||
+        (a.agency_name || '').toLowerCase().includes(search) ||
+        (a.company_name || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/candidate-skills') {
+    let list = [...(mockData.candidateSkills || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(cs =>
+        (cs.candidate_name || '').toLowerCase().includes(search) ||
+        (cs.skill_name || '').toLowerCase().includes(search) ||
+        (cs.pgd_level || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/job-skills') {
+    let list = [...(mockData.jobSkills || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(js =>
+        (js.job_title || '').toLowerCase().includes(search) ||
+        (js.skill_name || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/assessments') {
+    let list = [...(mockData.assessments || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(a =>
+        (a.candidate_name || '').toLowerCase().includes(search) ||
+        (a.job_title || '').toLowerCase().includes(search) ||
+        (a.skill_name || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/matches') {
+    let list = [...(mockData.matches || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(m =>
+        (m.match_id || '').toLowerCase().includes(search) ||
+        (m.candidate_name || '').toLowerCase().includes(search) ||
+        (m.job_title || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/preferences') {
+    let list = [...(mockData.preferences || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(p =>
+        (p.candidate_name || '').toLowerCase().includes(search) ||
+        String(p.pincode).includes(search) ||
+        (p.city || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/applies') {
+    let list = [...(mockData.applies || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(a =>
+        (a.candidate_name || '').toLowerCase().includes(search) ||
+        (a.job_title || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/follows') {
+    let list = [...(mockData.follows || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(f =>
+        (f.candidate_name || '').toLowerCase().includes(search) ||
+        (f.company_name || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
+
+  if (cleanUrl === '/referrals') {
+    let list = [...(mockData.referrals || [])];
+    const search = (urlParams.get('search') || '').toLowerCase();
+    if (search) {
+      list = list.filter(r =>
+        (r.candidate_name || '').toLowerCase().includes(search) ||
+        (r.referral_status || '').toLowerCase().includes(search)
+      );
+    }
+    return { success: true, total: list.length, data: list };
+  }
   // User & Dashboard
   if (cleanUrl === '/user/dashboard' || cleanUrl === '/dashboard' || cleanUrl === '/dashboard/user' || cleanUrl === '/user') {
     return { success: true, data: getMockUserDashboard() };

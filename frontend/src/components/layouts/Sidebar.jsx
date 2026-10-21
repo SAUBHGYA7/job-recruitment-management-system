@@ -23,14 +23,29 @@ import {
   Activity,
   Wrench,
   Layers,
-  LayoutDashboard
+  LayoutDashboard,
+  GraduationCap,
+  History,
+  HeartHandshake,
+  UserCheck,
+  MapPin,
+  Network,
+  ShieldCheck,
+  Award,
+  CheckSquare,
+  Target,
+  GitCompare,
+  Compass,
+  Send,
+  UserPlus,
+  UserCheck2
 } from 'lucide-react';
 
 export default function Sidebar() {
   const { user } = useAuth();
   const role = user?.role || 'USER';
 
-  const userLinks = [
+  const coreLinks = [
     { to: '/user/dashboard', label: 'Overview', icon: LayoutDashboard },
     { to: '/user/candidates', label: 'Candidates', icon: Users },
     { to: '/user/jobs', label: 'Job Postings', icon: Briefcase },
@@ -39,6 +54,33 @@ export default function Sidebar() {
     { to: '/user/employers', label: 'Employers', icon: Building2 },
     { to: '/user/skills', label: 'Skills Catalog', icon: Sparkles },
     { to: '/user/reports', label: 'Reports & Export', icon: BarChart3 },
+  ];
+
+  const profileLinks = [
+    { to: '/user/education', label: 'Education & Degrees', icon: GraduationCap },
+    { to: '/user/experience', label: 'Work Experience', icon: History },
+    { to: '/user/dependents', label: 'Dependents', icon: HeartHandshake },
+    { to: '/user/subtypes', label: 'Candidate Subtypes', icon: UserCheck },
+  ];
+
+  const orgLinks = [
+    { to: '/user/locations', label: 'Locations & Pincodes', icon: MapPin },
+    { to: '/user/companies', label: 'Companies & Affiliates', icon: Network },
+    { to: '/user/agencies', label: 'Recruitment Agencies', icon: ShieldCheck },
+  ];
+
+  const matchingLinks = [
+    { to: '/user/candidate-skills', label: 'Candidate Skills (HAS)', icon: Award },
+    { to: '/user/job-skills', label: 'Job Requirements', icon: CheckSquare },
+    { to: '/user/assessments', label: 'Skill Assessments', icon: Target },
+    { to: '/user/matches', label: 'Candidate Matches', icon: GitCompare },
+    { to: '/user/preferences', label: 'Location Preferences', icon: Compass },
+  ];
+
+  const relationshipLinks = [
+    { to: '/user/applies', label: 'Job Submissions', icon: Send },
+    { to: '/user/follows', label: 'Company Follows', icon: UserPlus },
+    { to: '/user/referrals', label: 'Candidate Referrals', icon: UserCheck2 },
   ];
 
   const designerLinks = [
@@ -67,7 +109,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-56 bg-[#0e131b] border-r border-[#1d2533] flex flex-col shrink-0 h-screen select-none">
+    <aside className="w-60 bg-[#0e131b] border-r border-[#1d2533] flex flex-col shrink-0 h-screen select-none">
       {/* Brand Header */}
       <div className="h-12 px-3.5 flex items-center gap-2.5 border-b border-[#1d2533] bg-[#121822]">
         <div className="w-6 h-6 rounded bg-[#182333] border border-[#273852] flex items-center justify-center text-cyan-400">
@@ -75,7 +117,7 @@ export default function Sidebar() {
         </div>
         <div className="leading-tight">
           <span className="text-xs font-bold tracking-wide text-white font-mono block">JRMS CONSOLE</span>
-          <span className="text-[10px] text-slate-500 font-mono block">Oracle 23c Free</span>
+          <span className="text-[10px] text-slate-500 font-mono block">Oracle 23c Free (31 Relations)</span>
         </div>
       </div>
 
@@ -94,14 +136,114 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation list */}
-      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-        {/* User Portal Section */}
+      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+        {/* Core Operations */}
         {(role === 'USER' || role === 'DATABASE_DESIGNER' || role === 'DBA') && (
-          <div className="mb-3">
+          <div className="mb-2.5">
             <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Recruitment System
+              Core Operations
             </p>
-            {userLinks.map((item) => (
+            {coreLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-2.5 py-1.5 rounded text-xs transition-colors ${
+                    isActive
+                      ? 'bg-cyan-950/80 text-cyan-300 font-medium border border-cyan-800/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#151c27]'
+                  }`
+                }
+              >
+                <item.icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        )}
+
+        {/* Candidate Profiles */}
+        {(role === 'USER' || role === 'DATABASE_DESIGNER' || role === 'DBA') && (
+          <div className="mb-2.5">
+            <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Candidate Profiles
+            </p>
+            {profileLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-2.5 py-1.5 rounded text-xs transition-colors ${
+                    isActive
+                      ? 'bg-cyan-950/80 text-cyan-300 font-medium border border-cyan-800/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#151c27]'
+                  }`
+                }
+              >
+                <item.icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        )}
+
+        {/* Organizations */}
+        {(role === 'USER' || role === 'DATABASE_DESIGNER' || role === 'DBA') && (
+          <div className="mb-2.5">
+            <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Employers & Organizations
+            </p>
+            {orgLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-2.5 py-1.5 rounded text-xs transition-colors ${
+                    isActive
+                      ? 'bg-cyan-950/80 text-cyan-300 font-medium border border-cyan-800/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#151c27]'
+                  }`
+                }
+              >
+                <item.icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        )}
+
+        {/* Skills & Matching */}
+        {(role === 'USER' || role === 'DATABASE_DESIGNER' || role === 'DBA') && (
+          <div className="mb-2.5">
+            <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Skills & Matching
+            </p>
+            {matchingLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 px-2.5 py-1.5 rounded text-xs transition-colors ${
+                    isActive
+                      ? 'bg-cyan-950/80 text-cyan-300 font-medium border border-cyan-800/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#151c27]'
+                  }`
+                }
+              >
+                <item.icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        )}
+
+        {/* Relationships */}
+        {(role === 'USER' || role === 'DATABASE_DESIGNER' || role === 'DBA') && (
+          <div className="mb-2.5">
+            <p className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Relationships & Tracking
+            </p>
+            {relationshipLinks.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

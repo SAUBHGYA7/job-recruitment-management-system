@@ -1,0 +1,2612 @@
+{
+  "education": [
+    {
+      "edu_id": "ED001",
+      "cgpa": 8.4,
+      "specialization": "CS",
+      "degree": "BTech",
+      "end_year": 2023,
+      "university": "Anna University",
+      "start_year": 2019,
+      "cand_id": 101,
+      "candidate_name": "Ram Mishra"
+    },
+    {
+      "edu_id": "ED002",
+      "cgpa": 9,
+      "specialization": "IT",
+      "degree": "BTech",
+      "end_year": 2023,
+      "university": "Anna University",
+      "start_year": 2019,
+      "cand_id": 102,
+      "candidate_name": "Om Pandey"
+    },
+    {
+      "edu_id": "ED003",
+      "cgpa": 8.6,
+      "specialization": "CS",
+      "degree": "MBA",
+      "end_year": 2023,
+      "university": "Anna University",
+      "start_year": 2020,
+      "cand_id": 103,
+      "candidate_name": "Ojas Dwivedi"
+    },
+    {
+      "edu_id": "ED004",
+      "cgpa": 8.9,
+      "specialization": "CS",
+      "degree": "MTech",
+      "end_year": 2022,
+      "university": "Delhi University",
+      "start_year": 2020,
+      "cand_id": 104,
+      "candidate_name": "Sita Awasthi"
+    },
+    {
+      "edu_id": "ED005",
+      "cgpa": 8.6,
+      "specialization": "CS",
+      "degree": "MBA",
+      "end_year": 2023,
+      "university": "Anna University",
+      "start_year": 2020,
+      "cand_id": 105,
+      "candidate_name": "Pilu Yadav"
+    },
+    {
+      "edu_id": "ED006",
+      "cgpa": 9.2,
+      "specialization": "Data Science",
+      "degree": "MTech",
+      "end_year": 2023,
+      "university": "Delhi University",
+      "start_year": 2020,
+      "cand_id": 106,
+      "candidate_name": "Aarav Rao"
+    },
+    {
+      "edu_id": "ED007",
+      "cgpa": 8.1,
+      "specialization": "AI & ML",
+      "degree": "BTech",
+      "end_year": 2024,
+      "university": "Anna University",
+      "start_year": 2019,
+      "cand_id": 107,
+      "candidate_name": "Ananya Sharma"
+    },
+    {
+      "edu_id": "ED008",
+      "cgpa": 7.9,
+      "specialization": "Software Engineering",
+      "degree": "BCA",
+      "end_year": 2022,
+      "university": "Bangalore University",
+      "start_year": 2018,
+      "cand_id": 108,
+      "candidate_name": "Vikram Singh"
+    },
+    {
+      "edu_id": "ED009",
+      "cgpa": 8.8,
+      "specialization": "Cybersecurity",
+      "degree": "MS CS",
+      "end_year": 2023,
+      "university": "BITS Pilani",
+      "start_year": 2021,
+      "cand_id": 109,
+      "candidate_name": "Pooja Nair"
+    },
+    {
+      "edu_id": "ED010",
+      "cgpa": 9.4,
+      "specialization": "Computer Systems",
+      "degree": "BTech",
+      "end_year": 2022,
+      "university": "Anna University",
+      "start_year": 2019,
+      "cand_id": 110,
+      "candidate_name": "Test Updated User Updated"
+    },
+    {
+      "edu_id": "ED011",
+      "cgpa": 8.3,
+      "specialization": "Cloud Computing",
+      "degree": "MCA",
+      "end_year": 2024,
+      "university": "Pune University",
+      "start_year": 2021,
+      "cand_id": 111,
+      "candidate_name": "Meera Menon"
+    },
+    {
+      "edu_id": "ED012",
+      "cgpa": 7.8,
+      "specialization": "Information Technology",
+      "degree": "BSc CS",
+      "end_year": 2022,
+      "university": "Mumbai University",
+      "start_year": 2019,
+      "cand_id": 112,
+      "candidate_name": "Rohan Verma"
+    },
+    {
+      "edu_id": "ED013",
+      "cgpa": 8.7,
+      "specialization": "Database Systems",
+      "degree": "MTech",
+      "end_year": 2023,
+      "university": "Delhi University",
+      "start_year": 2020,
+      "cand_id": 113,
+      "candidate_name": "Sneha Patel"
+    },
+    {
+      "edu_id": "ED014",
+      "cgpa": 9.1,
+      "specialization": "Computer Science",
+      "degree": "BTech",
+      "end_year": 2023,
+      "university": "Anna University",
+      "start_year": 2019,
+      "cand_id": 114,
+      "candidate_name": "Aditya Gupta"
+    },
+    {
+      "edu_id": "ED015",
+      "cgpa": 8.5,
+      "specialization": "AI & Robotics",
+      "degree": "MS CS",
+      "end_year": 2024,
+      "university": "BITS Pilani",
+      "start_year": 2021,
+      "cand_id": 115,
+      "candidate_name": "Divya Kulkarni"
+    },
+    {
+      "edu_id": "ED016",
+      "cgpa": 7.6,
+      "specialization": "Business Analytics",
+      "degree": "MBA",
+      "end_year": 2022,
+      "university": "Anna University",
+      "start_year": 2020,
+      "cand_id": 116,
+      "candidate_name": "Siddharth Joshi"
+    },
+    {
+      "edu_id": "ED017",
+      "cgpa": 8.9,
+      "specialization": "Computer Networks",
+      "degree": "BTech",
+      "end_year": 2023,
+      "university": "Anna University",
+      "start_year": 2019,
+      "cand_id": 117,
+      "candidate_name": "Kavita Reddy"
+    },
+    {
+      "edu_id": "ED018",
+      "cgpa": 9,
+      "specialization": "Software Architecture",
+      "degree": "MTech",
+      "end_year": 2022,
+      "university": "Delhi University",
+      "start_year": 2020,
+      "cand_id": 118,
+      "candidate_name": "Arjun Chopra"
+    },
+    {
+      "edu_id": "ED019",
+      "cgpa": 8.2,
+      "specialization": "Distributed Systems",
+      "degree": "MS CS",
+      "end_year": 2023,
+      "university": "BITS Pilani",
+      "start_year": 2021,
+      "cand_id": 119,
+      "candidate_name": "Tanvi Deshmukh"
+    },
+    {
+      "edu_id": "ED020",
+      "cgpa": 8,
+      "specialization": "Informatics",
+      "degree": "BCA",
+      "end_year": 2023,
+      "university": "Bangalore University",
+      "start_year": 2018,
+      "cand_id": 120,
+      "candidate_name": "Manish Bhatt"
+    },
+    {
+      "edu_id": "ED021",
+      "cgpa": 9.3,
+      "specialization": "CS & Engineering",
+      "degree": "BTech",
+      "end_year": 2024,
+      "university": "Anna University",
+      "start_year": 2019,
+      "cand_id": 121,
+      "candidate_name": "Ritu Saxena"
+    },
+    {
+      "edu_id": "ED022",
+      "cgpa": 8.4,
+      "specialization": "Information Security",
+      "degree": "MTech",
+      "end_year": 2023,
+      "university": "Delhi University",
+      "start_year": 2020,
+      "cand_id": 122,
+      "candidate_name": "Nikhil Banerjee"
+    },
+    {
+      "edu_id": "ED023",
+      "cgpa": 8.7,
+      "specialization": "Enterprise Computing",
+      "degree": "BTech",
+      "end_year": 2022,
+      "university": "Anna University",
+      "start_year": 2019,
+      "cand_id": 123,
+      "candidate_name": "Ishita Dhar"
+    },
+    {
+      "edu_id": "ED024",
+      "cgpa": 9.5,
+      "specialization": "Machine Learning",
+      "degree": "MS CS",
+      "end_year": 2024,
+      "university": "BITS Pilani",
+      "start_year": 2021,
+      "cand_id": 124,
+      "candidate_name": "Harsh Mehta"
+    },
+    {
+      "edu_id": "ED025",
+      "cgpa": 8,
+      "specialization": "Information Systems",
+      "degree": "MCA",
+      "end_year": 2023,
+      "university": "Pune University",
+      "start_year": 2021,
+      "cand_id": 125,
+      "candidate_name": "Shreya Ghosh"
+    }
+  ],
+  "experience": [
+    {
+      "exp_id": "EXP001",
+      "job_title": "S/W Dev",
+      "start_date": "2021-04-30",
+      "end_date": "2023-04-29",
+      "comp_name": "TCS",
+      "cand_id": 101,
+      "candidate_name": "Ram Mishra"
+    },
+    {
+      "exp_id": "EXP002",
+      "job_title": "Senior S/W",
+      "start_date": "2022-06-30",
+      "end_date": "2024-06-29",
+      "comp_name": "Infosys",
+      "cand_id": 102,
+      "candidate_name": "Om Pandey"
+    },
+    {
+      "exp_id": "EXP003",
+      "job_title": "Senior S/W",
+      "start_date": "2022-06-30",
+      "end_date": "2024-06-29",
+      "comp_name": "Infosys",
+      "cand_id": 102,
+      "candidate_name": "Om Pandey"
+    },
+    {
+      "exp_id": "EXP004",
+      "job_title": "Data Analyst",
+      "start_date": "2022-07-01",
+      "end_date": "2025-05-30",
+      "comp_name": "TCS",
+      "cand_id": 101,
+      "candidate_name": "Ram Mishra"
+    },
+    {
+      "exp_id": "EXP005",
+      "job_title": "Data Analyst",
+      "start_date": "2022-07-01",
+      "end_date": "2025-06-29",
+      "comp_name": "Infosys",
+      "cand_id": 105,
+      "candidate_name": "Pilu Yadav"
+    },
+    {
+      "exp_id": "EXP006",
+      "job_title": "Cloud Architect",
+      "start_date": "2020-02-29",
+      "end_date": "2024-08-30",
+      "comp_name": "Wipro",
+      "cand_id": 106,
+      "candidate_name": "Aarav Rao"
+    },
+    {
+      "exp_id": "EXP007",
+      "job_title": "Frontend Dev",
+      "start_date": "2021-06-14",
+      "end_date": "2024-05-30",
+      "comp_name": "Accenture",
+      "cand_id": 107,
+      "candidate_name": "Ananya Sharma"
+    },
+    {
+      "exp_id": "EXP008",
+      "job_title": "DevOps Engineer",
+      "start_date": "2019-07-31",
+      "end_date": "2023-12-30",
+      "comp_name": "Cognizant",
+      "cand_id": 108,
+      "candidate_name": "Vikram Singh"
+    },
+    {
+      "exp_id": "EXP009",
+      "job_title": "QA Automation",
+      "start_date": "2022-01-09",
+      "end_date": "2024-03-30",
+      "comp_name": "TCS",
+      "cand_id": 109,
+      "candidate_name": "Pooja Nair"
+    },
+    {
+      "exp_id": "EXP010",
+      "job_title": "ML Engineer",
+      "start_date": "2018-10-31",
+      "end_date": "2024-07-30",
+      "comp_name": "Microsoft",
+      "cand_id": 110,
+      "candidate_name": "Test Updated User Updated"
+    },
+    {
+      "exp_id": "EXP011",
+      "job_title": "Cyber Analyst",
+      "start_date": "2021-08-31",
+      "end_date": "2024-01-30",
+      "comp_name": "Capgemini",
+      "cand_id": 111,
+      "candidate_name": "Meera Menon"
+    },
+    {
+      "exp_id": "EXP012",
+      "job_title": "Backend Dev",
+      "start_date": "2020-04-14",
+      "end_date": "2024-09-29",
+      "comp_name": "Oracle India",
+      "cand_id": 112,
+      "candidate_name": "Rohan Verma"
+    },
+    {
+      "exp_id": "EXP013",
+      "job_title": "UI/UX Designer",
+      "start_date": "2022-04-30",
+      "end_date": "2024-06-29",
+      "comp_name": "Swiggy",
+      "cand_id": 113,
+      "candidate_name": "Sneha Patel"
+    },
+    {
+      "exp_id": "EXP014",
+      "job_title": "System Architect",
+      "start_date": "2017-01-31",
+      "end_date": "2024-08-30",
+      "comp_name": "Google India",
+      "cand_id": 114,
+      "candidate_name": "Aditya Gupta"
+    },
+    {
+      "exp_id": "EXP015",
+      "job_title": "Mobile Dev",
+      "start_date": "2021-08-09",
+      "end_date": "2024-04-29",
+      "comp_name": "Flipkart",
+      "cand_id": 115,
+      "candidate_name": "Divya Kulkarni"
+    },
+    {
+      "exp_id": "EXP016",
+      "job_title": "Full Stack Dev",
+      "start_date": "2020-09-30",
+      "end_date": "2024-07-30",
+      "comp_name": "Amazon",
+      "cand_id": 116,
+      "candidate_name": "Siddharth Joshi"
+    },
+    {
+      "exp_id": "EXP017",
+      "job_title": "Technical Writer",
+      "start_date": "2022-03-14",
+      "end_date": "2024-02-27",
+      "comp_name": "Zoho",
+      "cand_id": 117,
+      "candidate_name": "Kavita Reddy"
+    },
+    {
+      "exp_id": "EXP018",
+      "job_title": "Data Engineer",
+      "start_date": "2019-01-14",
+      "end_date": "2024-06-29",
+      "comp_name": "Cisco",
+      "cand_id": 118,
+      "candidate_name": "Arjun Chopra"
+    },
+    {
+      "exp_id": "EXP019",
+      "job_title": "Product Specialist",
+      "start_date": "2021-10-31",
+      "end_date": "2024-05-30",
+      "comp_name": "Zomato",
+      "cand_id": 119,
+      "candidate_name": "Tanvi Deshmukh"
+    },
+    {
+      "exp_id": "EXP020",
+      "job_title": "Site Reliability",
+      "start_date": "2018-05-31",
+      "end_date": "2024-03-30",
+      "comp_name": "IBM",
+      "cand_id": 120,
+      "candidate_name": "Manish Bhatt"
+    },
+    {
+      "exp_id": "EXP021",
+      "job_title": "S/W Dev",
+      "start_date": "2022-07-31",
+      "end_date": "2024-08-30",
+      "comp_name": "HCL Tech",
+      "cand_id": 121,
+      "candidate_name": "Ritu Saxena"
+    },
+    {
+      "exp_id": "EXP022",
+      "job_title": "Data Analyst",
+      "start_date": "2020-11-30",
+      "end_date": "2024-07-30",
+      "comp_name": "Tech Mahindra",
+      "cand_id": 122,
+      "candidate_name": "Nikhil Banerjee"
+    },
+    {
+      "exp_id": "EXP023",
+      "job_title": "Senior S/W",
+      "start_date": "2019-06-30",
+      "end_date": "2024-06-29",
+      "comp_name": "Infosys",
+      "cand_id": 123,
+      "candidate_name": "Ishita Dhar"
+    },
+    {
+      "exp_id": "EXP024",
+      "job_title": "System Architect",
+      "start_date": "2018-02-14",
+      "end_date": "2024-08-30",
+      "comp_name": "Intel",
+      "cand_id": 124,
+      "candidate_name": "Harsh Mehta"
+    },
+    {
+      "exp_id": "EXP025",
+      "job_title": "Frontend Dev",
+      "start_date": "2022-03-31",
+      "end_date": "2024-05-30",
+      "comp_name": "Mindtree",
+      "cand_id": 125,
+      "candidate_name": "Shreya Ghosh"
+    }
+  ],
+  "dependents": [
+    {
+      "dep_id": "D001",
+      "dob": "1995-05-11",
+      "relationship": "Spouse",
+      "cand_id": 101,
+      "candidate_name": "Ram Mishra"
+    },
+    {
+      "dep_id": "D002",
+      "dob": "2015-08-09",
+      "relationship": "Son",
+      "cand_id": 102,
+      "candidate_name": "Om Pandey"
+    },
+    {
+      "dep_id": "D003",
+      "dob": "2015-08-09",
+      "relationship": "Son",
+      "cand_id": 103,
+      "candidate_name": "Ojas Dwivedi"
+    },
+    {
+      "dep_id": "D004",
+      "dob": "1998-11-09",
+      "relationship": "Spouse",
+      "cand_id": 104,
+      "candidate_name": "Sita Awasthi"
+    },
+    {
+      "dep_id": "D005",
+      "dob": "2012-06-24",
+      "relationship": "Son",
+      "cand_id": 105,
+      "candidate_name": "Pilu Yadav"
+    },
+    {
+      "dep_id": "D006",
+      "dob": "1996-03-13",
+      "relationship": "Spouse",
+      "cand_id": 106,
+      "candidate_name": "Aarav Rao"
+    },
+    {
+      "dep_id": "D007",
+      "dob": "1975-09-20",
+      "relationship": "Mother",
+      "cand_id": 107,
+      "candidate_name": "Ananya Sharma"
+    },
+    {
+      "dep_id": "D008",
+      "dob": "2018-04-04",
+      "relationship": "Daughter",
+      "cand_id": 108,
+      "candidate_name": "Vikram Singh"
+    },
+    {
+      "dep_id": "D009",
+      "dob": "1970-12-29",
+      "relationship": "Father",
+      "cand_id": 109,
+      "candidate_name": "Pooja Nair"
+    },
+    {
+      "dep_id": "D010",
+      "dob": "1997-07-18",
+      "relationship": "Spouse",
+      "cand_id": 110,
+      "candidate_name": "Test Updated User Updated"
+    },
+    {
+      "dep_id": "D011",
+      "dob": "2016-10-10",
+      "relationship": "Son",
+      "cand_id": 111,
+      "candidate_name": "Meera Menon"
+    },
+    {
+      "dep_id": "D012",
+      "dob": "1999-01-21",
+      "relationship": "Sister",
+      "cand_id": 112,
+      "candidate_name": "Rohan Verma"
+    },
+    {
+      "dep_id": "D013",
+      "dob": "1974-08-16",
+      "relationship": "Mother",
+      "cand_id": 113,
+      "candidate_name": "Sneha Patel"
+    },
+    {
+      "dep_id": "D014",
+      "dob": "1995-12-02",
+      "relationship": "Spouse",
+      "cand_id": 114,
+      "candidate_name": "Aditya Gupta"
+    },
+    {
+      "dep_id": "D015",
+      "dob": "2019-02-17",
+      "relationship": "Daughter",
+      "cand_id": 115,
+      "candidate_name": "Divya Kulkarni"
+    },
+    {
+      "dep_id": "D016",
+      "dob": "1972-05-10",
+      "relationship": "Father",
+      "cand_id": 116,
+      "candidate_name": "Siddharth Joshi"
+    },
+    {
+      "dep_id": "D017",
+      "dob": "1998-09-07",
+      "relationship": "Spouse",
+      "cand_id": 117,
+      "candidate_name": "Kavita Reddy"
+    },
+    {
+      "dep_id": "D018",
+      "dob": "2017-11-28",
+      "relationship": "Son",
+      "cand_id": 118,
+      "candidate_name": "Arjun Chopra"
+    },
+    {
+      "dep_id": "D019",
+      "dob": "1976-06-03",
+      "relationship": "Mother",
+      "cand_id": 119,
+      "candidate_name": "Tanvi Deshmukh"
+    },
+    {
+      "dep_id": "D020",
+      "dob": "1996-10-14",
+      "relationship": "Spouse",
+      "cand_id": 120,
+      "candidate_name": "Manish Bhatt"
+    },
+    {
+      "dep_id": "D021",
+      "dob": "2020-01-08",
+      "relationship": "Son",
+      "cand_id": 121,
+      "candidate_name": "Ritu Saxena"
+    },
+    {
+      "dep_id": "D022",
+      "dob": "1973-04-26",
+      "relationship": "Father",
+      "cand_id": 122,
+      "candidate_name": "Nikhil Banerjee"
+    },
+    {
+      "dep_id": "D023",
+      "dob": "1997-02-13",
+      "relationship": "Spouse",
+      "cand_id": 123,
+      "candidate_name": "Ishita Dhar"
+    },
+    {
+      "dep_id": "D024",
+      "dob": "2018-08-19",
+      "relationship": "Daughter",
+      "cand_id": 124,
+      "candidate_name": "Harsh Mehta"
+    },
+    {
+      "dep_id": "D025",
+      "dob": "1999-11-04",
+      "relationship": "Brother",
+      "cand_id": 125,
+      "candidate_name": "Shreya Ghosh"
+    }
+  ],
+  "freshers": [
+    {
+      "cand_id": 101,
+      "grad_year": 2023,
+      "internship_count": 4,
+      "candidate_name": "Ram Mishra"
+    },
+    {
+      "cand_id": 102,
+      "grad_year": 2023,
+      "internship_count": 4,
+      "candidate_name": "Om Pandey"
+    },
+    {
+      "cand_id": 103,
+      "grad_year": 2024,
+      "internship_count": 2,
+      "candidate_name": "Ojas Dwivedi"
+    },
+    {
+      "cand_id": 104,
+      "grad_year": 2024,
+      "internship_count": 2,
+      "candidate_name": "Sita Awasthi"
+    },
+    {
+      "cand_id": 105,
+      "grad_year": 2023,
+      "internship_count": 4,
+      "candidate_name": "Pilu Yadav"
+    },
+    {
+      "cand_id": 111,
+      "grad_year": 2024,
+      "internship_count": 3,
+      "candidate_name": "Meera Menon"
+    },
+    {
+      "cand_id": 112,
+      "grad_year": 2023,
+      "internship_count": 2,
+      "candidate_name": "Rohan Verma"
+    },
+    {
+      "cand_id": 113,
+      "grad_year": 2024,
+      "internship_count": 2,
+      "candidate_name": "Sneha Patel"
+    },
+    {
+      "cand_id": 115,
+      "grad_year": 2024,
+      "internship_count": 1,
+      "candidate_name": "Divya Kulkarni"
+    },
+    {
+      "cand_id": 117,
+      "grad_year": 2024,
+      "internship_count": 2,
+      "candidate_name": "Kavita Reddy"
+    },
+    {
+      "cand_id": 121,
+      "grad_year": 2024,
+      "internship_count": 3,
+      "candidate_name": "Ritu Saxena"
+    },
+    {
+      "cand_id": 125,
+      "grad_year": 2024,
+      "internship_count": 2,
+      "candidate_name": "Shreya Ghosh"
+    }
+  ],
+  "experienced": [
+    {
+      "cand_id": 101,
+      "total_exp": 5,
+      "current_company": "Infosys",
+      "candidate_name": "Ram Mishra"
+    },
+    {
+      "cand_id": 102,
+      "total_exp": 3,
+      "current_company": "TCS",
+      "candidate_name": "Om Pandey"
+    },
+    {
+      "cand_id": 103,
+      "total_exp": 5,
+      "current_company": "Infosys",
+      "candidate_name": "Ojas Dwivedi"
+    },
+    {
+      "cand_id": 104,
+      "total_exp": 3,
+      "current_company": "Wipro",
+      "candidate_name": "Sita Awasthi"
+    },
+    {
+      "cand_id": 105,
+      "total_exp": 4,
+      "current_company": "TCS",
+      "candidate_name": "Pilu Yadav"
+    },
+    {
+      "cand_id": 106,
+      "total_exp": 6.5,
+      "current_company": "Wipro",
+      "candidate_name": "Aarav Rao"
+    },
+    {
+      "cand_id": 108,
+      "total_exp": 7,
+      "current_company": "Cognizant",
+      "candidate_name": "Vikram Singh"
+    },
+    {
+      "cand_id": 110,
+      "total_exp": 8.5,
+      "current_company": "Microsoft",
+      "candidate_name": "Test Updated User Updated"
+    },
+    {
+      "cand_id": 114,
+      "total_exp": 9,
+      "current_company": "Google India",
+      "candidate_name": "Aditya Gupta"
+    },
+    {
+      "cand_id": 116,
+      "total_exp": 6,
+      "current_company": "Amazon",
+      "candidate_name": "Siddharth Joshi"
+    },
+    {
+      "cand_id": 118,
+      "total_exp": 7.5,
+      "current_company": "Cisco",
+      "candidate_name": "Arjun Chopra"
+    },
+    {
+      "cand_id": 120,
+      "total_exp": 8,
+      "current_company": "IBM",
+      "candidate_name": "Manish Bhatt"
+    },
+    {
+      "cand_id": 124,
+      "total_exp": 9.5,
+      "current_company": "Intel",
+      "candidate_name": "Harsh Mehta"
+    }
+  ],
+  "freelancers": [
+    {
+      "cand_id": 101,
+      "hourly_rate": 800,
+      "portfolio_url": "https://ram.dev",
+      "candidate_name": "Ram Mishra"
+    },
+    {
+      "cand_id": 102,
+      "hourly_rate": 700,
+      "portfolio_url": "https://om.dev",
+      "candidate_name": "Om Pandey"
+    },
+    {
+      "cand_id": 103,
+      "hourly_rate": 900,
+      "portfolio_url": "https://ojas.dev",
+      "candidate_name": "Ojas Dwivedi"
+    },
+    {
+      "cand_id": 104,
+      "hourly_rate": 700,
+      "portfolio_url": "https://sita.dev",
+      "candidate_name": "Sita Awasthi"
+    },
+    {
+      "cand_id": 105,
+      "hourly_rate": 850,
+      "portfolio_url": "https://pilu.dev",
+      "candidate_name": "Pilu Yadav"
+    },
+    {
+      "cand_id": 106,
+      "hourly_rate": 1200,
+      "portfolio_url": "https://aarav.dev",
+      "candidate_name": "Aarav Rao"
+    },
+    {
+      "cand_id": 107,
+      "hourly_rate": 950,
+      "portfolio_url": "https://ananya.dev",
+      "candidate_name": "Ananya Sharma"
+    },
+    {
+      "cand_id": 108,
+      "hourly_rate": 1100,
+      "portfolio_url": "https://vikram.dev",
+      "candidate_name": "Vikram Singh"
+    },
+    {
+      "cand_id": 109,
+      "hourly_rate": 850,
+      "portfolio_url": "https://pooja.dev",
+      "candidate_name": "Pooja Nair"
+    },
+    {
+      "cand_id": 110,
+      "hourly_rate": 1500,
+      "portfolio_url": "https://karthik.dev",
+      "candidate_name": "Test Updated User Updated"
+    }
+  ],
+  "locations": [
+    {
+      "pincode": 560001,
+      "country": "India",
+      "state": "Karnataka",
+      "city": "Bengaluru"
+    },
+    {
+      "pincode": 110001,
+      "country": "India",
+      "state": "Delhi",
+      "city": "New Delhi"
+    },
+    {
+      "pincode": 400001,
+      "country": "India",
+      "state": "Maharashtra",
+      "city": "Mumbai"
+    },
+    {
+      "pincode": 360001,
+      "country": "India",
+      "state": "Gujarat",
+      "city": "Rajkot"
+    },
+    {
+      "pincode": 600001,
+      "country": "India",
+      "state": "Tamil Nadu",
+      "city": "Chennai"
+    },
+    {
+      "pincode": 700001,
+      "country": "India",
+      "state": "W.B",
+      "city": "Kolkata"
+    },
+    {
+      "pincode": 500001,
+      "country": "India",
+      "state": "Telangana",
+      "city": "Hyderabad"
+    },
+    {
+      "pincode": 411001,
+      "country": "India",
+      "state": "Maharashtra",
+      "city": "Mumbai"
+    },
+    {
+      "pincode": 302001,
+      "country": "India",
+      "state": "Rajasthan",
+      "city": "Jaipur"
+    },
+    {
+      "pincode": 682001,
+      "country": "India",
+      "state": "Kerala",
+      "city": "Kochi"
+    },
+    {
+      "pincode": 201301,
+      "country": "India",
+      "state": "Uttar Pradesh",
+      "city": "Noida"
+    },
+    {
+      "pincode": 122001,
+      "country": "India",
+      "state": "Haryana",
+      "city": "Gurugram"
+    }
+  ],
+  "companies": [
+    {
+      "comp_id": "COMP001",
+      "comp_type": "IT Services",
+      "emp_count": 500,
+      "emp_id": "E001",
+      "company_name": "Tech Nova Systems Updated"
+    },
+    {
+      "comp_id": "COMP002",
+      "comp_type": "Data Analytics",
+      "emp_count": 300,
+      "emp_id": "E002",
+      "company_name": "DataCore Analytics"
+    },
+    {
+      "comp_id": "COMP003",
+      "comp_type": "Product Design",
+      "emp_count": 120,
+      "emp_id": "E003",
+      "company_name": "DesignTech Solutions"
+    },
+    {
+      "comp_id": "COMP004",
+      "comp_type": "Enterprise S/W",
+      "emp_count": 450,
+      "emp_id": "E004",
+      "company_name": "CodeCraft Software"
+    },
+    {
+      "comp_id": "COMP005",
+      "comp_type": "Cloud Infrastructure",
+      "emp_count": 800,
+      "emp_id": "E006",
+      "company_name": "Apex Global Networks"
+    },
+    {
+      "comp_id": "COMP006",
+      "comp_type": "Cybersecurity Solutions",
+      "emp_count": 250,
+      "emp_id": "E007",
+      "company_name": "CyberShield Labs"
+    },
+    {
+      "comp_id": "COMP007",
+      "comp_type": "Fintech Products",
+      "emp_count": 350,
+      "emp_id": "E008",
+      "company_name": "FinTech Dynamics"
+    },
+    {
+      "comp_id": "COMP008",
+      "comp_type": "AI Research Lab",
+      "emp_count": 180,
+      "emp_id": "E009",
+      "company_name": "Quantum AI Systems"
+    }
+  ],
+  "agencies": [
+    {
+      "agency_no": "AG001",
+      "agency_name": "Talent Bridge Global",
+      "emp_id": "E001",
+      "company_name": "Tech Nova Systems Updated",
+      "lic_no": "LIC-4101-KAR"
+    },
+    {
+      "agency_no": "AG002",
+      "agency_name": "Apex Hire Consultants",
+      "emp_id": "E002",
+      "company_name": "DataCore Analytics",
+      "lic_no": "LIC-4102-MAH"
+    },
+    {
+      "agency_no": "AG003",
+      "agency_name": "CareerPoint Staffing",
+      "emp_id": "E003",
+      "company_name": "DesignTech Solutions",
+      "lic_no": "LIC-4103-DEL"
+    },
+    {
+      "agency_no": "AG004",
+      "agency_name": "TechElite Search Partners",
+      "emp_id": "E006",
+      "company_name": "Apex Global Networks",
+      "lic_no": "LIC-4106-KAR"
+    },
+    {
+      "agency_no": "AG005",
+      "agency_name": "CloudStaff Executive",
+      "emp_id": "E008",
+      "company_name": "FinTech Dynamics",
+      "lic_no": "LIC-4108-MAH"
+    }
+  ],
+  "candidateSkills": [
+    {
+      "cand_id": 101,
+      "skill_id": "S001",
+      "pgd_level": "Advanced",
+      "years_of_exp": 5,
+      "candidate_name": "Ram Mishra",
+      "skill_name": "Oracle PL/SQL Updated",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 101,
+      "skill_id": "S002",
+      "pgd_level": "Advanced",
+      "years_of_exp": 4,
+      "candidate_name": "Ram Mishra",
+      "skill_name": "SQL",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 102,
+      "skill_id": "S002",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 3,
+      "candidate_name": "Om Pandey",
+      "skill_name": "SQL",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 103,
+      "skill_id": "S001",
+      "pgd_level": "Advanced",
+      "years_of_exp": 5,
+      "candidate_name": "Ojas Dwivedi",
+      "skill_name": "Oracle PL/SQL Updated",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 103,
+      "skill_id": "S003",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 3,
+      "candidate_name": "Ojas Dwivedi",
+      "skill_name": "UI Design",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 104,
+      "skill_id": "S004",
+      "pgd_level": "Advanced",
+      "years_of_exp": 3,
+      "candidate_name": "Sita Awasthi",
+      "skill_name": "Python",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 105,
+      "skill_id": "S005",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 4,
+      "candidate_name": "Pilu Yadav",
+      "skill_name": "Oracle DB",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 106,
+      "skill_id": "S008",
+      "pgd_level": "Expert",
+      "years_of_exp": 6,
+      "candidate_name": "Aarav Rao",
+      "skill_name": "AWS Cloud",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 106,
+      "skill_id": "S010",
+      "pgd_level": "Advanced",
+      "years_of_exp": 4.5,
+      "candidate_name": "Aarav Rao",
+      "skill_name": "Kubernetes",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 107,
+      "skill_id": "S006",
+      "pgd_level": "Advanced",
+      "years_of_exp": 3.5,
+      "candidate_name": "Ananya Sharma",
+      "skill_name": "React.js",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 107,
+      "skill_id": "S011",
+      "pgd_level": "Advanced",
+      "years_of_exp": 3,
+      "candidate_name": "Ananya Sharma",
+      "skill_name": "TypeScript",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 108,
+      "skill_id": "S009",
+      "pgd_level": "Expert",
+      "years_of_exp": 5.5,
+      "candidate_name": "Vikram Singh",
+      "skill_name": "Docker",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 108,
+      "skill_id": "S010",
+      "pgd_level": "Expert",
+      "years_of_exp": 5,
+      "candidate_name": "Vikram Singh",
+      "skill_name": "Kubernetes",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 109,
+      "skill_id": "S004",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 2.5,
+      "candidate_name": "Pooja Nair",
+      "skill_name": "Python",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 110,
+      "skill_id": "S013",
+      "pgd_level": "Expert",
+      "years_of_exp": 7,
+      "candidate_name": "Test Updated User Updated",
+      "skill_name": "Machine Learning",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 110,
+      "skill_id": "S004",
+      "pgd_level": "Expert",
+      "years_of_exp": 7.5,
+      "candidate_name": "Test Updated User Updated",
+      "skill_name": "Python",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 111,
+      "skill_id": "S012",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 2,
+      "candidate_name": "Meera Menon",
+      "skill_name": "Cybersecurity",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 112,
+      "skill_id": "S007",
+      "pgd_level": "Advanced",
+      "years_of_exp": 4,
+      "candidate_name": "Rohan Verma",
+      "skill_name": "Node.js",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 112,
+      "skill_id": "S002",
+      "pgd_level": "Advanced",
+      "years_of_exp": 4.5,
+      "candidate_name": "Rohan Verma",
+      "skill_name": "SQL",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 113,
+      "skill_id": "S003",
+      "pgd_level": "Advanced",
+      "years_of_exp": 3,
+      "candidate_name": "Sneha Patel",
+      "skill_name": "UI Design",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 114,
+      "skill_id": "S014",
+      "pgd_level": "Expert",
+      "years_of_exp": 8,
+      "candidate_name": "Aditya Gupta",
+      "skill_name": "Go / Golang",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 114,
+      "skill_id": "S005",
+      "pgd_level": "Expert",
+      "years_of_exp": 7,
+      "candidate_name": "Aditya Gupta",
+      "skill_name": "Oracle DB",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 115,
+      "skill_id": "S006",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 2.5,
+      "candidate_name": "Divya Kulkarni",
+      "skill_name": "React.js",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 116,
+      "skill_id": "S006",
+      "pgd_level": "Advanced",
+      "years_of_exp": 4.5,
+      "candidate_name": "Siddharth Joshi",
+      "skill_name": "React.js",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 116,
+      "skill_id": "S007",
+      "pgd_level": "Advanced",
+      "years_of_exp": 4,
+      "candidate_name": "Siddharth Joshi",
+      "skill_name": "Node.js",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 117,
+      "skill_id": "S001",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 2,
+      "candidate_name": "Kavita Reddy",
+      "skill_name": "Oracle PL/SQL Updated",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 118,
+      "skill_id": "S015",
+      "pgd_level": "Expert",
+      "years_of_exp": 6,
+      "candidate_name": "Arjun Chopra",
+      "skill_name": "Kafka",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 118,
+      "skill_id": "S004",
+      "pgd_level": "Advanced",
+      "years_of_exp": 5,
+      "candidate_name": "Arjun Chopra",
+      "skill_name": "Python",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 119,
+      "skill_id": "S002",
+      "pgd_level": "Advanced",
+      "years_of_exp": 3.5,
+      "candidate_name": "Tanvi Deshmukh",
+      "skill_name": "SQL",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 120,
+      "skill_id": "S008",
+      "pgd_level": "Expert",
+      "years_of_exp": 7,
+      "candidate_name": "Manish Bhatt",
+      "skill_name": "AWS Cloud",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 121,
+      "skill_id": "S006",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 2,
+      "candidate_name": "Ritu Saxena",
+      "skill_name": "React.js",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 122,
+      "skill_id": "S007",
+      "pgd_level": "Advanced",
+      "years_of_exp": 4,
+      "candidate_name": "Nikhil Banerjee",
+      "skill_name": "Node.js",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 123,
+      "skill_id": "S011",
+      "pgd_level": "Advanced",
+      "years_of_exp": 3.5,
+      "candidate_name": "Ishita Dhar",
+      "skill_name": "TypeScript",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 124,
+      "skill_id": "S008",
+      "pgd_level": "Expert",
+      "years_of_exp": 8.5,
+      "candidate_name": "Harsh Mehta",
+      "skill_name": "AWS Cloud",
+      "skill_category": "Technology"
+    },
+    {
+      "cand_id": 125,
+      "skill_id": "S013",
+      "pgd_level": "Intermediate",
+      "years_of_exp": 2,
+      "candidate_name": "Shreya Ghosh",
+      "skill_name": "Machine Learning",
+      "skill_category": "Technology"
+    }
+  ],
+  "jobSkills": [
+    {
+      "job_key": 1,
+      "skill_id": "S001",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J001",
+      "job_title": "S/W Dev",
+      "skill_name": "Oracle PL/SQL Updated",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 1,
+      "skill_id": "S002",
+      "is_mandatory": "Y",
+      "min_years": 1,
+      "job_id": "J001",
+      "job_title": "S/W Dev",
+      "skill_name": "SQL",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 2,
+      "skill_id": "S002",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J002",
+      "job_title": "Data Analyst",
+      "skill_name": "SQL",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 3,
+      "skill_id": "S003",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J003",
+      "job_title": "Data Analyst",
+      "skill_name": "UI Design",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 4,
+      "skill_id": "S004",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J004",
+      "job_title": "S/W Dev",
+      "skill_name": "Python",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 5,
+      "skill_id": "S005",
+      "is_mandatory": "N",
+      "min_years": 1,
+      "job_id": "J005",
+      "job_title": "Database",
+      "skill_name": "Oracle DB",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 6,
+      "skill_id": "S008",
+      "is_mandatory": "Y",
+      "min_years": 4,
+      "job_id": "J006",
+      "job_title": "Cloud Architect",
+      "skill_name": "AWS Cloud",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 6,
+      "skill_id": "S010",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J006",
+      "job_title": "Cloud Architect",
+      "skill_name": "Kubernetes",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 7,
+      "skill_id": "S006",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J007",
+      "job_title": "Frontend Dev",
+      "skill_name": "React.js",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 7,
+      "skill_id": "S011",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J007",
+      "job_title": "Frontend Dev",
+      "skill_name": "TypeScript",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 8,
+      "skill_id": "S009",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J008",
+      "job_title": "DevOps Engineer",
+      "skill_name": "Docker",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 8,
+      "skill_id": "S010",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J008",
+      "job_title": "DevOps Engineer",
+      "skill_name": "Kubernetes",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 9,
+      "skill_id": "S004",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J009",
+      "job_title": "QA Automation",
+      "skill_name": "Python",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 10,
+      "skill_id": "S013",
+      "is_mandatory": "Y",
+      "min_years": 4,
+      "job_id": "J010",
+      "job_title": "ML Engineer",
+      "skill_name": "Machine Learning",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 10,
+      "skill_id": "S004",
+      "is_mandatory": "Y",
+      "min_years": 4,
+      "job_id": "J010",
+      "job_title": "ML Engineer",
+      "skill_name": "Python",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 11,
+      "skill_id": "S012",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J011",
+      "job_title": "Cyber Analyst",
+      "skill_name": "Cybersecurity",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 12,
+      "skill_id": "S007",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J012",
+      "job_title": "Backend Dev",
+      "skill_name": "Node.js",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 12,
+      "skill_id": "S002",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J012",
+      "job_title": "Backend Dev",
+      "skill_name": "SQL",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 13,
+      "skill_id": "S003",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J013",
+      "job_title": "UI/UX Designer",
+      "skill_name": "UI Design",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 14,
+      "skill_id": "S014",
+      "is_mandatory": "Y",
+      "min_years": 5,
+      "job_id": "J014",
+      "job_title": "System Architect",
+      "skill_name": "Go / Golang",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 14,
+      "skill_id": "S005",
+      "is_mandatory": "Y",
+      "min_years": 4,
+      "job_id": "J014",
+      "job_title": "System Architect",
+      "skill_name": "Oracle DB",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 15,
+      "skill_id": "S006",
+      "is_mandatory": "Y",
+      "min_years": 2,
+      "job_id": "J015",
+      "job_title": "Mobile Dev",
+      "skill_name": "React.js",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 16,
+      "skill_id": "S006",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J016",
+      "job_title": "Full Stack Dev",
+      "skill_name": "React.js",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 16,
+      "skill_id": "S007",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J016",
+      "job_title": "Full Stack Dev",
+      "skill_name": "Node.js",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 18,
+      "skill_id": "S015",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J018",
+      "job_title": "Data Engineer",
+      "skill_name": "Kafka",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 18,
+      "skill_id": "S004",
+      "is_mandatory": "Y",
+      "min_years": 3,
+      "job_id": "J018",
+      "job_title": "Data Engineer",
+      "skill_name": "Python",
+      "skill_category": "Required"
+    },
+    {
+      "job_key": 20,
+      "skill_id": "S008",
+      "is_mandatory": "Y",
+      "min_years": 4,
+      "job_id": "J020",
+      "job_title": "Site Reliability",
+      "skill_name": "AWS Cloud",
+      "skill_category": "Required"
+    }
+  ],
+  "assessments": [
+    {
+      "cand_id": 101,
+      "job_key": 1,
+      "skill_id": "S001",
+      "match_pct": 92,
+      "assessment_score": 90,
+      "assessment_date": "2026-08-14",
+      "candidate_name": "Ram Mishra",
+      "job_title": "S/W Dev",
+      "skill_name": "Oracle PL/SQL Updated"
+    },
+    {
+      "cand_id": 102,
+      "job_key": 2,
+      "skill_id": "S002",
+      "match_pct": 85.5,
+      "assessment_score": 82,
+      "assessment_date": "2026-08-15",
+      "candidate_name": "Om Pandey",
+      "job_title": "Data Analyst",
+      "skill_name": "SQL"
+    },
+    {
+      "cand_id": 103,
+      "job_key": 3,
+      "skill_id": "S003",
+      "match_pct": 88,
+      "assessment_score": 86.5,
+      "assessment_date": "2026-08-16",
+      "candidate_name": "Ojas Dwivedi",
+      "job_title": "Data Analyst",
+      "skill_name": "UI Design"
+    },
+    {
+      "cand_id": 104,
+      "job_key": 4,
+      "skill_id": "S004",
+      "match_pct": 79,
+      "assessment_score": 78,
+      "assessment_date": "2026-08-17",
+      "candidate_name": "Sita Awasthi",
+      "job_title": "S/W Dev",
+      "skill_name": "Python"
+    },
+    {
+      "cand_id": 105,
+      "job_key": 5,
+      "skill_id": "S005",
+      "match_pct": 75,
+      "assessment_score": 74.5,
+      "assessment_date": "2026-08-18",
+      "candidate_name": "Pilu Yadav",
+      "job_title": "Database",
+      "skill_name": "Oracle DB"
+    },
+    {
+      "cand_id": 106,
+      "job_key": 6,
+      "skill_id": "S008",
+      "match_pct": 95,
+      "assessment_score": 94,
+      "assessment_date": "2026-08-19",
+      "candidate_name": "Aarav Rao",
+      "job_title": "Cloud Architect",
+      "skill_name": "AWS Cloud"
+    },
+    {
+      "cand_id": 107,
+      "job_key": 7,
+      "skill_id": "S006",
+      "match_pct": 91,
+      "assessment_score": 89,
+      "assessment_date": "2026-08-20",
+      "candidate_name": "Ananya Sharma",
+      "job_title": "Frontend Dev",
+      "skill_name": "React.js"
+    },
+    {
+      "cand_id": 108,
+      "job_key": 8,
+      "skill_id": "S010",
+      "match_pct": 88.5,
+      "assessment_score": 87,
+      "assessment_date": "2026-08-21",
+      "candidate_name": "Vikram Singh",
+      "job_title": "DevOps Engineer",
+      "skill_name": "Kubernetes"
+    },
+    {
+      "cand_id": 109,
+      "job_key": 9,
+      "skill_id": "S004",
+      "match_pct": 82,
+      "assessment_score": 80,
+      "assessment_date": "2026-08-22",
+      "candidate_name": "Pooja Nair",
+      "job_title": "QA Automation",
+      "skill_name": "Python"
+    },
+    {
+      "cand_id": 110,
+      "job_key": 10,
+      "skill_id": "S013",
+      "match_pct": 96,
+      "assessment_score": 95,
+      "assessment_date": "2026-08-23",
+      "candidate_name": "Test Updated User Updated",
+      "job_title": "ML Engineer",
+      "skill_name": "Machine Learning"
+    },
+    {
+      "cand_id": 111,
+      "job_key": 11,
+      "skill_id": "S012",
+      "match_pct": 74,
+      "assessment_score": 72,
+      "assessment_date": "2026-08-24",
+      "candidate_name": "Meera Menon",
+      "job_title": "Cyber Analyst",
+      "skill_name": "Cybersecurity"
+    },
+    {
+      "cand_id": 112,
+      "job_key": 12,
+      "skill_id": "S007",
+      "match_pct": 89,
+      "assessment_score": 88,
+      "assessment_date": "2026-08-25",
+      "candidate_name": "Rohan Verma",
+      "job_title": "Backend Dev",
+      "skill_name": "Node.js"
+    },
+    {
+      "cand_id": 113,
+      "job_key": 13,
+      "skill_id": "S003",
+      "match_pct": 86,
+      "assessment_score": 85,
+      "assessment_date": "2026-08-26",
+      "candidate_name": "Sneha Patel",
+      "job_title": "UI/UX Designer",
+      "skill_name": "UI Design"
+    },
+    {
+      "cand_id": 114,
+      "job_key": 14,
+      "skill_id": "S014",
+      "match_pct": 98,
+      "assessment_score": 97,
+      "assessment_date": "2026-08-27",
+      "candidate_name": "Aditya Gupta",
+      "job_title": "System Architect",
+      "skill_name": "Go / Golang"
+    },
+    {
+      "cand_id": 115,
+      "job_key": 15,
+      "skill_id": "S006",
+      "match_pct": 84,
+      "assessment_score": 83,
+      "assessment_date": "2026-08-28",
+      "candidate_name": "Divya Kulkarni",
+      "job_title": "Mobile Dev",
+      "skill_name": "React.js"
+    },
+    {
+      "cand_id": 116,
+      "job_key": 16,
+      "skill_id": "S007",
+      "match_pct": 93,
+      "assessment_score": 92,
+      "assessment_date": "2026-08-29",
+      "candidate_name": "Siddharth Joshi",
+      "job_title": "Full Stack Dev",
+      "skill_name": "Node.js"
+    },
+    {
+      "cand_id": 117,
+      "job_key": 17,
+      "skill_id": "S001",
+      "match_pct": 76,
+      "assessment_score": 75,
+      "assessment_date": "2026-08-30",
+      "candidate_name": "Kavita Reddy",
+      "job_title": "Technical Writer",
+      "skill_name": "Oracle PL/SQL Updated"
+    },
+    {
+      "cand_id": 118,
+      "job_key": 18,
+      "skill_id": "S015",
+      "match_pct": 94,
+      "assessment_score": 93,
+      "assessment_date": "2026-08-31",
+      "candidate_name": "Arjun Chopra",
+      "job_title": "Data Engineer",
+      "skill_name": "Kafka"
+    },
+    {
+      "cand_id": 119,
+      "job_key": 19,
+      "skill_id": "S002",
+      "match_pct": 87,
+      "assessment_score": 86,
+      "assessment_date": "2026-09-01",
+      "candidate_name": "Tanvi Deshmukh",
+      "job_title": "Product Specialist",
+      "skill_name": "SQL"
+    },
+    {
+      "cand_id": 120,
+      "job_key": 20,
+      "skill_id": "S008",
+      "match_pct": 92,
+      "assessment_score": 91,
+      "assessment_date": "2026-09-02",
+      "candidate_name": "Manish Bhatt",
+      "job_title": "Site Reliability",
+      "skill_name": "AWS Cloud"
+    }
+  ],
+  "matches": [
+    {
+      "match_id": "M001",
+      "cand_id": 101,
+      "job_key": 1,
+      "match_date": "2026-08-09",
+      "candidate_name": "Ram Mishra",
+      "job_title": "S/W Dev",
+      "salary": 75000
+    },
+    {
+      "match_id": "M002",
+      "cand_id": 102,
+      "job_key": 2,
+      "match_date": "2026-08-10",
+      "candidate_name": "Om Pandey",
+      "job_title": "Data Analyst",
+      "salary": 75000
+    },
+    {
+      "match_id": "M003",
+      "cand_id": 103,
+      "job_key": 3,
+      "match_date": "2026-08-11",
+      "candidate_name": "Ojas Dwivedi",
+      "job_title": "Data Analyst",
+      "salary": 75000
+    },
+    {
+      "match_id": "M004",
+      "cand_id": 104,
+      "job_key": 4,
+      "match_date": "2026-08-12",
+      "candidate_name": "Sita Awasthi",
+      "job_title": "S/W Dev",
+      "salary": 75000
+    },
+    {
+      "match_id": "M005",
+      "cand_id": 105,
+      "job_key": 5,
+      "match_date": "2026-08-13",
+      "candidate_name": "Pilu Yadav",
+      "job_title": "Database",
+      "salary": 75000
+    },
+    {
+      "match_id": "M006",
+      "cand_id": 106,
+      "job_key": 6,
+      "match_date": "2026-08-14",
+      "candidate_name": "Aarav Rao",
+      "job_title": "Cloud Architect",
+      "salary": 75000
+    },
+    {
+      "match_id": "M007",
+      "cand_id": 107,
+      "job_key": 7,
+      "match_date": "2026-08-15",
+      "candidate_name": "Ananya Sharma",
+      "job_title": "Frontend Dev",
+      "salary": 75000
+    },
+    {
+      "match_id": "M008",
+      "cand_id": 108,
+      "job_key": 8,
+      "match_date": "2026-08-16",
+      "candidate_name": "Vikram Singh",
+      "job_title": "DevOps Engineer",
+      "salary": 75000
+    },
+    {
+      "match_id": "M009",
+      "cand_id": 109,
+      "job_key": 9,
+      "match_date": "2026-08-17",
+      "candidate_name": "Pooja Nair",
+      "job_title": "QA Automation",
+      "salary": 75000
+    },
+    {
+      "match_id": "M010",
+      "cand_id": 110,
+      "job_key": 10,
+      "match_date": "2026-08-18",
+      "candidate_name": "Test Updated User Updated",
+      "job_title": "ML Engineer",
+      "salary": 75000
+    },
+    {
+      "match_id": "M011",
+      "cand_id": 111,
+      "job_key": 11,
+      "match_date": "2026-08-19",
+      "candidate_name": "Meera Menon",
+      "job_title": "Cyber Analyst",
+      "salary": 75000
+    },
+    {
+      "match_id": "M012",
+      "cand_id": 112,
+      "job_key": 12,
+      "match_date": "2026-08-20",
+      "candidate_name": "Rohan Verma",
+      "job_title": "Backend Dev",
+      "salary": 75000
+    },
+    {
+      "match_id": "M013",
+      "cand_id": 113,
+      "job_key": 13,
+      "match_date": "2026-08-21",
+      "candidate_name": "Sneha Patel",
+      "job_title": "UI/UX Designer",
+      "salary": 75000
+    },
+    {
+      "match_id": "M014",
+      "cand_id": 114,
+      "job_key": 14,
+      "match_date": "2026-08-22",
+      "candidate_name": "Aditya Gupta",
+      "job_title": "System Architect",
+      "salary": 75000
+    },
+    {
+      "match_id": "M015",
+      "cand_id": 115,
+      "job_key": 15,
+      "match_date": "2026-08-23",
+      "candidate_name": "Divya Kulkarni",
+      "job_title": "Mobile Dev",
+      "salary": 75000
+    },
+    {
+      "match_id": "M016",
+      "cand_id": 116,
+      "job_key": 16,
+      "match_date": "2026-08-24",
+      "candidate_name": "Siddharth Joshi",
+      "job_title": "Full Stack Dev",
+      "salary": 75000
+    },
+    {
+      "match_id": "M017",
+      "cand_id": 117,
+      "job_key": 17,
+      "match_date": "2026-08-25",
+      "candidate_name": "Kavita Reddy",
+      "job_title": "Technical Writer",
+      "salary": 75000
+    },
+    {
+      "match_id": "M018",
+      "cand_id": 118,
+      "job_key": 18,
+      "match_date": "2026-08-26",
+      "candidate_name": "Arjun Chopra",
+      "job_title": "Data Engineer",
+      "salary": 75000
+    },
+    {
+      "match_id": "M019",
+      "cand_id": 119,
+      "job_key": 19,
+      "match_date": "2026-08-27",
+      "candidate_name": "Tanvi Deshmukh",
+      "job_title": "Product Specialist",
+      "salary": 75000
+    },
+    {
+      "match_id": "M020",
+      "cand_id": 120,
+      "job_key": 20,
+      "match_date": "2026-08-28",
+      "candidate_name": "Manish Bhatt",
+      "job_title": "Site Reliability",
+      "salary": 75000
+    }
+  ],
+  "preferences": [
+    {
+      "cand_id": 105,
+      "pincode": 110001,
+      "candidate_name": "Pilu Yadav",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "country": "India"
+    },
+    {
+      "cand_id": 107,
+      "pincode": 110001,
+      "candidate_name": "Ananya Sharma",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "country": "India"
+    },
+    {
+      "cand_id": 118,
+      "pincode": 110001,
+      "candidate_name": "Arjun Chopra",
+      "city": "New Delhi",
+      "state": "Delhi",
+      "country": "India"
+    },
+    {
+      "cand_id": 124,
+      "pincode": 122001,
+      "candidate_name": "Harsh Mehta",
+      "city": "Gurugram",
+      "state": "Haryana",
+      "country": "India"
+    },
+    {
+      "cand_id": 121,
+      "pincode": 201301,
+      "candidate_name": "Ritu Saxena",
+      "city": "Noida",
+      "state": "Uttar Pradesh",
+      "country": "India"
+    },
+    {
+      "cand_id": 116,
+      "pincode": 302001,
+      "candidate_name": "Siddharth Joshi",
+      "city": "Jaipur",
+      "state": "Rajasthan",
+      "country": "India"
+    },
+    {
+      "cand_id": 113,
+      "pincode": 360001,
+      "candidate_name": "Sneha Patel",
+      "city": "Rajkot",
+      "state": "Gujarat",
+      "country": "India"
+    },
+    {
+      "cand_id": 103,
+      "pincode": 400001,
+      "candidate_name": "Ojas Dwivedi",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    {
+      "cand_id": 104,
+      "pincode": 400001,
+      "candidate_name": "Sita Awasthi",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    {
+      "cand_id": 112,
+      "pincode": 400001,
+      "candidate_name": "Rohan Verma",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    {
+      "cand_id": 119,
+      "pincode": 400001,
+      "candidate_name": "Tanvi Deshmukh",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    {
+      "cand_id": 108,
+      "pincode": 411001,
+      "candidate_name": "Vikram Singh",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    {
+      "cand_id": 115,
+      "pincode": 411001,
+      "candidate_name": "Divya Kulkarni",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    {
+      "cand_id": 110,
+      "pincode": 500001,
+      "candidate_name": "Test Updated User Updated",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "country": "India"
+    },
+    {
+      "cand_id": 117,
+      "pincode": 500001,
+      "candidate_name": "Kavita Reddy",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "country": "India"
+    },
+    {
+      "cand_id": 101,
+      "pincode": 560001,
+      "candidate_name": "Ram Mishra",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India"
+    },
+    {
+      "cand_id": 102,
+      "pincode": 560001,
+      "candidate_name": "Om Pandey",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India"
+    },
+    {
+      "cand_id": 106,
+      "pincode": 560001,
+      "candidate_name": "Aarav Rao",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India"
+    },
+    {
+      "cand_id": 114,
+      "pincode": 560001,
+      "candidate_name": "Aditya Gupta",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India"
+    },
+    {
+      "cand_id": 123,
+      "pincode": 560001,
+      "candidate_name": "Ishita Dhar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India"
+    },
+    {
+      "cand_id": 109,
+      "pincode": 600001,
+      "candidate_name": "Pooja Nair",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "country": "India"
+    },
+    {
+      "cand_id": 125,
+      "pincode": 600001,
+      "candidate_name": "Shreya Ghosh",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "country": "India"
+    },
+    {
+      "cand_id": 111,
+      "pincode": 682001,
+      "candidate_name": "Meera Menon",
+      "city": "Kochi",
+      "state": "Kerala",
+      "country": "India"
+    },
+    {
+      "cand_id": 120,
+      "pincode": 700001,
+      "candidate_name": "Manish Bhatt",
+      "city": "Kolkata",
+      "state": "W.B",
+      "country": "India"
+    },
+    {
+      "cand_id": 122,
+      "pincode": 700001,
+      "candidate_name": "Nikhil Banerjee",
+      "city": "Kolkata",
+      "state": "W.B",
+      "country": "India"
+    }
+  ],
+  "applies": [
+    {
+      "cand_id": 101,
+      "job_key": 1,
+      "candidate_name": "Ram Mishra",
+      "job_title": "S/W Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 102,
+      "job_key": 2,
+      "candidate_name": "Om Pandey",
+      "job_title": "Data Analyst",
+      "salary": 65000
+    },
+    {
+      "cand_id": 103,
+      "job_key": 3,
+      "candidate_name": "Ojas Dwivedi",
+      "job_title": "Data Analyst",
+      "salary": 65000
+    },
+    {
+      "cand_id": 104,
+      "job_key": 4,
+      "candidate_name": "Sita Awasthi",
+      "job_title": "S/W Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 105,
+      "job_key": 5,
+      "candidate_name": "Pilu Yadav",
+      "job_title": "Database",
+      "salary": 65000
+    },
+    {
+      "cand_id": 106,
+      "job_key": 6,
+      "candidate_name": "Aarav Rao",
+      "job_title": "Cloud Architect",
+      "salary": 65000
+    },
+    {
+      "cand_id": 107,
+      "job_key": 7,
+      "candidate_name": "Ananya Sharma",
+      "job_title": "Frontend Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 108,
+      "job_key": 8,
+      "candidate_name": "Vikram Singh",
+      "job_title": "DevOps Engineer",
+      "salary": 65000
+    },
+    {
+      "cand_id": 109,
+      "job_key": 9,
+      "candidate_name": "Pooja Nair",
+      "job_title": "QA Automation",
+      "salary": 65000
+    },
+    {
+      "cand_id": 110,
+      "job_key": 10,
+      "candidate_name": "Test Updated User Updated",
+      "job_title": "ML Engineer",
+      "salary": 65000
+    },
+    {
+      "cand_id": 111,
+      "job_key": 11,
+      "candidate_name": "Meera Menon",
+      "job_title": "Cyber Analyst",
+      "salary": 65000
+    },
+    {
+      "cand_id": 112,
+      "job_key": 12,
+      "candidate_name": "Rohan Verma",
+      "job_title": "Backend Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 113,
+      "job_key": 13,
+      "candidate_name": "Sneha Patel",
+      "job_title": "UI/UX Designer",
+      "salary": 65000
+    },
+    {
+      "cand_id": 114,
+      "job_key": 14,
+      "candidate_name": "Aditya Gupta",
+      "job_title": "System Architect",
+      "salary": 65000
+    },
+    {
+      "cand_id": 115,
+      "job_key": 15,
+      "candidate_name": "Divya Kulkarni",
+      "job_title": "Mobile Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 116,
+      "job_key": 16,
+      "candidate_name": "Siddharth Joshi",
+      "job_title": "Full Stack Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 117,
+      "job_key": 17,
+      "candidate_name": "Kavita Reddy",
+      "job_title": "Technical Writer",
+      "salary": 65000
+    },
+    {
+      "cand_id": 118,
+      "job_key": 18,
+      "candidate_name": "Arjun Chopra",
+      "job_title": "Data Engineer",
+      "salary": 65000
+    },
+    {
+      "cand_id": 119,
+      "job_key": 19,
+      "candidate_name": "Tanvi Deshmukh",
+      "job_title": "Product Specialist",
+      "salary": 65000
+    },
+    {
+      "cand_id": 120,
+      "job_key": 20,
+      "candidate_name": "Manish Bhatt",
+      "job_title": "Site Reliability",
+      "salary": 65000
+    },
+    {
+      "cand_id": 121,
+      "job_key": 7,
+      "candidate_name": "Ritu Saxena",
+      "job_title": "Frontend Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 122,
+      "job_key": 12,
+      "candidate_name": "Nikhil Banerjee",
+      "job_title": "Backend Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 123,
+      "job_key": 16,
+      "candidate_name": "Ishita Dhar",
+      "job_title": "Full Stack Dev",
+      "salary": 65000
+    },
+    {
+      "cand_id": 124,
+      "job_key": 6,
+      "candidate_name": "Harsh Mehta",
+      "job_title": "Cloud Architect",
+      "salary": 65000
+    },
+    {
+      "cand_id": 125,
+      "job_key": 10,
+      "candidate_name": "Shreya Ghosh",
+      "job_title": "ML Engineer",
+      "salary": 65000
+    }
+  ],
+  "follows": [
+    {
+      "cand_id": 101,
+      "emp_id": "E001",
+      "follow_date": "2026-08-01",
+      "candidate_name": "Ram Mishra",
+      "company_name": "Tech Nova Systems Updated"
+    },
+    {
+      "cand_id": 101,
+      "emp_id": "E006",
+      "follow_date": "2026-08-05",
+      "candidate_name": "Ram Mishra",
+      "company_name": "Apex Global Networks"
+    },
+    {
+      "cand_id": 102,
+      "emp_id": "E002",
+      "follow_date": "2026-08-02",
+      "candidate_name": "Om Pandey",
+      "company_name": "DataCore Analytics"
+    },
+    {
+      "cand_id": 103,
+      "emp_id": "E003",
+      "follow_date": "2026-08-03",
+      "candidate_name": "Ojas Dwivedi",
+      "company_name": "DesignTech Solutions"
+    },
+    {
+      "cand_id": 104,
+      "emp_id": "E004",
+      "follow_date": "2026-08-04",
+      "candidate_name": "Sita Awasthi",
+      "company_name": "CodeCraft Software"
+    },
+    {
+      "cand_id": 105,
+      "emp_id": "E005",
+      "follow_date": "2026-08-05",
+      "candidate_name": "Pilu Yadav",
+      "company_name": "CloudMatrix Infotech"
+    },
+    {
+      "cand_id": 106,
+      "emp_id": "E006",
+      "follow_date": "2026-08-06",
+      "candidate_name": "Aarav Rao",
+      "company_name": "Apex Global Networks"
+    },
+    {
+      "cand_id": 107,
+      "emp_id": "E007",
+      "follow_date": "2026-08-07",
+      "candidate_name": "Ananya Sharma",
+      "company_name": "CyberShield Labs"
+    },
+    {
+      "cand_id": 108,
+      "emp_id": "E008",
+      "follow_date": "2026-08-08",
+      "candidate_name": "Vikram Singh",
+      "company_name": "FinTech Dynamics"
+    },
+    {
+      "cand_id": 109,
+      "emp_id": "E009",
+      "follow_date": "2026-08-09",
+      "candidate_name": "Pooja Nair",
+      "company_name": "Quantum AI Systems"
+    },
+    {
+      "cand_id": 110,
+      "emp_id": "E010",
+      "follow_date": "2026-08-10",
+      "candidate_name": "Test Updated User Updated",
+      "company_name": "NexGen HealthTech"
+    },
+    {
+      "cand_id": 126,
+      "emp_id": "EMP016",
+      "follow_date": "2026-09-02",
+      "candidate_name": "Vikramaditya Rao",
+      "company_name": "Apex Technologies"
+    }
+  ],
+  "referrals": [
+    {
+      "cand_id": 101,
+      "referral_date": "2025-08-04",
+      "referral_status": "Accepted",
+      "candidate_name": "Ram Mishra"
+    },
+    {
+      "cand_id": 102,
+      "referral_date": "2025-08-05",
+      "referral_status": "Pending",
+      "candidate_name": "Om Pandey"
+    },
+    {
+      "cand_id": 103,
+      "referral_date": "2025-08-06",
+      "referral_status": "Accepted",
+      "candidate_name": "Ojas Dwivedi"
+    },
+    {
+      "cand_id": 104,
+      "referral_date": "2025-08-07",
+      "referral_status": "Accepted",
+      "candidate_name": "Sita Awasthi"
+    },
+    {
+      "cand_id": 105,
+      "referral_date": "2025-08-08",
+      "referral_status": "Rejected",
+      "candidate_name": "Pilu Yadav"
+    },
+    {
+      "cand_id": 106,
+      "referral_date": "2025-08-09",
+      "referral_status": "Accepted",
+      "candidate_name": "Aarav Rao"
+    },
+    {
+      "cand_id": 107,
+      "referral_date": "2025-08-10",
+      "referral_status": "Accepted",
+      "candidate_name": "Ananya Sharma"
+    },
+    {
+      "cand_id": 108,
+      "referral_date": "2025-08-11",
+      "referral_status": "Pending",
+      "candidate_name": "Vikram Singh"
+    },
+    {
+      "cand_id": 110,
+      "referral_date": "2025-08-13",
+      "referral_status": "Accepted",
+      "candidate_name": "Test Updated User Updated"
+    },
+    {
+      "cand_id": 114,
+      "referral_date": "2025-08-15",
+      "referral_status": "Accepted",
+      "candidate_name": "Aditya Gupta"
+    },
+    {
+      "cand_id": 116,
+      "referral_date": "2025-08-17",
+      "referral_status": "Accepted",
+      "candidate_name": "Siddharth Joshi"
+    },
+    {
+      "cand_id": 118,
+      "referral_date": "2025-08-19",
+      "referral_status": "Accepted",
+      "candidate_name": "Arjun Chopra"
+    },
+    {
+      "cand_id": 120,
+      "referral_date": "2025-08-21",
+      "referral_status": "Pending",
+      "candidate_name": "Manish Bhatt"
+    },
+    {
+      "cand_id": 124,
+      "referral_date": "2025-08-23",
+      "referral_status": "Accepted",
+      "candidate_name": "Harsh Mehta"
+    }
+  ]
+}

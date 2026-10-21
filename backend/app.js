@@ -19,6 +19,12 @@ import designerRoutes from './routes/designerRoutes.js';
 import dbaRoutes from './routes/dbaRoutes.js';
 import reportsRoutes from './routes/reportsRoutes.js';
 
+// Extended Schema & Relationship Routes (All 31 Relations)
+import { educationRouter, experienceRouter, dependentRouter, subtypeRouter } from './routes/profileRoutes.js';
+import { locationRouter, companyRouter, agencyRouter } from './routes/organizationRoutes.js';
+import { candidateSkillRouter, jobSkillRouter, assessmentRouter, matchRouter, preferenceRouter } from './routes/matchingRoutes.js';
+import { appliesRouter, followsRouter, referralRouter } from './routes/relationshipRoutes.js';
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -57,6 +63,29 @@ app.use('/api/designer', designerRoutes);
 app.use('/api/database', designerRoutes);
 app.use('/api/dba', dbaRoutes);
 app.use('/api/reports', reportsRoutes);
+
+// Candidate Profile Modules
+app.use('/api/education', educationRouter);
+app.use('/api/experience', experienceRouter);
+app.use('/api/dependents', dependentRouter);
+app.use('/api/subtypes', subtypeRouter);
+
+// Organizations & Location Modules
+app.use('/api/locations', locationRouter);
+app.use('/api/companies', companyRouter);
+app.use('/api/agencies', agencyRouter);
+
+// Skills & Matching Modules
+app.use('/api/candidate-skills', candidateSkillRouter);
+app.use('/api/job-skills', jobSkillRouter);
+app.use('/api/assessments', assessmentRouter);
+app.use('/api/matches', matchRouter);
+app.use('/api/preferences', preferenceRouter);
+
+// Relationships & Tracking Modules
+app.use('/api/applies', appliesRouter);
+app.use('/api/follows', followsRouter);
+app.use('/api/referrals', referralRouter);
 
 // Global Error Handler for API routes
 app.use('/api', errorHandler);

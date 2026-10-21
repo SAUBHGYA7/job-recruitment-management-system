@@ -347,7 +347,7 @@ const APP_TABLES = new Set([
   'FREELANCER', 'FRESHER', 'EXPERIENCED',
   'COMPANY', 'COMPANY_EMPLOYER',
   'RECRUITMENT_AGENCY', 'RECRUITMENT_LICENSE', 'RECRUITMENT',
-  'REQUIRES', 'MATCHED_TO', 'APPLIES', 'PREFERS', 'REFERS', 'ASSESSED_FOR', 'HAS',
+  'REQUIRES', 'MATCHED_TO', 'APPLIES', 'PREFERS', 'REFERS', 'ASSESSED_FOR', 'HAS', 'FOLLOWS',
   'APP_USERS', 'APP_AUDIT_LOG'
 ]);
 
@@ -368,7 +368,7 @@ export async function getRelationships(req, res, next) {
       let group = 'entity';
       if (['FREELANCER', 'FRESHER', 'EXPERIENCED'].includes(name)) group = 'subtype';
       else if (['CANDIDATE_ADDRESS', 'CANDIDATE_PHONE', 'CANDIDATE_EMAIL', 'JOB_DETAILS', 'JOB_POSTING', 'EDUCATION_DEGREE', 'EDUCATION_END', 'APPLICATION_DATE', 'APPLICATION_INFO', 'EMPLOYER_DETAILS', 'EMPLOYER_PHONE', 'SKILL_DETAILS', 'STATE_CITY'].includes(name)) group = 'decomposed';
-      else if (['REQUIRES', 'MATCHED_TO', 'APPLIES', 'PREFERS', 'REFERS', 'ASSESSED_FOR', 'HAS', 'COMPANY_EMPLOYER', 'RECRUITMENT'].includes(name)) group = 'relationship';
+      else if (['REQUIRES', 'MATCHED_TO', 'APPLIES', 'PREFERS', 'REFERS', 'ASSESSED_FOR', 'HAS', 'COMPANY_EMPLOYER', 'RECRUITMENT', 'FOLLOWS'].includes(name)) group = 'relationship';
       else if (['APP_USERS', 'APP_AUDIT_LOG'].includes(name)) group = 'security';
 
       let rowCount = 0;

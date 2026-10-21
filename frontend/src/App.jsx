@@ -17,6 +17,23 @@ import EmployersPage from './pages/user/EmployersPage';
 import SkillsPage from './pages/user/SkillsPage';
 import UserReportsPage from './pages/user/UserReportsPage';
 
+// Extended Schema & Relationship Modules (All 31 Relations)
+import EducationPage from './pages/user/EducationPage';
+import ExperiencePage from './pages/user/ExperiencePage';
+import DependentsPage from './pages/user/DependentsPage';
+import SubtypesPage from './pages/user/SubtypesPage';
+import LocationsPage from './pages/user/LocationsPage';
+import CompaniesPage from './pages/user/CompaniesPage';
+import AgenciesPage from './pages/user/AgenciesPage';
+import CandidateSkillsPage from './pages/user/CandidateSkillsPage';
+import JobSkillsPage from './pages/user/JobSkillsPage';
+import AssessmentsPage from './pages/user/AssessmentsPage';
+import MatchesPage from './pages/user/MatchesPage';
+import PreferencesPage from './pages/user/PreferencesPage';
+import AppliesPage from './pages/user/AppliesPage';
+import FollowsPage from './pages/user/FollowsPage';
+import ReferralsPage from './pages/user/ReferralsPage';
+
 // Designer Actor Pages
 import DesignerDashboard from './pages/designer/DesignerDashboard';
 import TablesPage from './pages/designer/TablesPage';
@@ -92,6 +109,29 @@ export default function App() {
               <Route path="/user/employers" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><EmployersPage /></ProtectedRoute>} />
               <Route path="/user/skills" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><SkillsPage /></ProtectedRoute>} />
               <Route path="/user/reports" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><UserReportsPage /></ProtectedRoute>} />
+
+              {/* Candidate Profiles */}
+              <Route path="/user/education" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><EducationPage /></ProtectedRoute>} />
+              <Route path="/user/experience" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><ExperiencePage /></ProtectedRoute>} />
+              <Route path="/user/dependents" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><DependentsPage /></ProtectedRoute>} />
+              <Route path="/user/subtypes" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><SubtypesPage /></ProtectedRoute>} />
+
+              {/* Organizations & Locations */}
+              <Route path="/user/locations" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><LocationsPage /></ProtectedRoute>} />
+              <Route path="/user/companies" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><CompaniesPage /></ProtectedRoute>} />
+              <Route path="/user/agencies" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><AgenciesPage /></ProtectedRoute>} />
+
+              {/* Skills & Matching */}
+              <Route path="/user/candidate-skills" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><CandidateSkillsPage /></ProtectedRoute>} />
+              <Route path="/user/job-skills" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><JobSkillsPage /></ProtectedRoute>} />
+              <Route path="/user/assessments" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><AssessmentsPage /></ProtectedRoute>} />
+              <Route path="/user/matches" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><MatchesPage /></ProtectedRoute>} />
+              <Route path="/user/preferences" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><PreferencesPage /></ProtectedRoute>} />
+
+              {/* Relationships & Tracking */}
+              <Route path="/user/applies" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><AppliesPage /></ProtectedRoute>} />
+              <Route path="/user/follows" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><FollowsPage /></ProtectedRoute>} />
+              <Route path="/user/referrals" element={<ProtectedRoute allowedRoles={['USER', 'DATABASE_DESIGNER', 'DBA']}><ReferralsPage /></ProtectedRoute>} />
 
               {/* Database Designer Routes */}
               <Route path="/designer/dashboard" element={<ProtectedRoute allowedRoles={['DATABASE_DESIGNER', 'DBA']}><DesignerDashboard /></ProtectedRoute>} />

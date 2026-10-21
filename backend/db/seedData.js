@@ -9755,5 +9755,67 @@ export const initialSeedData = {
       "STATE": "Haryana",
       "CITY": "Gurugram"
     }
+  ],
+  "FOLLOWS": [
+    {
+      "CAND_ID": 101,
+      "EMP_ID": "E001",
+      "FOLLOW_DATE": "2026-08-01"
+    },
+    {
+      "CAND_ID": 101,
+      "EMP_ID": "E006",
+      "FOLLOW_DATE": "2026-08-05"
+    },
+    {
+      "CAND_ID": 102,
+      "EMP_ID": "E002",
+      "FOLLOW_DATE": "2026-08-02"
+    },
+    {
+      "CAND_ID": 103,
+      "EMP_ID": "E003",
+      "FOLLOW_DATE": "2026-08-03"
+    },
+    {
+      "CAND_ID": 104,
+      "EMP_ID": "E004",
+      "FOLLOW_DATE": "2026-08-04"
+    },
+    {
+      "CAND_ID": 105,
+      "EMP_ID": "E005",
+      "FOLLOW_DATE": "2026-08-05"
+    },
+    {
+      "CAND_ID": 106,
+      "EMP_ID": "E006",
+      "FOLLOW_DATE": "2026-08-06"
+    },
+    {
+      "CAND_ID": 107,
+      "EMP_ID": "E007",
+      "FOLLOW_DATE": "2026-08-07"
+    },
+    {
+      "CAND_ID": 108,
+      "EMP_ID": "E008",
+      "FOLLOW_DATE": "2026-08-08"
+    },
+    {
+      "CAND_ID": 109,
+      "EMP_ID": "E009",
+      "FOLLOW_DATE": "2026-08-09"
+    },
+    {
+      "CAND_ID": 110,
+      "EMP_ID": "E010",
+      "FOLLOW_DATE": "2026-08-10"
+    },
+    {
+      "CAND_ID": 126,
+      "EMP_ID": "EMP016",
+      "FOLLOW_DATE": "2026-09-02"
+    }
   ]
 };
