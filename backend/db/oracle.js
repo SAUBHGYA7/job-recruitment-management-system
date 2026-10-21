@@ -574,7 +574,8 @@ function handleInMemoryQuery(sql, binds = {}) {
 
         // If the query uses JOINs (controller entity queries), return enriched/joined view
         if (hasJoin) {
-          if (tbl === 'Job') {
+          const upperTbl = (tbl || '').toUpperCase();
+          if (upperTbl === 'JOB') {
             let rows = (inMemoryDb.tables.Job || []).map(j => {
               const jd = (inMemoryDb.tables.Job_Details || []).find(d => String(d.JOB_KEY) === String(j.JOB_KEY)) || {};
               const jp = (inMemoryDb.tables.Job_Posting || []).find(p => p.JOB_TITLE === jd.JOB_TITLE) || {};
@@ -599,7 +600,7 @@ function handleInMemoryQuery(sql, binds = {}) {
             return { rows, rowsAffected: 0, isOracle: false };
           }
 
-          if (tbl === 'Candidate') {
+          if (upperTbl === 'CANDIDATE') {
             let rows = (inMemoryDb.tables.Candidate || []).map(c => {
               const ca = (inMemoryDb.tables.Candidate_Address || []).find(a => String(a.CAND_ID) === String(c.CAND_ID)) || {};
               const ce = (inMemoryDb.tables.Candidate_Email || []).filter(e => String(e.CAND_ID) === String(c.CAND_ID)).map(e => e.EMAIL).join(', ');
@@ -653,7 +654,7 @@ function handleInMemoryQuery(sql, binds = {}) {
             return { rows, rowsAffected: 0, isOracle: false };
           }
 
-          if (tbl === 'Interview') {
+          if (upperTbl === 'INTERVIEW') {
             let rows = (inMemoryDb.tables.Interview || []).map(i => {
               const id = (inMemoryDb.tables.Interview_Details || []).find(d => String(d.INT_ID) === String(i.INT_ID)) || {};
               const cand = (inMemoryDb.tables.Candidate || []).find(c => String(c.INT_ID) === String(i.INT_ID));
@@ -682,7 +683,7 @@ function handleInMemoryQuery(sql, binds = {}) {
             return { rows, rowsAffected: 0, isOracle: false };
           }
 
-          if (tbl === 'Employer') {
+          if (upperTbl === 'EMPLOYER') {
             let rows = (inMemoryDb.tables.Employer || []).map(e => {
               const ed = (inMemoryDb.tables.Employer_Details || []).find(d => String(d.EMP_ID) === String(e.EMP_ID)) || {};
               const phones = (inMemoryDb.tables.Employer_Phone || []).filter(p => String(p.EMP_ID) === String(e.EMP_ID)).map(p => p.PHONE_NO).join(', ');
@@ -715,7 +716,7 @@ function handleInMemoryQuery(sql, binds = {}) {
             return { rows, rowsAffected: 0, isOracle: false };
           }
 
-          if (tbl === 'Skill') {
+          if (upperTbl === 'SKILL') {
             let rows = (inMemoryDb.tables.Skill || []).map(s => {
               const sd = (inMemoryDb.tables.Skill_Details || []).find(d => d.SKILL_NAME === s.SKILL_NAME) || {};
               const reqCount = (inMemoryDb.tables.Requires || []).filter(r => String(r.SKILL_ID) === String(s.SKILL_ID)).length;
@@ -740,7 +741,7 @@ function handleInMemoryQuery(sql, binds = {}) {
             return { rows, rowsAffected: 0, isOracle: false };
           }
 
-          if (tbl === 'Application') {
+          if (upperTbl === 'APPLICATION') {
             let rows = (inMemoryDb.tables.Application || []).map(a => {
               const ai = (inMemoryDb.tables.Application_Info || []).find(i => String(i.APP_ID) === String(a.APP_ID));
               const ad = (inMemoryDb.tables.Application_Date || []).find(d => d.FINAL_RESULT === a.FINAL_RESULT);
@@ -893,6 +894,7 @@ function handleInMemoryQuery(sql, binds = {}) {
       }
 
       inMemoryDb.tables[tbl].push(newRow);
+      inMemoryDb.saveState?.();
       console.log(`[InMemoryDB] INSERT into ${tbl}: row added (total ${inMemoryDb.tables[tbl].length})`);
       return { rows: [], rowsAffected: 1, isOracle: false };
     }
@@ -929,6 +931,7 @@ function handleInMemoryQuery(sql, binds = {}) {
         }
         return row;
       });
+      inMemoryDb.saveState?.();
       console.log(`[InMemoryDB] UPDATE ${tbl}: ${affectedCount} row(s) affected`);
       return { rows: [], rowsAffected: affectedCount, isOracle: false };
     }
@@ -954,6 +957,7 @@ function handleInMemoryQuery(sql, binds = {}) {
       }
 
       const affected = beforeLen - inMemoryDb.tables[tbl].length;
+      inMemoryDb.saveState?.();
       console.log(`[InMemoryDB] DELETE from ${tbl}: ${affected} row(s) removed`);
       return { rows: [], rowsAffected: affected, isOracle: false };
     }

@@ -25,7 +25,8 @@ export const mockData = {
     { cand_id: 122, fullName: 'Nikhil Chandra Banerjee', gender: 'Male', dob: '1998-11-07', address: { house_no: '18A', city: 'Kolkata', street: 'Salt Lake Sector V' }, phones: ['9831055667'], emails: ['nikhil.banerjee@example.com'], education: { specialization: 'Information Security', cgpa: 8.4, degree: 'MTech', university: 'Pune University' }, application: { app_id: 'APP022', app_status: 'Rejected', final_result: 'Rejected' }, skills: [{ skill_name: 'Node.js', pgd_level: 'Advanced', years_of_exp: 4.0 }] },
     { cand_id: 123, fullName: 'Ishita Laxmi Dhar', gender: 'Female', dob: '1999-08-31', address: { house_no: '409', city: 'Bengaluru', street: 'Whitefield Main Rd' }, phones: ['9880077881'], emails: ['ishita.dhar@example.com'], education: { specialization: 'Enterprise Computing', cgpa: 8.7, degree: 'BTech', university: 'Anna University' }, application: { app_id: 'APP023', app_status: 'Shortlisted', final_result: 'Selected' }, skills: [{ skill_name: 'TypeScript', pgd_level: 'Advanced', years_of_exp: 3.5 }] },
     { cand_id: 124, fullName: 'Harsh Vardhan Mehta', gender: 'Male', dob: '1995-05-27', address: { house_no: '21', city: 'Gurugram', street: 'Cyber City DLF' }, phones: ['9812099002'], emails: ['harsh.mehta@example.com'], education: { specialization: 'Machine Learning', cgpa: 9.5, degree: 'MS CS', university: 'BITS Pilani' }, application: { app_id: 'APP024', app_status: 'Shortlisted', final_result: 'Pending' }, skills: [{ skill_name: 'AWS Cloud', pgd_level: 'Expert', years_of_exp: 8.5 }] },
-    { cand_id: 125, fullName: 'Shreya Anu Ghosh', gender: 'Female', dob: '2002-01-10', address: { house_no: '604', city: 'Chennai', street: 'OMR IT Corridor' }, phones: ['9841022339'], emails: ['shreya.ghosh@example.com'], education: { specialization: 'Information Systems', cgpa: 8.0, degree: 'MCA', university: 'Bangalore University' }, application: { app_id: 'APP025', app_status: 'In Review', final_result: 'Pending' }, skills: [{ skill_name: 'Machine Learning', pgd_level: 'Intermediate', years_of_exp: 2.0 }] }
+    { cand_id: 125, fullName: 'Shreya Anu Ghosh', gender: 'Female', dob: '2002-01-10', address: { house_no: '604', city: 'Chennai', street: 'OMR IT Corridor' }, phones: ['9841022339'], emails: ['shreya.ghosh@example.com'], education: { specialization: 'Information Systems', cgpa: 8.0, degree: 'MCA', university: 'Bangalore University' }, application: { app_id: 'APP025', app_status: 'In Review', final_result: 'Pending' }, skills: [{ skill_name: 'Machine Learning', pgd_level: 'Intermediate', years_of_exp: 2.0 }] },
+    { cand_id: 126, fullName: 'Vikramaditya Rao', fname: 'Vikramaditya', mname: '', lname: 'Rao', gender: 'Male', dob: '1998-05-15', address: { house_no: '42', city: 'Bengaluru', street: 'Koramangala 5th Block' }, phones: ['9876543210'], emails: ['vikramaditya.rao@techmail.com'], education: { specialization: 'CS & AI', cgpa: 9.6, degree: 'BTech', university: 'Anna University' }, application: { app_id: 'APP026', app_status: 'Shortlisted', final_result: 'Selected' }, skills: [{ skill_name: 'Next.js', pgd_level: 'Expert', years_of_exp: 5 }, { skill_name: 'Java', pgd_level: 'Advanced', years_of_exp: 4 }] }
   ],
   jobs: [
     { job_key: 1, job_id: 'J001', job_title: 'S/W Dev', job_status: 'Open', salary: 65000, descriptive: 'Application development engineer in enterprise Java and cloud systems.', closing_date: '2026-09-30', applicant_count: 1, required_skills: [{ skill_name: 'Java' }, { skill_name: 'SQL' }] },
@@ -47,7 +48,8 @@ export const mockData = {
     { job_key: 17, job_id: 'J017', job_title: 'Technical Writer', job_status: 'Closed', salary: 70000, descriptive: 'API documentation, developer guides, and architecture specifications.', closing_date: '2026-09-10', applicant_count: 1, required_skills: [{ skill_name: 'Java' }] },
     { job_key: 18, job_id: 'J018', job_title: 'Data Engineer', job_status: 'Open', salary: 160000, descriptive: 'Big data ingestion pipelines with Apache Spark, Kafka, and Snowflake.', closing_date: '2026-11-10', applicant_count: 1, required_skills: [{ skill_name: 'Kafka' }, { skill_name: 'Python' }] },
     { job_key: 19, job_id: 'J019', job_title: 'Product Specialist', job_status: 'Open', salary: 115000, descriptive: 'Technical product management and feature requirement gathering.', closing_date: '2026-10-12', applicant_count: 1, required_skills: [{ skill_name: 'SQL' }] },
-    { job_key: 20, job_id: 'J020', job_title: 'Site Reliability', job_status: 'Open', salary: 105000, descriptive: 'Zero-downtime operations, Prometheus monitoring, and incident response.', closing_date: '2026-10-30', applicant_count: 1, required_skills: [{ skill_name: 'AWS Cloud' }] }
+    { job_key: 20, job_id: 'J020', job_title: 'Site Reliability', job_status: 'Open', salary: 105000, descriptive: 'Zero-downtime operations, Prometheus monitoring, and incident response.', closing_date: '2026-10-30', applicant_count: 1, required_skills: [{ skill_name: 'AWS Cloud' }] },
+    { job_key: 21, job_id: 'J021', job_title: 'Lead AI Engineer', job_status: 'Open', salary: 145000, descriptive: 'Lead cutting-edge generative AI, LLM systems, and ML pipeline development.', closing_date: '2026-12-31', applicant_count: 1, required_skills: [{ skill_name: 'Next.js' }, { skill_name: 'Python' }] }
   ],
   applications: [
     { app_id: 'APP001', app_status: 'Shortlisted', final_result: 'Selected', app_date: '2026-08-10', candidate: { id: 101, name: 'Ram Kumar Mishra' }, job: { job_key: 1, job_title: 'S/W Dev' } },
@@ -74,7 +76,8 @@ export const mockData = {
     { app_id: 'APP022', app_status: 'Rejected', final_result: 'Rejected', app_date: '2026-08-22', candidate: { id: 122, name: 'Nikhil Chandra Banerjee' }, job: { job_key: 12, job_title: 'Backend Dev' } },
     { app_id: 'APP023', app_status: 'Shortlisted', final_result: 'Selected', app_date: '2026-08-15', candidate: { id: 123, name: 'Ishita Laxmi Dhar' }, job: { job_key: 16, job_title: 'Full Stack Dev' } },
     { app_id: 'APP024', app_status: 'Shortlisted', final_result: 'Pending', app_date: '2026-08-20', candidate: { id: 124, name: 'Harsh Vardhan Mehta' }, job: { job_key: 6, job_title: 'Cloud Architect' } },
-    { app_id: 'APP025', app_status: 'In Review', final_result: 'Pending', app_date: '2026-08-20', candidate: { id: 125, name: 'Shreya Anu Ghosh' }, job: { job_key: 10, job_title: 'ML Engineer' } }
+    { app_id: 'APP025', app_status: 'In Review', final_result: 'Pending', app_date: '2026-08-20', candidate: { id: 125, name: 'Shreya Anu Ghosh' }, job: { job_key: 10, job_title: 'ML Engineer' } },
+    { app_id: 'APP026', app_status: 'Shortlisted', final_result: 'Selected', app_date: '2026-09-02', candidate: { id: 126, name: 'Vikramaditya Rao' }, job: { job_key: 21, job_title: 'Lead AI Engineer' } }
   ],
   interviews: [
     { int_id: 'INT001', int_date: '2026-08-20', int_time: '10:00', int_mode: 'Online', location: 'Bengaluru', int_status: 'Scheduled', score: null, feedback: 'Interview pending technical round evaluation', candidate: { name: 'Ram Kumar Mishra' } },
@@ -101,7 +104,8 @@ export const mockData = {
     { int_id: 'INT022', int_date: '2026-09-02', int_time: '10:00', int_mode: 'Offline', location: 'Mumbai', int_status: 'Completed', score: 70, feedback: 'Adequate skills but communication needs polishing', candidate: { name: 'Nikhil Chandra Banerjee' } },
     { int_id: 'INT023', int_date: '2026-09-02', int_time: '11:30', int_mode: 'Online', location: 'Delhi', int_status: 'Completed', score: 87.5, feedback: 'Strong analytical thinking and clean code architecture', candidate: { name: 'Ishita Laxmi Dhar' } },
     { int_id: 'INT024', int_date: '2026-09-03', int_time: '14:00', int_mode: 'Online', location: 'Pune', int_status: 'Scheduled', score: null, feedback: 'Machine learning modeling round', candidate: { name: 'Harsh Vardhan Mehta' } },
-    { int_id: 'INT025', int_date: '2026-09-03', int_time: '15:30', int_mode: 'Offline', location: 'Gurugram', int_status: 'Scheduled', score: null, feedback: 'Technical discussion with VP of Engineering', candidate: { name: 'Shreya Anu Ghosh' } }
+    { int_id: 'INT025', int_date: '2026-09-03', int_time: '15:30', int_mode: 'Offline', location: 'Gurugram', int_status: 'Scheduled', score: null, feedback: 'Technical discussion with VP of Engineering', candidate: { name: 'Shreya Anu Ghosh' } },
+    { int_id: 'INT026', int_date: '2026-09-05', int_time: '11:00', int_mode: 'Online', location: 'Bengaluru', int_status: 'Completed', score: 96, feedback: 'Exceptional architecture skills and mastery of full-stack AI development.', candidate: { name: 'Vikramaditya Rao' } }
   ],
   employers: [
     { emp_id: 'E001', company_name: 'Tech Nova Systems', founded_year: 2015, headquarter: 'Bengaluru', company_mail: 'hr@technova.com', phones: ['9784659312'], license_no: 'LIC-4101-KAR', agency_name: 'Talent Bridge Global' },
@@ -118,7 +122,8 @@ export const mockData = {
     { emp_id: 'E012', company_name: 'AutoDrive Robotics', founded_year: 2020, headquarter: 'Chennai', company_mail: 'drive@autodrive.com', phones: ['9840133557'], license_no: 'LIC-4112-TN', agency_name: 'Apex Hire Consultants' },
     { emp_id: 'E013', company_name: 'EduSphere Learning', founded_year: 2015, headquarter: 'Noida', company_mail: 'talent@edusphere.com', phones: ['9818055779'], license_no: 'LIC-4113-UP', agency_name: 'CloudStaff Executive' },
     { emp_id: 'E014', company_name: 'Solaris Clean Energy', founded_year: 2018, headquarter: 'Ahmedabad', company_mail: 'hr@solarisenergy.com', phones: ['9825077991'], license_no: 'LIC-4114-GUJ', agency_name: 'Talent Bridge Global' },
-    { emp_id: 'E015', company_name: 'HyperScale Cloud Labs', founded_year: 2019, headquarter: 'Bengaluru', company_mail: 'careers@hyperscale.com', phones: ['9880099113'], license_no: 'LIC-4115-KAR', agency_name: 'TechElite Search Partners' }
+    { emp_id: 'E015', company_name: 'HyperScale Cloud Labs', founded_year: 2019, headquarter: 'Bengaluru', company_mail: 'careers@hyperscale.com', phones: ['9880099113'], license_no: 'LIC-4115-KAR', agency_name: 'TechElite Search Partners' },
+    { emp_id: 'E016', company_name: 'Apex Technologies', founded_year: 2018, headquarter: 'Bengaluru', company_mail: 'contact@apextech.io', website: 'https://apextech.io', phones: ['9876543219'], license_no: 'LIC-4116-KAR', agency_name: 'TechElite Search Partners' }
   ],
   skills: [
     { skill_id: 'S001', skill_name: 'Java', skill_category: 'Programming', description: 'Core Java, Spring Boot, OOP principles and JVM optimization', demandCount: 2, candidatesWithSkill: 3 },
@@ -135,7 +140,8 @@ export const mockData = {
     { skill_id: 'S012', skill_name: 'Cybersecurity', skill_category: 'Security & Audit', description: 'Penetration testing, encryption standards, OAuth2, and OWASP top 10', demandCount: 1, candidatesWithSkill: 1 },
     { skill_id: 'S013', skill_name: 'Machine Learning', skill_category: 'Data Science', description: 'Scikit-learn, PyTorch, statistical modeling, and inference pipelines', demandCount: 1, candidatesWithSkill: 2 },
     { skill_id: 'S014', skill_name: 'Go / Golang', skill_category: 'Programming', description: 'High-concurrency systems programming, goroutines, and channels', demandCount: 1, candidatesWithSkill: 1 },
-    { skill_id: 'S015', skill_name: 'Kafka', skill_category: 'Data Engineering', description: 'Distributed streaming event architecture, topic partitions, and consumer groups', demandCount: 1, candidatesWithSkill: 1 }
+    { skill_id: 'S015', skill_name: 'Kafka', skill_category: 'Data Engineering', description: 'Distributed streaming event architecture, topic partitions, and consumer groups', demandCount: 1, candidatesWithSkill: 1 },
+    { skill_id: 'S016', skill_name: 'Next.js', skill_category: 'Frontend & Full Stack', description: 'React full stack framework with server components and edge rendering', demandCount: 3, candidatesWithSkill: 2 }
   ],
   users: [
     { user_id: 1, USER_ID: 1, username: 'recruiter', USERNAME: 'recruiter', role: 'USER', ROLE: 'USER', is_active: 1, IS_ACTIVE: 1, full_name: 'Alex Mercer (Recruitment Lead)', FULL_NAME: 'Alex Mercer (Recruitment Lead)', email: 'recruiter@jrms.org', EMAIL: 'recruiter@jrms.org', created_at: '2026-09-01 09:00:00', CREATED_AT: '2026-09-01 09:00:00' },
@@ -724,18 +730,109 @@ export function executeMockSql(query) {
 }
 
 // ─── Browser Persistence Sync (For Hosted Cloud / Vercel Fallback Mode) ──────
+export const deletedMockIds = {
+  candidates: new Set(),
+  jobs: new Set(),
+  employers: new Set(),
+  applications: new Set(),
+  interviews: new Set(),
+  skills: new Set()
+};
+
 if (typeof window !== 'undefined' && window.localStorage) {
   try {
     const saved = localStorage.getItem('jrms_cloud_dataset');
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed === 'object') {
-        if (Array.isArray(parsed.candidates)) mockData.candidates = parsed.candidates;
-        if (Array.isArray(parsed.jobs)) mockData.jobs = parsed.jobs;
-        if (Array.isArray(parsed.applications)) mockData.applications = parsed.applications;
-        if (Array.isArray(parsed.interviews)) mockData.interviews = parsed.interviews;
-        if (Array.isArray(parsed.employers)) mockData.employers = parsed.employers;
-        if (Array.isArray(parsed.skills)) mockData.skills = parsed.skills;
+        // Load deleted IDs
+        if (parsed.deletedIds) {
+          if (Array.isArray(parsed.deletedIds.candidates)) parsed.deletedIds.candidates.forEach(id => deletedMockIds.candidates.add(Number(id)));
+          if (Array.isArray(parsed.deletedIds.jobs)) parsed.deletedIds.jobs.forEach(id => deletedMockIds.jobs.add(String(id)));
+          if (Array.isArray(parsed.deletedIds.employers)) parsed.deletedIds.employers.forEach(id => deletedMockIds.employers.add(String(id).toUpperCase()));
+          if (Array.isArray(parsed.deletedIds.applications)) parsed.deletedIds.applications.forEach(id => deletedMockIds.applications.add(String(id).toUpperCase()));
+          if (Array.isArray(parsed.deletedIds.interviews)) parsed.deletedIds.interviews.forEach(id => deletedMockIds.interviews.add(String(id).toUpperCase()));
+          if (Array.isArray(parsed.deletedIds.skills)) parsed.deletedIds.skills.forEach(id => deletedMockIds.skills.add(String(id).toUpperCase()));
+        }
+
+        // Candidates: merge saved candidates with seed candidates (excluding deleted)
+        if (Array.isArray(parsed.candidates)) {
+          const savedCandMap = new Map();
+          parsed.candidates.forEach(c => savedCandMap.set(c.cand_id, c));
+          // Keep existing seed candidates that were not deleted
+          mockData.candidates.forEach(seedC => {
+            if (!savedCandMap.has(seedC.cand_id) && !deletedMockIds.candidates.has(seedC.cand_id)) {
+              savedCandMap.set(seedC.cand_id, seedC);
+            }
+          });
+          mockData.candidates = Array.from(savedCandMap.values()).filter(c => !deletedMockIds.candidates.has(c.cand_id));
+        }
+
+        // Jobs
+        if (Array.isArray(parsed.jobs)) {
+          const savedJobMap = new Map();
+          parsed.jobs.forEach(j => savedJobMap.set(String(j.job_key || j.job_id), j));
+          mockData.jobs.forEach(seedJ => {
+            const k = String(seedJ.job_key || seedJ.job_id);
+            if (!savedJobMap.has(k) && !deletedMockIds.jobs.has(k) && !deletedMockIds.jobs.has(String(seedJ.job_key)) && !deletedMockIds.jobs.has(String(seedJ.job_id))) {
+              savedJobMap.set(k, seedJ);
+            }
+          });
+          mockData.jobs = Array.from(savedJobMap.values()).filter(j => !deletedMockIds.jobs.has(String(j.job_key)) && !deletedMockIds.jobs.has(String(j.job_id)));
+        }
+
+        // Employers
+        if (Array.isArray(parsed.employers)) {
+          const savedEmpMap = new Map();
+          parsed.employers.forEach(e => savedEmpMap.set(String(e.emp_id).toUpperCase(), e));
+          mockData.employers.forEach(seedE => {
+            const k = String(seedE.emp_id).toUpperCase();
+            if (!savedEmpMap.has(k) && !deletedMockIds.employers.has(k)) {
+              savedEmpMap.set(k, seedE);
+            }
+          });
+          mockData.employers = Array.from(savedEmpMap.values()).filter(e => !deletedMockIds.employers.has(String(e.emp_id).toUpperCase()));
+        }
+
+        // Applications
+        if (Array.isArray(parsed.applications)) {
+          const savedAppMap = new Map();
+          parsed.applications.forEach(a => savedAppMap.set(String(a.app_id).toUpperCase(), a));
+          mockData.applications.forEach(seedA => {
+            const k = String(seedA.app_id).toUpperCase();
+            if (!savedAppMap.has(k) && !deletedMockIds.applications.has(k)) {
+              savedAppMap.set(k, seedA);
+            }
+          });
+          mockData.applications = Array.from(savedAppMap.values()).filter(a => !deletedMockIds.applications.has(String(a.app_id).toUpperCase()));
+        }
+
+        // Interviews
+        if (Array.isArray(parsed.interviews)) {
+          const savedIntMap = new Map();
+          parsed.interviews.forEach(i => savedIntMap.set(String(i.int_id).toUpperCase(), i));
+          mockData.interviews.forEach(seedI => {
+            const k = String(seedI.int_id).toUpperCase();
+            if (!savedIntMap.has(k) && !deletedMockIds.interviews.has(k)) {
+              savedIntMap.set(k, seedI);
+            }
+          });
+          mockData.interviews = Array.from(savedIntMap.values()).filter(i => !deletedMockIds.interviews.has(String(i.int_id).toUpperCase()));
+        }
+
+        // Skills
+        if (Array.isArray(parsed.skills)) {
+          const savedSkillMap = new Map();
+          parsed.skills.forEach(s => savedSkillMap.set(String(s.skill_id || s.skill_name).toUpperCase(), s));
+          mockData.skills.forEach(seedS => {
+            const k = String(seedS.skill_id || seedS.skill_name).toUpperCase();
+            if (!savedSkillMap.has(k) && !deletedMockIds.skills.has(k)) {
+              savedSkillMap.set(k, seedS);
+            }
+          });
+          mockData.skills = Array.from(savedSkillMap.values()).filter(s => !deletedMockIds.skills.has(String(s.skill_id).toUpperCase()) && !deletedMockIds.skills.has(String(s.skill_name).toUpperCase()));
+        }
+
         if (Array.isArray(parsed.users)) mockData.users = parsed.users;
         if (Array.isArray(parsed.auditLogs)) mockData.auditLogs = parsed.auditLogs;
         normalizeMockCandidates();
@@ -757,7 +854,15 @@ export function saveMockData() {
         employers: mockData.employers,
         skills: mockData.skills,
         users: mockData.users,
-        auditLogs: mockData.auditLogs
+        auditLogs: mockData.auditLogs,
+        deletedIds: {
+          candidates: Array.from(deletedMockIds.candidates),
+          jobs: Array.from(deletedMockIds.jobs),
+          employers: Array.from(deletedMockIds.employers),
+          applications: Array.from(deletedMockIds.applications),
+          interviews: Array.from(deletedMockIds.interviews),
+          skills: Array.from(deletedMockIds.skills)
+        }
       }));
     } catch (e) {
       console.warn('[Cloud Dataset] Could not save to localStorage:', e);
@@ -766,6 +871,12 @@ export function saveMockData() {
 }
 
 export function resetMockData() {
+  deletedMockIds.candidates.clear();
+  deletedMockIds.jobs.clear();
+  deletedMockIds.employers.clear();
+  deletedMockIds.applications.clear();
+  deletedMockIds.interviews.clear();
+  deletedMockIds.skills.clear();
   mockData.candidates = JSON.parse(JSON.stringify(initialSeedSnapshot.candidates));
   mockData.jobs = JSON.parse(JSON.stringify(initialSeedSnapshot.jobs));
   mockData.applications = JSON.parse(JSON.stringify(initialSeedSnapshot.applications));

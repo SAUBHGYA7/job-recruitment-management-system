@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {
   mockData,
+  deletedMockIds,
   saveMockData,
   resetMockData,
   logMockAudit,
@@ -57,6 +58,7 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
     if (cleanUrl.startsWith('/candidates/')) {
       const id = parseInt(cleanUrl.split('/')[2], 10);
       mockData.candidates = mockData.candidates.filter(c => c.cand_id !== id);
+      deletedMockIds.candidates.add(id);
       logMockAudit('DELETE_CANDIDATE', `Deleted Candidate #${id} from database`);
       saveMockData();
       return { success: true, message: `Candidate #${id} deleted from database` };
@@ -64,6 +66,7 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
     if (cleanUrl.startsWith('/jobs/')) {
       const id = cleanUrl.split('/')[2];
       mockData.jobs = mockData.jobs.filter(j => String(j.job_key) !== id && String(j.job_id) !== id);
+      deletedMockIds.jobs.add(id);
       logMockAudit('DELETE_JOB', `Deleted Job #${id} from database`);
       saveMockData();
       return { success: true, message: `Job #${id} deleted from database` };
@@ -71,6 +74,7 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
     if (cleanUrl.startsWith('/applications/')) {
       const id = cleanUrl.split('/')[2];
       mockData.applications = mockData.applications.filter(a => String(a.app_id) !== id);
+      deletedMockIds.applications.add(id.toUpperCase());
       logMockAudit('DELETE_APPLICATION', `Deleted Application #${id} from database`);
       saveMockData();
       return { success: true, message: `Application #${id} deleted from database` };
@@ -78,6 +82,7 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
     if (cleanUrl.startsWith('/interviews/')) {
       const id = cleanUrl.split('/')[2];
       mockData.interviews = mockData.interviews.filter(i => String(i.int_id) !== id);
+      deletedMockIds.interviews.add(id.toUpperCase());
       logMockAudit('DELETE_INTERVIEW', `Deleted Interview #${id} from database`);
       saveMockData();
       return { success: true, message: `Interview #${id} deleted from database` };
@@ -85,6 +90,7 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
     if (cleanUrl.startsWith('/employers/')) {
       const id = cleanUrl.split('/')[2];
       mockData.employers = mockData.employers.filter(e => String(e.emp_id) !== id);
+      deletedMockIds.employers.add(id.toUpperCase());
       logMockAudit('DELETE_EMPLOYER', `Deleted Employer #${id} from database`);
       saveMockData();
       return { success: true, message: `Employer #${id} deleted from database` };
@@ -92,6 +98,7 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
     if (cleanUrl.startsWith('/skills/')) {
       const id = cleanUrl.split('/')[2];
       mockData.skills = mockData.skills.filter(s => String(s.skill_id) !== id && String(s.skill_name).toLowerCase() !== id.toLowerCase());
+      deletedMockIds.skills.add(id.toUpperCase());
       logMockAudit('DELETE_SKILL', `Deleted Skill #${id} from database`);
       saveMockData();
       return { success: true, message: `Skill #${id} deleted from database` };
@@ -767,14 +774,105 @@ export function resolveFallbackData(url, method = 'get', body = {}) {
   return { success: true, data: [] };
 }
 
-// Response Interceptor: Handle API errors and transparently resolve fallback data
+// Response Interceptor: Handle API mutations, errors, and transparently merge persistent state
 api.interceptors.response.use(
   (response) => {
-    // If response returned HTML instead of JSON (typical when API route 404s and hits index.html on Vercel)
+    const method = (response.config?.method || 'get').toLowerCase();
+    const cleanUrl = (response.config?.url || '').replace(/^\/api/, '').split('?')[0];
+
+    // ─── 1. If Mutation (POST/PUT/DELETE/PATCH), ALWAYS keep localStorage in sync ───
+    if (['post', 'put', 'delete', 'patch'].includes(method)) {
+      try {
+        const parsedBody = safeParseBody(response.config?.data);
+        resolveFallbackData(response.config?.url, method, parsedBody);
+      } catch (e) {
+        console.warn('[Sync] Fallback mutation sync warning:', e);
+      }
+    }
+
+    // ─── 2. If response returned HTML instead of JSON (typical when API route 404s on Vercel) ───
     if (typeof response.data === 'string' && (response.data.toLowerCase().includes('<!doctype') || response.data.toLowerCase().includes('<html'))) {
       const fallback = resolveFallbackData(response.config.url, response.config.method, safeParseBody(response.config.data));
       return { ...response, data: fallback };
     }
+
+    // ─── 3. If GET request returned data, merge with client-side persistent storage ───
+    if (method === 'get' && response.data && typeof response.data === 'object') {
+      if (cleanUrl === '/candidates' && Array.isArray(response.data.data)) {
+        // Filter out deleted
+        let list = response.data.data.filter(c => !deletedMockIds.candidates.has(Number(c.cand_id ?? c.CAND_ID)));
+        // Merge missing from local
+        const serverIds = new Set(list.map(c => Number(c.cand_id ?? c.CAND_ID)));
+        const missing = mockData.candidates.filter(c => !serverIds.has(Number(c.cand_id)) && !deletedMockIds.candidates.has(Number(c.cand_id)));
+        list = [...list, ...missing];
+        // Apply local edits
+        response.data.data = list.map(c => {
+          const id = Number(c.cand_id ?? c.CAND_ID);
+          const localMatch = mockData.candidates.find(m => m.cand_id === id);
+          return localMatch ? { ...c, ...localMatch } : c;
+        });
+      } else if (cleanUrl === '/jobs' && Array.isArray(response.data.data)) {
+        let list = response.data.data.filter(j => !deletedMockIds.jobs.has(String(j.job_key ?? j.JOB_KEY)) && !deletedMockIds.jobs.has(String(j.job_id ?? j.JOB_ID)));
+        const serverKeys = new Set(list.map(j => String(j.job_key ?? j.JOB_KEY ?? j.job_id ?? j.JOB_ID)));
+        const missing = mockData.jobs.filter(j => !serverKeys.has(String(j.job_key)) && !serverKeys.has(String(j.job_id)) && !deletedMockIds.jobs.has(String(j.job_key)));
+        list = [...list, ...missing];
+        response.data.data = list.map(j => {
+          const k = String(j.job_key ?? j.JOB_KEY ?? j.job_id ?? j.JOB_ID);
+          const localMatch = mockData.jobs.find(m => String(m.job_key) === k || String(m.job_id) === k);
+          return localMatch ? { ...j, ...localMatch } : j;
+        });
+      } else if (cleanUrl === '/employers' && Array.isArray(response.data.data)) {
+        let list = response.data.data.filter(e => !deletedMockIds.employers.has(String(e.emp_id ?? e.EMP_ID).toUpperCase()));
+        const serverIds = new Set(list.map(e => String(e.emp_id ?? e.EMP_ID).toUpperCase()));
+        const missing = mockData.employers.filter(e => !serverIds.has(String(e.emp_id).toUpperCase()) && !deletedMockIds.employers.has(String(e.emp_id).toUpperCase()));
+        list = [...list, ...missing];
+        response.data.data = list.map(e => {
+          const id = String(e.emp_id ?? e.EMP_ID).toUpperCase();
+          const localMatch = mockData.employers.find(m => String(m.emp_id).toUpperCase() === id);
+          return localMatch ? { ...e, ...localMatch } : e;
+        });
+      } else if (cleanUrl === '/applications' && Array.isArray(response.data.data)) {
+        let list = response.data.data.filter(a => !deletedMockIds.applications.has(String(a.app_id ?? a.APP_ID).toUpperCase()));
+        const serverIds = new Set(list.map(a => String(a.app_id ?? a.APP_ID).toUpperCase()));
+        const missing = mockData.applications.filter(a => !serverIds.has(String(a.app_id).toUpperCase()) && !deletedMockIds.applications.has(String(a.app_id).toUpperCase()));
+        list = [...list, ...missing];
+        response.data.data = list.map(a => {
+          const id = String(a.app_id ?? a.APP_ID).toUpperCase();
+          const localMatch = mockData.applications.find(m => String(m.app_id).toUpperCase() === id);
+          return localMatch ? { ...a, ...localMatch } : a;
+        });
+      } else if (cleanUrl === '/interviews' && Array.isArray(response.data.data)) {
+        let list = response.data.data.filter(i => !deletedMockIds.interviews.has(String(i.int_id ?? i.INT_ID).toUpperCase()));
+        const serverIds = new Set(list.map(i => String(i.int_id ?? i.INT_ID).toUpperCase()));
+        const missing = mockData.interviews.filter(i => !serverIds.has(String(i.int_id).toUpperCase()) && !deletedMockIds.interviews.has(String(i.int_id).toUpperCase()));
+        list = [...list, ...missing];
+        response.data.data = list.map(i => {
+          const id = String(i.int_id ?? i.INT_ID).toUpperCase();
+          const localMatch = mockData.interviews.find(m => String(m.int_id).toUpperCase() === id);
+          return localMatch ? { ...i, ...localMatch } : i;
+        });
+      } else if (cleanUrl === '/skills' && Array.isArray(response.data.data)) {
+        let list = response.data.data.filter(s => !deletedMockIds.skills.has(String(s.skill_id ?? s.SKILL_ID ?? s.skill_name).toUpperCase()));
+        const serverIds = new Set(list.map(s => String(s.skill_id ?? s.SKILL_ID ?? s.skill_name).toUpperCase()));
+        const missing = mockData.skills.filter(s => !serverIds.has(String(s.skill_id || s.skill_name).toUpperCase()) && !deletedMockIds.skills.has(String(s.skill_id || s.skill_name).toUpperCase()));
+        list = [...list, ...missing];
+        response.data.data = list.map(s => {
+          const id = String(s.skill_id ?? s.SKILL_ID ?? s.skill_name).toUpperCase();
+          const localMatch = mockData.skills.find(m => String(m.skill_id || m.skill_name).toUpperCase() === id);
+          return localMatch ? { ...s, ...localMatch } : s;
+        });
+      } else if ((cleanUrl === '/user/dashboard' || cleanUrl === '/dashboard') && response.data.data?.kpis) {
+        response.data.data.kpis = {
+          totalCandidates: mockData.candidates.length,
+          totalJobs: mockData.jobs.length,
+          openJobs: mockData.jobs.filter(j => j.job_status === 'Open').length,
+          totalApplications: mockData.applications.length,
+          totalInterviews: mockData.interviews.length,
+          totalEmployers: mockData.employers.length
+        };
+      }
+    }
+
     return response;
   },
   (error) => {

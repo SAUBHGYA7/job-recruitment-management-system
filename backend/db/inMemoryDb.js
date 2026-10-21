@@ -1,15 +1,73 @@
-// Smart In-Memory Relational Database Engine faithfully simulating Oracle DB
-// for offline testing, viva demonstrations, and automatic fallback.
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import { initialSeedData } from './seedData.js';
+
+const PERSIST_FILE = path.join(os.tmpdir(), 'jrms_db_state.json');
+
+function createCaseInsensitiveTableMap(rawTables) {
+  const store = {};
+  for (const [k, v] of Object.entries(rawTables)) {
+    store[k.toUpperCase()] = v;
+  }
+  return new Proxy(store, {
+    get(target, prop) {
+      if (typeof prop === 'string') {
+        const up = prop.toUpperCase();
+        if (up in target) return target[up];
+      }
+      return target[prop];
+    },
+    set(target, prop, value) {
+      if (typeof prop === 'string') {
+        target[prop.toUpperCase()] = value;
+      } else {
+        target[prop] = value;
+      }
+      return true;
+    }
+  });
+}
 
 class InMemoryOracleEngine {
   constructor() {
-    this.tables = JSON.parse(JSON.stringify(initialSeedData));
+    this.tables = this.loadState();
     this.schemaMetadata = this.buildMetadata();
   }
 
+  loadState() {
+    try {
+      if (fs.existsSync(PERSIST_FILE)) {
+        const content = fs.readFileSync(PERSIST_FILE, 'utf8');
+        const parsed = JSON.parse(content);
+        if (parsed && typeof parsed === 'object') {
+          console.log('[InMemoryDB] Restored state from persistence file:', PERSIST_FILE);
+          return createCaseInsensitiveTableMap(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('[InMemoryDB] Could not load persisted state:', e.message);
+    }
+    return createCaseInsensitiveTableMap(JSON.parse(JSON.stringify(initialSeedData)));
+  }
+
+  saveState() {
+    try {
+      const dump = {};
+      for (const k of Object.keys(this.tables)) {
+        dump[k] = this.tables[k];
+      }
+      fs.writeFileSync(PERSIST_FILE, JSON.stringify(dump), 'utf8');
+    } catch (e) {
+      // Non-fatal
+    }
+  }
+
   resetData() {
-    this.tables = JSON.parse(JSON.stringify(initialSeedData));
+    try {
+      if (fs.existsSync(PERSIST_FILE)) fs.unlinkSync(PERSIST_FILE);
+    } catch (e) {}
+    this.tables = createCaseInsensitiveTableMap(JSON.parse(JSON.stringify(initialSeedData)));
   }
 
   buildMetadata() {

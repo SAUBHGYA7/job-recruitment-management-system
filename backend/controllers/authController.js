@@ -113,12 +113,13 @@ export async function login(req, res, next) {
     );
 
     // Audit log
+    const clientIp = (req.headers && req.headers['x-forwarded-for']) || req.socket?.remoteAddress || '127.0.0.1';
     await logAuditEvent({
       username: user.username,
       role: user.role,
       action: 'USER_LOGIN',
       details: `Successful login as ${user.role} (${user.fullName})`,
-      ipAddress: req.ip || '127.0.0.1'
+      ipAddress: clientIp
     });
 
     res.json({
@@ -147,12 +148,13 @@ export async function getCurrentUser(req, res) {
 
 export async function logout(req, res) {
   if (req.user) {
+    const clientIp = (req.headers && req.headers['x-forwarded-for']) || req.socket?.remoteAddress || '127.0.0.1';
     await logAuditEvent({
       username: req.user.username,
       role: req.user.role,
       action: 'USER_LOGOUT',
       details: `User logged out`,
-      ipAddress: req.ip || '127.0.0.1'
+      ipAddress: clientIp
     });
   }
   res.json({
