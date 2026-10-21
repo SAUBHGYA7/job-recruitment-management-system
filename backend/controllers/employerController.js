@@ -6,24 +6,30 @@ export async function updateEmployer(req, res, next) {
     const { id } = req.params;
     const { company_name, founded_year, company_mail, website, headquarter, phone_no } = req.body;
 
-    if (!company_name) {
-      return res.status(400).json({ success: false, message: 'Company name is required.' });
-    }
+    const existingRes = await executeQuery(`SELECT company_name, founded_year FROM Employer WHERE emp_id = :id`, { id });
+    const existing = existingRes.rows[0] || {};
+    const targetName = company_name || existing.COMPANY_NAME || existing.company_name || 'Enterprise';
+    const targetYear = founded_year ? parseInt(founded_year, 10) : (existing.FOUNDED_YEAR || existing.founded_year || 2020);
 
     await executeQuery(`
-      UPDATE Employer SET company_name = :company_name, founded_year = :founded_year WHERE emp_id = :id
-    `, { company_name, founded_year: founded_year ? parseInt(founded_year, 10) : 2020, id });
+      UPDATE Employer SET company_name = :targetName, founded_year = :targetYear WHERE emp_id = :id
+    `, { targetName, targetYear, id });
 
-    const detailsCheck = await executeQuery(`SELECT emp_id FROM Employer_Details WHERE emp_id = :id`, { id });
+    const detailsCheck = await executeQuery(`SELECT emp_id, company_mail, website, headquarter FROM Employer_Details WHERE emp_id = :id`, { id });
+    const existingDet = detailsCheck.rows[0] || {};
+    const targetMail = company_mail !== undefined ? company_mail : (existingDet.COMPANY_MAIL || existingDet.company_mail || 'contact@company.com');
+    const targetSite = website !== undefined ? website : (existingDet.WEBSITE || existingDet.website || 'https://company.example.com');
+    const targetHQ = headquarter !== undefined ? headquarter : (existingDet.HEADQUARTER || existingDet.headquarter || 'Bengaluru');
+
     if (detailsCheck.rows.length > 0) {
       await executeQuery(`
-        UPDATE Employer_Details SET company_mail = :company_mail, website = :website, headquarter = :headquarter WHERE emp_id = :id
-      `, { id, company_mail: company_mail || 'contact@company.com', website: website || 'https://company.example.com', headquarter: headquarter || 'Bengaluru' });
+        UPDATE Employer_Details SET company_mail = :targetMail, website = :targetSite, headquarter = :targetHQ WHERE emp_id = :id
+      `, { id, targetMail, targetSite, targetHQ });
     } else {
       await executeQuery(`
         INSERT INTO Employer_Details (emp_id, company_mail, website, headquarter)
-        VALUES (:id, :company_mail, :website, :headquarter)
-      `, { id, company_mail: company_mail || 'contact@company.com', website: website || 'https://company.example.com', headquarter: headquarter || 'Bengaluru' });
+        VALUES (:id, :targetMail, :targetSite, :targetHQ)
+      `, { id, targetMail, targetSite, targetHQ });
     }
 
     if (phone_no !== undefined) {
@@ -40,7 +46,7 @@ export async function updateEmployer(req, res, next) {
       username: req.user?.username || 'USER',
       role: req.user?.role || 'USER',
       action: 'UPDATE_EMPLOYER',
-      details: `Updated Employer #${id} (${company_name}) in Oracle Database`
+      details: `Updated Employer #${id} (${targetName}) in Oracle Database`
     });
 
     res.json({ success: true, message: `Employer #${id} updated successfully in Oracle.` });

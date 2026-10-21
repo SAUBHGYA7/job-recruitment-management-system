@@ -160,3 +160,28 @@ export async function logout(req, res) {
     message: 'Logged out successfully.'
   });
 }
+
+export async function quickLogin(req, res, next) {
+  try {
+    const role = (req.body?.role || 'USER').toUpperCase();
+    const userMap = {
+      USER: 'recruiter',
+      DATABASE_DESIGNER: 'designer',
+      DESIGNER: 'designer',
+      DBA: 'dba_admin'
+    };
+    const targetUsername = userMap[role] || 'recruiter';
+    const validPasswords = {
+      recruiter: 'User@123',
+      designer: 'Designer@123',
+      dba_admin: 'Dba@123'
+    };
+    req.body = {
+      username: targetUsername,
+      password: validPasswords[targetUsername]
+    };
+    return login(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+}

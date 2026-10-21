@@ -9,6 +9,7 @@ router.use(authenticateUser);
 
 router.get('/', requireRole('USER', 'DATABASE_DESIGNER', 'DBA'), getApplications);
 router.post('/', requireRole('USER', 'DBA'), createApplication);
+router.put('/:id', requireRole('USER', 'DBA'), updateApplicationStatus);
 router.put('/:id/status', requireRole('USER', 'DBA'), updateApplicationStatus);
 router.delete('/:id', requireRole('USER', 'DBA'), deleteApplication);
 
