@@ -152,7 +152,12 @@ export async function getCandidateById(req, res, next) {
         dob: c.DOB ?? c.dob,
         gender: c.GENDER ?? c.gender,
         reg_date: c.REG_DATE ?? c.reg_date,
-        address: addrRes.rows[0] || {},
+        address: addrRes.rows[0] ? {
+          house_no: addrRes.rows[0].HOUSE_NO ?? addrRes.rows[0].house_no ?? '',
+          city: addrRes.rows[0].CITY ?? addrRes.rows[0].city ?? '',
+          street: addrRes.rows[0].STREET ?? addrRes.rows[0].street ?? '',
+          ...addrRes.rows[0]
+        } : {},
         emails: emailRes.rows.map(r => r.EMAIL || r.email),
         phones: phoneRes.rows.map(r => r.PHONE || r.phone),
         education: eduRes.rows[0] || {},
