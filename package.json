@@ -8,7 +8,9 @@
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "start": "node backend/server.js",
     "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev"
+    "dev:frontend": "cd frontend && npm run dev",
+    "jdbc:test": "cd jdbc-client && mvn exec:java -Dexec.mainClass=\"com.jrms.jdbc.Main\" -Dexec.args=\"--test\" -q",
+    "jdbc:cli": "cd jdbc-client && mvn exec:java -Dexec.mainClass=\"com.jrms.jdbc.Main\" -q"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

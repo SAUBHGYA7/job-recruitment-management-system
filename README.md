@@ -23,6 +23,7 @@ A full-stack enterprise web application and relational database system built for
   - [BCNF Normalization Proofs](#bcnf-normalization-proofs)
   - [Non-Decomposed Subtypes & Entities](#non-decomposed-subtypes--entities)
 - [Tech Stack](#tech-stack)
+- [Oracle JDBC Client (Java)](#oracle-jdbc-client-java)
 - [Key Features by Actor](#key-features-by-actor)
   - [1. Recruiter / End User Portal](#1-recruiter--end-user-portal)
   - [2. Database Designer Portal](#2-database-designer-portal)
@@ -247,10 +248,62 @@ Certain entities were preserved without decomposition:
 | **Client Routing** | React Router DOM v6 | Protected route guards enforcing actor access permissions |
 | **Backend Runtime** | Node.js (v18+), Express.js | Modular REST API service |
 | **Database Driver** | `oracledb` (v6.7+, Thin Mode) | High-performance direct connection driver to Oracle Database |
-| **Database Engine** | Oracle Database 23c Free | Enterprise relational database running in containerized environment |
+| **Enterprise JDBC** | Oracle JDBC 23c (`ojdbc11`) | Native Java JDBC driver for ACID transactions and metadata catalog |
+| **Database Engine** | Oracle Database 23c/23ai Free | Enterprise relational database running in containerized environment |
 | **Security & Auth** | JSON Web Tokens (JWT), BCrypt.js | Cryptographic password hashing and stateless authorization headers |
 | **Network Gateway** | Cloudflare Tunnel (`cloudflared`) | Secure TLS tunnel mapping localhost Oracle backend to cloud endpoints |
 | **Deployment** | Vercel | Production CDN edge hosting with client-side proxying |
+
+---
+
+## Oracle JDBC Client (Java)
+
+In addition to the Node.js/Express REST API layer, the project provides a **native Java enterprise JDBC client** in the `jdbc-client/` directory. This module establishes direct Type 4 TCP/IP connections to Oracle Database using the official Oracle JDBC 11 Thin Driver (`com.oracle.database.jdbc:ojdbc11`), implementing complete transaction safety, prepared statements, and data dictionary queries across the BCNF-decomposed 41 tables.
+
+### Key Architecture & Components
+
+```
+jdbc-client/
+├── pom.xml                                      # Maven build file (Java 17+, ojdbc11)
+├── README.md                                    # JDBC client documentation
+├── lib/
+│   └── ojdbc11.jar                              # Oracle JDBC Driver 23c (ojdbc11)
+└── src/main/java/com/jrms/jdbc/
+    ├── DatabaseManager.java                     # JDBC connection pool & .env parser
+    ├── CandidateDAO.java                        # Atomic multi-table Candidate transactions
+    ├── JobDAO.java                              # Job, Job_Details & Job_Posting DAO
+    ├── EmployerDAO.java                         # Employer & Employer_Phone DAO
+    ├── SkillDAO.java                            # Skill & Skill Requirements DAO
+    ├── SchemaDAO.java                           # USER_TABLES metadata & dynamic SQL
+    └── Main.java                                # Interactive CLI & automated test suite
+```
+
+### Running the JDBC Client
+
+#### 1. Automated Verification Test Suite (7/7 Tests)
+Validates JDBC connection, data dictionary access, full CRUD lifecycles for Candidates, Jobs, Employers, Skills, and dynamic SQL query execution:
+
+```powershell
+# Using PowerShell runner:
+.\run-jdbc.ps1 --test
+
+# Or using batch runner:
+.\run-jdbc.bat --test
+
+# Or via npm:
+npm run jdbc:test
+```
+
+#### 2. Interactive Terminal Console (CLI)
+Provides an interactive menu for Recruiters, DB Designers, and DBAs directly from your terminal:
+
+```powershell
+# Using PowerShell runner:
+.\run-jdbc.ps1
+
+# Or via npm:
+npm run jdbc:cli
+```
 
 ---
 
@@ -418,6 +471,20 @@ job-recruitment-management-system/
 │   ├── seed.sql                # Complete Oracle DML: 25+ records per relation
 │   └── README.md
 │
+├── jdbc-client/                # Native Java Oracle JDBC Client (DAOs, CLI & test suite)
+│   ├── src/main/java/com/jrms/jdbc/
+│   │   ├── DatabaseManager.java # JDBC connection manager (localhost:1521/FREEPDB1)
+│   │   ├── CandidateDAO.java    # Multi-table atomic Candidate operations
+│   │   ├── JobDAO.java          # Job & Job Details BCNF operations
+│   │   ├── EmployerDAO.java     # Employer operations
+│   │   ├── SkillDAO.java        # Skill operations & requirements
+│   │   ├── SchemaDAO.java       # USER_TABLES metadata & dynamic SQL
+│   │   └── Main.java            # Terminal console & verification test suite
+│   ├── pom.xml                  # Maven build configuration (ojdbc11 dependency)
+│   └── README.md
+│
+├── run-jdbc.bat                # Windows batch launcher for JDBC client
+├── run-jdbc.ps1                # PowerShell launcher for JDBC client
 ├── vercel.json                 # Root deployment configuration
 ├── package.json                # Project root workspace scripts
 └── README.md                   # Comprehensive system documentation
