@@ -1,0 +1,31 @@
+{
+  "name": "job-recruitment-management-system",
+  "version": "1.0.0",
+  "description": "Job Recruitment Management System (DBMS DA1/DA2) Full-Stack Application",
+  "type": "module",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "start": "node backend/server.js",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "neo4j:up": "docker compose up -d",
+    "neo4j:down": "docker compose down",
+    "schema:init": "node scripts/initConstraints.js",
+    "migrate": "node scripts/migrate.js",
+    "verify:migration": "node scripts/verify_migration.js",
+    "test:backend": "node backend/tests/api_verification.test.js",
+    "test:safety": "node backend/tests/phase3_1_safety_review.test.js",
+    "test:frontend": "node frontend/tests/frontend_integration.test.js",
+    "build:frontend": "cd frontend && npm run build"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "neo4j-driver": "^6.2.0",
+    "oracledb": "^6.7.1"
+  }
+}

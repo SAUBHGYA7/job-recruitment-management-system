@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production Build & Dist
+dist/
+*/dist/
+build/
+*/build/
+
+# Environment Variables & Real Secrets (NEVER COMMIT)
+.env
+.env.*
+!.env.example
+!*/.env.example
+*.env
+*.env.local
+
+# Logs, Runtime & Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+logs/
+
+# Database Data & Docker Local Storage
+data/
+neo4j/
+neo4j_data/
+neo4j_logs/
+
+# OS & Editor Files
+.DS_Store
+*/.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+cloudflared.exe

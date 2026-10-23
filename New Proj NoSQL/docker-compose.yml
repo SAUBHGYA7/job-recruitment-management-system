@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.26-community
+    container_name: jrms-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474" # Neo4j Browser / HTTP API
+      - "7687:7687" # Bolt Protocol
+    environment:
+      NEO4J_AUTH: "neo4j/${NEO4J_PASSWORD:?Error: NEO4J_PASSWORD must be defined in .env}"
+      NEO4J_PLUGINS: '["apoc"]'
+      # Restrict APOC to safe collection, map, and date manipulation procedures; DO NOT enable unrestricted APOC
+      NEO4J_dbms_security_procedures_allowlist: "apoc.coll.*,apoc.map.*,apoc.date.*"
+      NEO4J_server_memory_pagecache_size: "512M"
+      NEO4J_server_memory_heap_initial__size: "512M"
+      NEO4J_server_memory_heap_max__size: "1G"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  neo4j_data:
+    name: jrms_neo4j_data
+  neo4j_logs:
+    name: jrms_neo4j_logs
